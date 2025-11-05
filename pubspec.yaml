@@ -1,0 +1,35 @@
+  name: s501_developpement
+  description: Une application de recommandation de recettes.
+
+  # Empêche la publication accidentelle sur pub.dev.
+  publish_to: 'none'
+
+  version: 1.0.0+1
+
+  environment:
+    sdk: '>=3.0.0 <4.0.0'
+
+  dependencies:
+    flutter:
+      sdk: flutter
+
+    # --- DÉPENDANCES ESSENTIELLES ---
+
+    # 1. Pour la gestion d'état (vos "Controllers")
+    provider: ^6.0.0
+
+    # 2. Pour la base de données LOCALE (votre "Service" de BDD)
+    sqflite: ^2.3.0
+    path_provider: ^2.0.0
+    path: ^1.8.0
+
+    cupertino_icons: ^1.0.2
+
+  dev_dependencies:
+    flutter_test:
+      sdk: flutter
+    flutter_lints: ^3.0.0
+
+  flutter:
+    uses-material-design: true
+    
