@@ -47,4 +47,5 @@ class RecetteAliment {
   int getIdAliment() {
     return id_aliment;
   }
+
 }
