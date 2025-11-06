@@ -27,4 +27,51 @@ class Recette {
     required this.difficulte,
   });
 
+  // --- GETTERS ---
+  ///je dois faire les getters de score titre type recette image difficulte
+  int getIdRecette() {
+    return id_recette;
+  }
+
+  String getTitre() {
+    return titre;
+  }
+
+  String getInstructions() {
+    return instructions;
+  }
+
+  String getTypeRecette() {
+    return type_recette;
+  }
+
+  double getScore() {
+    return score;
+  }
+
+  int getNoteBase() {
+    return note_base;
+  }
+
+  String getImage() {
+    return image;
+  }
+
+  String getDifficulte() {
+    return difficulte;
+  }
+
+  // --SQUELLETTE DES METHODES QUI SERONT IMPLEMNETER PLUS TARD --
+
+  static void creerRecetteUtilisateur(String titre, String instructions, List<String> ingredients,) {
+    ///contenu que je dois ajouter
+  }
+
+  void toggleFavori(){
+    ///contenu que je dois ajouter
+  }
+
+  void noterRecette(int note) {
+    ///contenu que je dois ajouter 
+  }
 }
