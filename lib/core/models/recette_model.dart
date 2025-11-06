@@ -72,6 +72,6 @@ class Recette {
   }
 
   void noterRecette(int note) {
-    ///contenu que je dois ajouter 
+    ///contenu que je dois ajouter
   }
 }
