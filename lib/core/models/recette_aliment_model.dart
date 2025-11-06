@@ -43,7 +43,7 @@ class RecetteAliment {
   int getIdRecette() {
     return id_recette;
   }
-  // pareil ici aussi
+  // pareil
   int getIdAliment() {
     return id_aliment;
   }
