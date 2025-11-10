@@ -1,14 +1,14 @@
-// Fichier: aliment-model.dart
+
 
 class Aliment {
-  -
+ 
   int id_aliment;
   String nom;
   String categorie;
   String nutriscore;
   String image;
 
-  
+ 
   Aliment({
     required this.id_aliment,
     required this.nom,
@@ -17,7 +17,7 @@ class Aliment {
     required this.image,
   });
 
- -
+  
   int getIdAliment() {
     return id_aliment;
   }
@@ -38,41 +38,25 @@ class Aliment {
     return image;
   }
 
- 
-  /// Modifie le nom de l'aliment
-  void setNom(String nouveauNom) {
-    this.nom = nouveauNom;
-  }
-
-  /// Modifie la catégorie de l'aliment
-  void setCategorie(String nouvelleCategorie) {
-    this.categorie = nouvelleCategorie;
-  }
-
-  /// Modifie le nutriscore de l'aliment
-  void setNutriscore(String nouveauNutriscore) {
-    this.nutriscore = nouveauNutriscore;
-  }
-
-  /// Modifie l'image de l'aliment
-  void setImage(String nouvelleImage) {
-    this.image = nouvelleImage;
-  }
   
-
-  
-  List<Aliment> getAliments() {
-    // TODO: Logique à implémenter
-    return [];
-  }
-
-  static Aliment creerNouvelAliment(int id, String nom, String categorie, String nutriscore, String image) {
+  factory Aliment.fromMap(Map<String, dynamic> map) {
     return Aliment(
-      id_aliment: id,
-      nom: nom,
-      categorie: categorie,
-      nutriscore: nutriscore,
-      image: image,
+      id_aliment: map['id_aliment'],
+      nom: map['nom'] ?? "",
+      categorie: map['categorie'] ?? "Inconnue",
+      nutriscore: map['nutriscore'] ?? "N/A",
+      image: map['image'] ?? "",
     );
+  }
+
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id_aliment': id_aliment,
+      'nom': nom,
+      'categorie': categorie,
+      'nutriscore': nutriscore,
+      'image': image,
+    };
   }
 }

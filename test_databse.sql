@@ -28,6 +28,38 @@ CREATE TABLE RecetteAliment (
     FOREIGN KEY (id_aliment) REFERENCES Aliments(id_aliment)
 );
 
+CREATE TABLE Profil (
+    id_profil INT AUTO_INCREMENT PRIMARY KEY,
+    poids REAL,
+    taille REAL,
+    objectif VARCHAR(255)
+);
+
+CREATE TABLE Frigo (
+    id_frigo INT AUTO_INCREMENT PRIMARY KEY,
+    id_aliment INT,
+    quantite REAL,
+    date_ajout DATE,
+    date_peremption DATE,
+    FOREIGN KEY (id_aliment) REFERENCES Aliments(id_aliment)
+);
+
+CREATE TABLE Historique (
+    id_historique INT AUTO_INCREMENT PRIMARY KEY,
+    id_recette INT,
+    date_action DATETIME,
+    duree_totale_min INT,
+    FOREIGN KEY (id_recette) REFERENCES Recettes(id_recette)
+);
+
+CREATE TABLE FeedbackRecette (
+    id_feedback INT AUTO_INCREMENT PRIMARY KEY,
+    id_recette INT,
+    favori INT,
+    note INT,
+    FOREIGN KEY (id_recette) REFERENCES Recettes(id_recette)
+);
+
 INSERT INTO Recettes (titre, instructions, type_recette, score, note_base, image, difficulte) VALUES
 ('No-Bake Nut Cookies', 'In a heavy saucepan, mix brown sugar, milk, vanilla, and butter. Bring to boil...', 'Dessert', 4.5, 10, 'https://loremflickr.com/320/240/cookie', 'Facile'),
 ('Jewell Ball''S Chicken', 'Place chipped beef on bottom of baking dish. Arrange chicken over beef...', 'Plat principal', 4.2, 8, 'https://loremflickr.com/320/240/chicken', 'Moyenne'),
