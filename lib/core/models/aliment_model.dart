@@ -1,12 +1,14 @@
-class Aliment {
+// Fichier: aliment-model.dart
 
+class Aliment {
+  -
   int id_aliment;
   String nom;
   String categorie;
   String nutriscore;
   String image;
 
-
+  
   Aliment({
     required this.id_aliment,
     required this.nom,
@@ -15,7 +17,7 @@ class Aliment {
     required this.image,
   });
 
-  
+ -
   int getIdAliment() {
     return id_aliment;
   }
@@ -36,17 +38,34 @@ class Aliment {
     return image;
   }
 
-  // Méthode du diagramme : getAliments
-  // Elle retourne une liste vide pour l'instant,
-  // car sa logique n'est pas définie ici.
+ 
+  /// Modifie le nom de l'aliment
+  void setNom(String nouveauNom) {
+    this.nom = nouveauNom;
+  }
+
+  /// Modifie la catégorie de l'aliment
+  void setCategorie(String nouvelleCategorie) {
+    this.categorie = nouvelleCategorie;
+  }
+
+  /// Modifie le nutriscore de l'aliment
+  void setNutriscore(String nouveauNutriscore) {
+    this.nutriscore = nouveauNutriscore;
+  }
+
+  /// Modifie l'image de l'aliment
+  void setImage(String nouvelleImage) {
+    this.image = nouvelleImage;
+  }
+  
+
+  
   List<Aliment> getAliments() {
-    // TODO: La logique de cette méthode est à définir
-    // (elle devrait sûrement être dans une autre classe)
+    // TODO: Logique à implémenter
     return [];
   }
 
- 
-  // On crée une méthode statique pour correspondre au diagramme.
   static Aliment creerNouvelAliment(int id, String nom, String categorie, String nutriscore, String image) {
     return Aliment(
       id_aliment: id,

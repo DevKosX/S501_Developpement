@@ -1,107 +1,59 @@
 
 
-import 'package:flutter/material.dart';
-import 'aliment-model.dart'; // Importer le modèle Aliment
+import '../models/aliment-model.dart';
 
-class AlimentController extends ChangeNotifier {
+class AlimentController {
+ 
+  Aliment aliment;
 
-  // --- 1. L'ETAT (STATE) ---
-  //
-  // C'est la liste de TOUS les aliments "connus" de l'application.
-  // C'est notre catalogue ou notre "base de données" d'aliments.
-  List<Aliment> _catalogueAliments = [];
+ 
+  AlimentController({required this.aliment});
 
-  // --- 2. L'ACCESSEUR (GETTER) ---
-  //
-  // La vue (View) viendra lire ce catalogue pour, par exemple,
-  // afficher une liste d'aliments à ajouter au frigo.
-  List<Aliment> get catalogueAliments => _catalogueAliments;
+  
+  // Appels simples aux getters du modèle.
 
-  // --- 3. LA LOGIQUE METIER (BUSINESS LOGIC) ---
-
-  /// Charge le catalogue initial d'aliments (simulation).
-  /// Dans le futur, viendra d'une API ou d'une base de données.
-  void chargerAliments() {
-    _catalogueAliments = [
-      Aliment(
-        id_aliment: 101,
-        nom: "Pomme",
-        categorie: "Fruit",
-        nutriscore: "A",
-        image: "assets/images/pomme.png" // Chemin d'exemple
-      ),
-      Aliment(
-        id_aliment: 102,
-        nom: "Poulet (filet)",
-        categorie: "Viande",
-        nutriscore: "A",
-        image: "assets/images/poulet.png"
-      ),
-      Aliment(
-        id_aliment: 103,
-        nom: "Lait",
-        categorie: "Produit laitier",
-        nutriscore: "B",
-        image: "assets/images/lait.png"
-      ),
-    ];
-
-    // --- CONNEXION VUE  ---
-    // On prévient la vue que le catalogue est chargé.
-    //
-    // notifyListeners();
+  /// Méthode : getIdAliment
+  int getIdAliment() {
+    return aliment.getIdAliment();
   }
 
-  /// Crée un nouvel aliment et l'ajoute au catalogue.
-  /// (Cette méthode était sur ton modèle UML, sa vraie place est ici)
-  void creerNouvelAliment({
-    required String nom,
-    required String categorie,
-    required String nutriscore,
-    required String image,
-  }) {
-    // Logique pour trouver un nouvel ID
-    int newId = _catalogueAliments.isEmpty
-        ? 101 // On commence à 101 par exemple
-        : _catalogueAliments.map((a) => a.id_aliment).reduce((a, b) => a > b ? a : b) + 1;
-
-    final nouvelAliment = Aliment(
-      id_aliment: newId,
-      nom: nom,
-      categorie: categorie,
-      nutriscore: nutriscore,
-      image: image,
-    );
-
-    _catalogueAliments.add(nouvelAliment);
-
-    // --- CONNEXION VUE  ---
-    // On prévient la vue qu'un aliment a été ajouté.
-    //
-    // notifyListeners();
+  /// Méthode : getNom
+  String getNom() {
+    return aliment.getNom();
   }
 
-  /// Récupère un aliment spécifique par son ID.
-  /// Utile pour le contrôleur du frigo.
-  Aliment? getAlimentById(int id) {
-    try {
-      // Trouve le premier aliment qui correspond à l'ID
-      return _catalogueAliments.firstWhere((aliment) => aliment.id_aliment == id);
-    } catch (e) {
-      // Gère l'erreur si aucun aliment n'est trouvé
-      print("Erreur: Aliment $id non trouvé dans le catalogue.");
-      return null;
-    }
+  /// Méthode : getCategorie
+  String getCategorie() {
+    return aliment.getCategorie();
   }
 
-  /// Supprime un aliment
-  void supprimerAliment(int id) {
-    
-    _catalogueAliments.removeWhere((aliment) => aliment.id_aliment == id);
+  /// Méthode : getNutriscore
+  String getNutriscore() {
+    return aliment.getNutriscore();
+  }
 
-    // --- CONNEXION VUE  ---
-    // On prévient la vue qu'un aliment a été supprimé.
-    //
-    // notifyListeners();
+  /// Méthode : getImage
+  String getImage() {
+    return aliment.getImage();
+  }
+
+
+
+  /// Méthode : getAliments
+  /// Appelle la méthode du modèle pour récupérer la liste.
+  List<Aliment> getAliments() {
+    /// Appel simple au modèle
+    var liste = aliment.getAliments();
+    /// On transmet la liste à la vue
+    return liste;
+  }
+
+  /// Méthode : creerNouvelAliment
+  /// Appelle la méthode statique du modèle.
+  /// Note: celle-ci n'a pas besoin de l'attribut 'this.aliment'
+  void creerNouvelAliment(int id, String nom, String categorie, String nutriscore, String image) {
+    /// Appel simple à la méthode statique du modèle
+    var nouvelAliment = Aliment.creerNouvelAliment(id, nom, categorie, nutriscore, image);
+    /// TODO: Transmettre 'nouvelAliment' à la vue si besoin
   }
 }
