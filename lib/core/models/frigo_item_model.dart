@@ -1,24 +1,29 @@
 
-import 'aliment-model.dart'; 
 
 class Frigo {
- 
+  //  ATTRIBUTS 
   int id_frigo;
-  double quantite; 
+  int id_aliment; // Clé étrangère
+  double quantite;
   DateTime date_ajout;
   DateTime date_peremption;
 
-  
+  //  CONSTRUCTEUR 
   Frigo({
     required this.id_frigo,
+    required this.id_aliment,
     required this.quantite,
     required this.date_ajout,
     required this.date_peremption,
   });
 
-  
+  // GETTERS 
   int getIdFrigo() {
     return id_frigo;
+  }
+
+  int getIdAliment() {
+    return id_aliment;
   }
 
   double getQuantite() {
@@ -33,29 +38,30 @@ class Frigo {
     return date_peremption;
   }
 
+  // HELPERS BDD 
 
-
-  /// Modifie la quantité de l'item
-  void setQuantite(double nouvelleQuantite) {
-    if (nouvelleQuantite >= 0) {
-      this.quantite = nouvelleQuantite;
-    }
+  /// Crée une instance de Frigo à partir d'un map (lu depuis la BDD).
+  /// La BDD stocke les dates comme Texte (ISO 8601).
+  factory Frigo.fromMap(Map<String, dynamic> map) {
+    return Frigo(
+      id_frigo: map['id_frigo'],
+      id_aliment: map['id_aliment'],
+      quantite: (map['quantite'] is int) 
+          ? (map['quantite'] as int).toDouble() 
+          : (map['quantite'] ?? 0.0),
+      date_ajout: DateTime.parse(map['date_ajout']),
+      date_peremption: DateTime.parse(map['date_peremption']),
+    );
   }
 
-  
-  void modifierDatePeremption(DateTime nouvelleDate) {
-    this.date_peremption = nouvelleDate;
-  }
-
-  // --- Méthodes (inchangées) ---
-
-  void ajouterAliment(Aliment aliment, double quantite, DateTime datePeremption) {
-    // TODO: Logique à implémenter.
-    print("Aliment ajouté (logique à définir)");
-  }
-
-  List<Frigo> getContenuFrigo() {
-    // TODO: Logique à implémenter.
-    return [];
+  /// Convertit l'instance de Frigo en map (pour écrire dans la BDD).
+  Map<String, dynamic> toMap() {
+    return {
+      'id_frigo': id_frigo,
+      'id_aliment': id_aliment,
+      'quantite': quantite,
+      'date_ajout': date_ajout.toIso8601String(), // Stocke en texte
+      'date_peremption': date_peremption.toIso8601String(), // Stocke en texte
+    };
   }
 }

@@ -1,65 +1,77 @@
 
+import 'package:flutter/material.dart';
+import '../models/frigo_model.dart';
+import '../repositories/frigo_repository.dart';
 
-import '../models/frigo_item_model.dart';
-import '../models/aliment-model.dart';
-
-class FrigoController {
-  
-  // Le contrôleur possède UNE instance du modèle
-  Frigo frigoItem;
-
-  
-  /// Le constructeur reçoit l'instance du modèle qu'il doit contrôler
-  FrigoController({required this.frigoItem});
+class FrigoController extends ChangeNotifier {
+  final FrigoRepository _repository;
 
 
-  /// Méthode : getIdFrigo
-  /// Retourne l'ID de l'item du frigo.
-  int getIdFrigo() {
-    return frigoItem.getIdFrigo();
-  }
+  List<Frigo> _contenuFrigo = [];
+  bool _isLoading = false;
 
-  /// Méthode : getQuantite
-  /// Retourne la quantité de l'item.
-  double getQuantite() {
-    return frigoItem.getQuantite();
-  }
 
-  /// Méthode : getDateAjout
-  /// Retourne la date d'ajout de l'item.
-  DateTime getDateAjout() {
-    return frigoItem.getDateAjout();
-  }
+  List<Frigo> get contenuFrigo => _contenuFrigo;
+  bool get isLoading => _isLoading;
 
-  /// Méthode : getDatePeremption
-  /// Retourne la date de péremption de l'item.
-  DateTime getDatePeremption() {
-    return frigoItem.getDatePeremption();
+
+  FrigoController(this._repository) {
+    chargerContenuFrigo();
   }
 
 
-  /// Méthode : ajouterAliment
-  /// Appelle la méthode du modèle.
-  void ajouterAliment(Aliment aliment, double quantite, DateTime datePeremption) {
-    /// Appel simple au modèle
-    frigoItem.ajouterAliment(aliment, quantite, datePeremption);
-    /// TODO: Transmettre un résultat à la vue si besoin
+
+  /// Charge (ou recharge) la liste des items du frigo.
+  Future<void> chargerContenuFrigo() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _contenuFrigo = await _repository.getContenuFrigo();
+    } catch (e) {
+      print("ERREUR chargement frigo: $e");
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
-  /// Méthode : getContenuFrigo
-  /// Appelle la méthode du modèle.
-  List<Frigo> getContenuFrigo() {
-    /// Appel simple au modèle
-    var contenu = frigoItem.getContenuFrigo();
-    /// On transmet la liste à la vue
-    return contenu;
+  /// Demande au repository d'ajouter un item.
+  Future<void> ajouterItem(Frigo item) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _repository.addItemAuFrigo(item);
+      // Après l'ajout, on recharge toute la liste
+      await chargerContenuFrigo(); 
+    } catch (e) {
+      print("ERREUR ajout item frigo: $e");
+      _isLoading = false;
+      notifyListeners();
+    }
+    // isLoading est remis à false par chargerContenuFrigo
   }
 
-  /// Méthode : modifierDatePeremption
-  
-  void modifierDatePeremption(DateTime nouvelleDate) {
-    /// Appel simple au modèle
-    frigoItem.modifierDatePeremption(nouvelleDate);
-    /// TODO: Prévenir la vue du changement
+  /// Demande au repository de supprimer un item.
+  Future<void> supprimerItem(int id_frigo) async {
+    try {
+      await _repository.deleteItemFrigo(id_frigo);
+      // Recharge la liste pour mettre à jour l'UI
+      await chargerContenuFrigo();
+    } catch (e) {
+      print("ERREUR suppression item frigo: $e");
+    }
+  }
+
+  /// Demande au repository de mettre à jour un item.
+  Future<void> mettreAJourItem(Frigo item) async {
+    try {
+      await _repository.updateItemFrigo(item);
+      // Recharge la liste
+      await chargerContenuFrigo();
+    } catch (e) {
+      print("ERREUR màj item frigo: $e");
+    }
   }
 }

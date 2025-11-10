@@ -1,59 +1,42 @@
 
 
-import '../models/aliment-model.dart';
+import 'package:flutter/material.dart';
+import '../models/aliment_model.dart';
+import '../repositories/aliment_repository.dart';
 
-class AlimentController {
- 
-  Aliment aliment;
+class AlimentController extends ChangeNotifier {
+  // A besoin du Repository pour accéder aux données
+  final AlimentRepository _repository;
 
- 
-  AlimentController({required this.aliment});
+  // --- ÉTAT (ce que la vue va afficher) ---
+  List<Aliment> _catalogueAliments = [];
+  bool _isLoading = false;
 
-  
-  // Appels simples aux getters du modèle.
+  // --- GETTERS (pour la vue) ---
+  List<Aliment> get catalogueAliments => _catalogueAliments;
+  bool get isLoading => _isLoading;
 
-  /// Méthode : getIdAliment
-  int getIdAliment() {
-    return aliment.getIdAliment();
+  // --- CONSTRUCTEUR ---
+  AlimentController(this._repository) {
+    // On charge le catalogue dès que le contrôleur est créé
+    chargerCatalogue();
   }
 
-  /// Méthode : getNom
-  String getNom() {
-    return aliment.getNom();
-  }
+  // --- MÉTHODES (appelées par la Vue) ---
 
-  /// Méthode : getCategorie
-  String getCategorie() {
-    return aliment.getCategorie();
-  }
+  /// Charge tous les aliments depuis la BDD via le repository.
+  Future<void> chargerCatalogue() async {
+    _isLoading = true;
+    notifyListeners(); // Dit à la vue d'afficher un loader
 
-  /// Méthode : getNutriscore
-  String getNutriscore() {
-    return aliment.getNutriscore();
-  }
+    try {
+      // Appel au repository pour les vraies données
+      _catalogueAliments = await _repository.getAliments();
+    } catch (e) {
+      print("ERREUR lors du chargement du catalogue: $e");
+    }
 
-  /// Méthode : getImage
-  String getImage() {
-    return aliment.getImage();
-  }
-
-
-
-  /// Méthode : getAliments
-  /// Appelle la méthode du modèle pour récupérer la liste.
-  List<Aliment> getAliments() {
-    /// Appel simple au modèle
-    var liste = aliment.getAliments();
-    /// On transmet la liste à la vue
-    return liste;
-  }
-
-  /// Méthode : creerNouvelAliment
-  /// Appelle la méthode statique du modèle.
-  /// Note: celle-ci n'a pas besoin de l'attribut 'this.aliment'
-  void creerNouvelAliment(int id, String nom, String categorie, String nutriscore, String image) {
-    /// Appel simple à la méthode statique du modèle
-    var nouvelAliment = Aliment.creerNouvelAliment(id, nom, categorie, nutriscore, image);
-    /// TODO: Transmettre 'nouvelAliment' à la vue si besoin
+    _isLoading = false;
+    notifyListeners(); // Dit à la vue que les données sont prêtes
   }
 }
