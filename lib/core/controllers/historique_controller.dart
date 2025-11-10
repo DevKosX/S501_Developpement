@@ -1,48 +1,32 @@
-import 'package:flutter/material.dart';
-import 'historique_model.dart'; // Adaptera le chemin si besoin
+import '../models/historique_action_model.dart';
 
-class HistoriqueController extends ChangeNotifier {
-  // 1. L'état
-  List<Historique> _historiqueActions = [];
+class HistoriqueController {
+  Historique historique;
 
-  // 2. Getter
-  List<Historique> get historiqueActions => _historiqueActions;
+  HistoriqueController({required this.historique});
 
-  // 3. Logique métier
-
-  /// Charger historique simulé
-  void chargerHistorique() {
-    _historiqueActions = [
-      Historique(id_historique: 1, date_action: DateTime.now().subtract(Duration(days: 1)), duree_totale_min: 40),
-      Historique(id_historique: 2, date_action: DateTime.now().subtract(Duration(hours: 5)), duree_totale_min: 25),
-    ];
-    // notifyListeners();
+  // Appelle le getter id_historique
+  int getIdHistorique() {
+    return historique.getIdHistorique();
   }
 
-  /// Enregistrer une nouvelle action
-  void enregistrerAction({
-    required int idHistorique,
-    required DateTime dateAction,
-    required int dureeMin,
-  }) {
-    _historiqueActions.add(
-      Historique(id_historique: idHistorique, date_action: dateAction, duree_totale_min: dureeMin),
-    );
-    // notifyListeners();
+  // Appelle le getter date_action
+  DateTime getDateAction() {
+    return historique.getDateAction();
   }
 
-  /// Récupérer une action spécifique
-  Historique? getActionById(int id) {
-    try {
-      return _historiqueActions.firstWhere((h) => h.id_historique == id);
-    } catch (e) {
-      return null;
-    }
+  // Appelle le getter duree_totale_min
+  int getDuree() {
+    return historique.getDuree();
   }
 
-  /// Supprimer une action
-  void supprimerAction(int id) {
-    _historiqueActions.removeWhere((h) => h.id_historique == id);
-    // notifyListeners();
+  // Appelle la méthode statique pour récupérer l'historique complet
+  List<Historique> getHistoriqueComplet() {
+    return Historique.getHistoriqueComplet();
+  }
+
+  // Enregistre une action avec la méthode du modèle
+  void enregistrerAction(int idRecette, int duree) {
+    historique.enregistrerAction(idRecette, duree);
   }
 }
