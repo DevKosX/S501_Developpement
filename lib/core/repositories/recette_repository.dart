@@ -30,10 +30,18 @@ abstract class RecetteRepository {
 
 // --- 2. L'IMPLÉMENTATION RÉELLE (SQLite) ---
 // ici, j'écris le vrai code qui va parler à SQLite.
+
 class RecetteRepositoryImpl implements RecetteRepository {
   // j'ai besoin d'accéder à ma base de données. j'utilise donc mon
   // DatabaseService qui est un Singleton (une seule instance pour toute l'app).
   final DatabaseService _dbService = DatabaseService.instance;
+
+
+  /// Méthode : getRecettes
+  /// Rôle : Récupère toutes les recettes stockées dans la base SQLite.
+  ///   Implémentation SQL 
+  /// SELECT * FROM Recettes
+
 
   @override
   Future<List<Recette>> getRecettes() async {
@@ -48,6 +56,11 @@ class RecetteRepositoryImpl implements RecetteRepository {
     // j'utilise la méthode .fromMap() que j'ai codée dans mon Modèle pour ça.
     return List.generate(maps.length, (i) => Recette.fromMap(maps[i]));
   }
+
+  /// Méthode : toggleFavori
+  /// Rôle : permet d'activer ou désactivé le statut "favori" d’une recette.
+  ///    Implémentation SQL :
+  /// SELECT * FROM FeedbackRecette WHERE id_recette = ? UPDATE ou INSERT selon existence
 
   @override
   Future<void> toggleFavori(Recette recette) async {
@@ -74,6 +87,11 @@ class RecetteRepositoryImpl implements RecetteRepository {
     print("REPO: favori mis à jour pour la recette $id");
   }
 
+  /// Méthode : noterRecette
+  /// Rôle : je veux enregistrer ou mettr à jour la note donnée par l’utilisateur à une recette je veux la changer en gros.
+  ///   Implémentation SQL :
+  /// SELECT * FROM FeedbackRecette WHERE id_recette = ?
+
   @override
   Future<void> noterRecette(Recette recette, int note) async {
     final db = await _dbService.database;
@@ -92,6 +110,11 @@ class RecetteRepositoryImpl implements RecetteRepository {
     }
     print("REPO: note $note enregistrée pour la recette $id");
   }
+
+  /// Méthode : creerRecetteUtilisateur
+  /// Rôle : methode qui ajoute une nouvelle recette par un utilisateur dans la base.
+  ///    Implémentation SQL :
+  /// INSERT INTO Recettes (...)
 
   @override
   Future<void> creerRecetteUtilisateur(Recette recette) async {
@@ -122,6 +145,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
   /// FROM RecetteAliment RA
   /// JOIN Aliments A ON A.id_aliment = RA.id_aliment
   /// WHERE RA.id_recette = ?
+
   @override
   Future<List<Map<String, dynamic>>> getIngredientsByRecette(int idRecette) async {
     final db = await _dbService.database;
@@ -144,6 +168,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
   ///   Implémentation SQL :
   /// INSERT INTO RecetteAliment (id_recette, id_aliment, quantite, unite, remarque)
   /// VALUES (?, ?, ?, ?, ?)
+
   @override
   Future<void> addIngredientToRecette(RecetteAliment recetteAliment) async {
     final db = await _dbService.database;
@@ -161,6 +186,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
   ///
   ///    Implémentation SQL :
   /// DELETE FROM RecetteAliment WHERE id_recette = ?
+
   @override
   Future<void> deleteIngredientsByRecette(int idRecette) async {
     final db = await _dbService.database;
