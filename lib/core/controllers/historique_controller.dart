@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/historique_action_model.dart';
+import '../models/historique_model.dart';
 import '../repositories/historique_repository.dart';
 
 class HistoriqueController extends ChangeNotifier {

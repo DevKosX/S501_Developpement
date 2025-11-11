@@ -109,4 +109,3 @@ class Recette {
     //contenu que je dois ajouter
   //}
 
-}
