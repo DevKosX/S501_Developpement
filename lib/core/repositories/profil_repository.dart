@@ -1,64 +1,53 @@
-
+import 'package:sqflite/sqflite.dart'; 
+// pour la connexion à la BDD
+import '../services/database_service.dart'; 
 import '../models/profil_model.dart';
 
+
 /// LE CONTRAT (Interface)
-/// Définit toutes les actions possibles sur le profil.
+
 abstract class ProfilRepository {
-  /// Récupère le profil unique de l'utilisateur.
-  /// Renvoie null s'il n'a pas encore été créé.
+
   Future<ProfilModel?> getProfil();
 
-  /// Met à jour ou crée le profil de l'utilisateur.
   Future<void> saveProfil(ProfilModel profil);
 }
 
-/// L'IMPLÉMENTATION MOCK (Code Dur) 
-/// C'est la fausse base de données, pour les tests et le développement de l'UI.
-class MockProfilRepository implements ProfilRepository {
-
-  // Simule donnée profil en cache
-  ProfilModel _mockProfil = ProfilModel(
-    id: 1,
-    poids: 75.0,
-    taille: 1.80,   
-    objectif: "Perdre du poids (Mock)",
-  );
+/// Connexion à la BD 
+class ProfilRepositoryImpl implements ProfilRepository {
+  
+  // Récupère instance unique  du service de BDD
+  final DatabaseService _dbService = DatabaseService.instance;
 
   @override
   Future<ProfilModel?> getProfil() async {
-    // Simule délai réseau ou BDD
-    await Future.delayed(const Duration(milliseconds: 500));
-    print("MOCK: Récupération du profil...");
-    return _mockProfil;
+    final db = await _dbService.database;
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      'Profil',
+      limit: 1, 
+    );
+
+    if (maps.isNotEmpty) {
+      return ProfilModel.fromMap(maps.first);
+    }
+    return null;
   }
 
   @override
   Future<void> saveProfil(ProfilModel profil) async {
-    // Simule un délai réseau ou BDD
-    await Future.delayed(const Duration(milliseconds: 500));
-    _mockProfil = profil; // Met à jour le "cache" mock
-    print("MOCK: Profil sauvegardé avec succès !");
-    print("  -> Poids: ${profil.poids}, Taille: ${profil.taille}, Objectif: ${profil.objectif}");
+    final db = await _dbService.database;
+    
+    // Utilise db.insert avec 'replace' pour faire un "UPSERT" :
+    // Si le profil n'existe pas il est inséré
+    // Si le profil existe déjà, il est remplacé 
+    await db.insert(
+      'Profil',
+      profil.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    print("REPO: Profil sauvegardé/mis à jour dans la BDD.");
   }
 }
 
-/// --- 3. L'IMPLÉMENTATION RÉELLE (Exemple pour plus tard) ---
-/*
-class SQLiteProfilRepository implements ProfilRepository {
-  final DatabaseService _dbService;
 
-  SQLiteProfilRepository(this._dbService);
-
-  @override
-  Future<ProfilModel?> getProfil() async {
-    // Vraie logique BDD (ex: _dbService.getProfil(1))
-    // ...
-  }
-
-  @override
-  Future<void> saveProfil(ProfilModel profil) async {
-    // Vraie logique BDD (ex: _dbService.saveProfil(profil.toMap()))
-    // ...
-  }
-}
-*/
