@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import '../models/recette_model.dart';
+import '../models/recette_aliment_model.dart';
 import '../services/database_service.dart';
 
 /// Fichier: core/repositories/recette_repository.dart
@@ -18,6 +19,13 @@ abstract class RecetteRepository {
   Future<void> toggleFavori(Recette recette);
   Future<void> noterRecette(Recette recette, int note);
   Future<void> creerRecetteUtilisateur(Recette recette);
+
+
+  ///ajout de 3 methodes essenetielles pour recette_aliments
+
+  Future<List<Map<String, dynamic>>> getIngredientsByRecette(int idRecette);
+  Future<void> addIngredientToRecette(RecetteAliment recetteAliment);
+  Future<void> deleteIngredientsByRecette(int idRecette);
 }
 
 // --- 2. L'IMPLÉMENTATION RÉELLE (SQLite) ---
@@ -97,5 +105,67 @@ class RecetteRepositoryImpl implements RecetteRepository {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
     print("REPO: nouvelle recette créée en BDD");
+  }
+
+
+
+  // --------------------------------------------------------------------------
+  // === NOUVELLES MÉTHODES LIÉES À RecetteAliment ===
+  // --------------------------------------------------------------------------
+
+  /// Méthode : getIngredientsByRecette
+  /// Rôle : je veu récupèrer une liste complète des ingrdients (avec quantité, unité, remarque) pour une recette donnée.
+  ///
+  ///   Implémentation SQL :
+  /// SELECT A.nom, A.marque, A.categorie, A.nutriscore,
+  ///        RA.quantite, RA.unite, RA.remarque
+  /// FROM RecetteAliment RA
+  /// JOIN Aliments A ON A.id_aliment = RA.id_aliment
+  /// WHERE RA.id_recette = ?
+  @override
+  Future<List<Map<String, dynamic>>> getIngredientsByRecette(int idRecette) async {
+    final db = await _dbService.database;
+
+    final result = await db.rawQuery('''
+      SELECT A.nom, A.marque, A.categorie, A.nutriscore, 
+             RA.quantite, RA.unite, RA.remarque
+      FROM RecetteAliment RA
+      JOIN Aliments A ON A.id_aliment = RA.id_aliment
+      WHERE RA.id_recette = ?
+    ''', [idRecette]);
+
+    print("REPO: ${result.length} ingrédients trouvés pour la recette $idRecette");
+    return result;
+  }
+
+  /// Méthode : addIngredientToRecette
+  /// Rôle : je veux ajouter un ingrédient (ligne) dans la table pivot RecetteAliment avec ses attributs
+  ///
+  ///   Implémentation SQL :
+  /// INSERT INTO RecetteAliment (id_recette, id_aliment, quantite, unite, remarque)
+  /// VALUES (?, ?, ?, ?, ?)
+  @override
+  Future<void> addIngredientToRecette(RecetteAliment recetteAliment) async {
+    final db = await _dbService.database;
+
+    await db.insert(
+      'RecetteAliment',
+      recetteAliment.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    print("REPO: ingrédient ajouté à la recette ${recetteAliment.id_recette}");
+  }
+
+  /// Méthode : deleteIngredientsByRecette
+  /// Rôle : je veux supprimer toutes les lignes de la table pivot RecetteAliment liées à une recette.
+  ///
+  ///    Implémentation SQL :
+  /// DELETE FROM RecetteAliment WHERE id_recette = ?
+  @override
+  Future<void> deleteIngredientsByRecette(int idRecette) async {
+    final db = await _dbService.database;
+
+    await db.delete('RecetteAliment', where: 'id_recette = ?', whereArgs: [idRecette]);
+    print("REPO: ingrédients supprimés pour la recette $idRecette");
   }
 }
