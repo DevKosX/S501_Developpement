@@ -39,7 +39,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
 
   /// Méthode : getRecettes
   /// Rôle : Récupère toutes les recettes stockées dans la base SQLite.
-  ///   Implémentation SQL 
+  ///   Implémentation SQL
   /// SELECT * FROM Recettes
 
 
@@ -178,7 +178,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
       recetteAliment.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    print("REPO: ingrédient ajouté à la recette ${recetteAliment.id_recette}");
+    print("REPO: ingrédient ajouté à la recette ${recetteAliment.idRecette}");
   }
 
   /// Méthode : deleteIngredientsByRecette

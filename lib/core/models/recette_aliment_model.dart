@@ -5,7 +5,9 @@
 /// ce modele est une classe pivot qui sert de liaison entre les recettess et les aliments dans ces recettes
 
 class RecetteAliment {
-  int id_RecetteAliment;
+  int idRecetteAliment;
+  int idRecette;
+  int idAliment;
   double quantite;
   String unite;
   String remarque;
@@ -13,7 +15,9 @@ class RecetteAliment {
   // --- CONSTRUCTEUR ---
 
   RecetteAliment({
-    required this.id_RecetteAliment,
+    required this.idRecetteAliment,
+    required this.idAliment,
+    required this.idRecette,
     required this.quantite,
     required this.unite,
     required this.remarque,
@@ -24,7 +28,7 @@ class RecetteAliment {
 
 
   int getIdRecetteAliment() {
-    return id_RecetteAliment;
+    return idRecetteAliment;
   }
 
   double getQuantite() {
@@ -41,34 +45,34 @@ class RecetteAliment {
 
   // J'ajoute les getters pour les IDs de liaison on en aura sûrement besoin les gars.
   int getIdRecette() {
-    return id_recette;
+    return idRecette;
   }
   // pareil
   int getIdAliment() {
-    return id_aliment;
+    return idAliment;
   }
 
   /// J'ai créé cette méthode pour convertir un Map en objet dart
   factory RecetteAliment.fromMap(Map<String, dynamic> map) {
     return RecetteAliment(
-      id_RecetteAliment: map['id_RecetteAliment'] as int,
+      idRecetteAliment: map['id_RecetteAliment'] as int,
       quantite: map['quantite'] as double,
       unite: map['unite'] as String,
       remarque: map['remarque'] as String,
-      id_recette: map['id_recette'] as int,
-      id_aliment: map['id_aliment'] as int,
+      idRecette: map['id_recette'] as int,
+      idAliment: map['id_aliment'] as int,
     );
   }
 
   /// J'ai créé cette méthode pour convertir l'objet Dart en Map pour l'ecrire en sql
   Map<String, dynamic> toMap() {
     return {
-      'id_RecetteAliment': id_RecetteAliment,
+      'id_RecetteAliment': idRecetteAliment,
       'quantite': quantite,
       'unite': unite,
       'remarque': remarque,
-      'id_recette': id_recette,
-      'id_aliment': id_aliment,
+      'id_recette': idRecette,
+      'id_aliment': idAliment,
     };
   }
 
