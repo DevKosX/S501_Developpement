@@ -48,4 +48,28 @@ class RecetteAliment {
     return id_aliment;
   }
 
+  /// J'ai créé cette méthode pour convertir un Map en objet dart
+  factory RecetteAliment.fromMap(Map<String, dynamic> map) {
+    return RecetteAliment(
+      id_RecetteAliment: map['id_RecetteAliment'] as int,
+      quantite: map['quantite'] as double,
+      unite: map['unite'] as String,
+      remarque: map['remarque'] as String,
+      id_recette: map['id_recette'] as int,
+      id_aliment: map['id_aliment'] as int,
+    );
+  }
+
+  /// J'ai créé cette méthode pour convertir l'objet Dart en Map pour l'ecrire en sql
+  Map<String, dynamic> toMap() {
+    return {
+      'id_RecetteAliment': id_RecetteAliment,
+      'quantite': quantite,
+      'unite': unite,
+      'remarque': remarque,
+      'id_recette': id_recette,
+      'id_aliment': id_aliment,
+    };
+  }
+
 }
