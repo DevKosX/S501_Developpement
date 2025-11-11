@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import '../models/frigo_model.dart';
+import '../models/frigo_item_model.dart';
 import '../repositories/frigo_repository.dart';
 
 class FrigoController extends ChangeNotifier {

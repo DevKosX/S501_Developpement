@@ -14,12 +14,29 @@ class FeedbackRecette {
   int getFavori() => favori;
   int getNote() => note;
 
-  // Méthodes UML :
+  // Méthodes UML
   void noterRecette(int nouvelleNote) {
     note = nouvelleNote;
   }
 
   void toggleFavori() {
     favori = favori == 0 ? 1 : 0;
+  }
+
+  // Helpers BDD
+  factory FeedbackRecette.fromMap(Map<String, dynamic> map) {
+    return FeedbackRecette(
+      id_recette: map['id_recette'],
+      favori: map['favori'] ?? 0,
+      note: map['note'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id_recette': id_recette,
+      'favori': favori,
+      'note': note,
+    };
   }
 }

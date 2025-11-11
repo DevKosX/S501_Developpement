@@ -1,6 +1,6 @@
 /// La logique calcul de l'IMC est placée ici.
 
-import 'package.flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import '../models/profil_model.dart';
 import '../repositories/profil_repository.dart';
 

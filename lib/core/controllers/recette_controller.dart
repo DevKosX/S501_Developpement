@@ -1,20 +1,8 @@
-/// Fichier : core/controllers/recette_controller.dart
-/// Auteur : Mohamed KOSBAR
-/// Implémentation du 6 au 10 novembre 2025
-
-
-/// Description :
-/// Le contrôleur de la classe agit comme une couche intermédiaire entre la Vue (UI) et le Modèle spécifique.
-
-/// faites vos codes en fonction en suivant sa uniquement les gars :
-////  - Appeler les méthodes de votre modèle
-////  - Récupérer leurs résultats
-////  - Les transmettre à la vue (ou à une autre couche de présentation)
-///
-/// cela va nous permettre de garder le code structuré selon le modèle MVC.
 import 'package:flutter/material.dart';
 import '../models/recette_model.dart';
 import '../repositories/recette_repository.dart';
+import '../models/recette_aliment_model.dart';
+
 
 /// Fichier: core/controllers/recette_controller.dart
 /// Author: Mohamed KOSBAR
@@ -50,7 +38,12 @@ class RecetteController extends ChangeNotifier {
 
   // --- MÉTHODES (appelées par la Vue) ---
 
+  // --------------------------------------------------------------------------
+  // === MÉTHODES GÉNÉRALES SUR LES RECETTES ===
+  // --------------------------------------------------------------------------
+
   /// méthode pour charger toutes les recettes depuis la BDD
+
   Future<void> chargerRecettes() async {
     _isLoading = true;
     notifyListeners(); // je dis à la vue d'afficher un chargement
@@ -99,6 +92,47 @@ class RecetteController extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+
+  // --------------------------------------------------------------------------
+  // === NOUVELLES MÉTHODES LIÉES À RecetteAliment ===
+  // --------------------------------------------------------------------------
+
+  ///méthode pour recuper la liste des ingrédients pour une recette
+  Future<List<Map<String, dynamic>>> getIngredientsByRecette(int idRecette) async {
+    try {
+      final ingredients = await _repository.getIngredientsByRecette(idRecette);
+      print("CTRL: ${ingredients.length} ingrédients récupérés pour la recette $idRecette");
+      return ingredients;
+    } catch (e) {
+      print("ERREUR: impossible de charger les ingrédients → $e");
+      return [];
+    }
+  }
+
+  ///méthode qui ajoute des ingrédients à une reccette crée
+  Future<void> addIngredientToRecette(RecetteAliment recetteAliment) async {
+    try {
+      await _repository.addIngredientToRecette(recetteAliment);
+      print("CTRL: ingrédient ajouté pour la recette ${recetteAliment.idRecette}");
+      notifyListeners();
+    } catch (e) {
+      print("ERREUR: impossible d’ajouter l’ingrédient → $e");
+    }
+  }
+
+
+  ///méthode de suppression
+  Future<void> deleteIngredientsByRecette(int idRecette) async {
+    try {
+      await _repository.deleteIngredientsByRecette(idRecette);
+      print("CTRL: ingrédients supprimés pour la recette $idRecette");
+      notifyListeners();
+    } catch (e) {
+      print("ERREUR: impossible de supprimer les ingrédients → $e");
+    }
+  }
+
 }
 
 
