@@ -21,17 +21,17 @@ class FeedbackRecetteRepositoryImpl implements FeedbackRecetteRepository {
   @override
   Future<void> toggleFavori(FeedbackRecette feedback) async {
     final db = await _dbService.database;
-    final id = feedback.id_recette;
+    final id = feedback.idrecette;
 
-    var result = await db.query('FeedbackRecette', where: 'id_recette = ?', whereArgs: [id]);
+    var result = await db.query('FeedbackRecette', where: 'idrecette = ?', whereArgs: [id]);
 
     if (result.isNotEmpty) {
       int currentStatus = result.first['favori'] as int? ?? 0;
       int newStatus = (currentStatus == 1) ? 0 : 1;
 
-      await db.update('FeedbackRecette', {'favori': newStatus}, where: 'id_recette = ?', whereArgs: [id]);
+      await db.update('FeedbackRecette', {'favori': newStatus}, where: 'idrecette = ?', whereArgs: [id]);
     } else {
-      await db.insert('FeedbackRecette', {'id_recette': id, 'favori': 1, 'note': 0});
+      await db.insert('FeedbackRecette', {'idrecette': id, 'favori': 1, 'note': 0});
     }
     print("REPO: favori mis à jour pour la recette $id");
   }
@@ -39,14 +39,14 @@ class FeedbackRecetteRepositoryImpl implements FeedbackRecetteRepository {
   @override
   Future<void> noterRecette(FeedbackRecette feedback, int note) async {
     final db = await _dbService.database;
-    final id = feedback.id_recette;
+    final id = feedback.idrecette;
 
-    var result = await db.query('FeedbackRecette', where: 'id_recette = ?', whereArgs: [id]);
+    var result = await db.query('FeedbackRecette', where: 'idrecette = ?', whereArgs: [id]);
 
     if (result.isNotEmpty) {
-      await db.update('FeedbackRecette', {'note': note}, where: 'id_recette = ?', whereArgs: [id]);
+      await db.update('FeedbackRecette', {'note': note}, where: 'idrecette = ?', whereArgs: [id]);
     } else {
-      await db.insert('FeedbackRecette', {'id_recette': id, 'note': note, 'favori': 0});
+      await db.insert('FeedbackRecette', {'idrecette': id, 'note': note, 'favori': 0});
     }
     print("REPO: note $note enregistrée pour la recette $id");
   }

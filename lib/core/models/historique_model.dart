@@ -1,44 +1,44 @@
 
 class Historique {
-  int id_historique;
-  DateTime date_action;
-  int duree_totale_min;
+  int idhistorique;
+  DateTime dateaction;
+  int dureetotalemin;
 
   Historique({
-    required this.id_historique,
-    required this.date_action,
-    required this.duree_totale_min,
+    required this.idhistorique,
+    required this.dateaction,
+    required this.dureetotalemin,
   });
 
   // Getters
-  int getIdHistorique() => id_historique;
-  DateTime getDateAction() => date_action;
-  int getDuree() => duree_totale_min;
+  int getIdHistorique() => idhistorique;
+  DateTime getDateAction() => dateaction;
+  int getDuree() => dureetotalemin;
 
   // Méthodes UML
   static List<Historique> getHistoriqueComplet(List<Historique> historiques) {
     return historiques;
   }
 
-  void enregistrerAction(int id_recette, int duree) {
+  void enregistrerAction(int idrecette, int duree) {
     // Logique d'enregistrement (a implémenter)
-    print("Action enregistrée : Recette $id_recette, Durée $duree minutes le $date_action");
+    print("Action enregistrée : Recette $idrecette, Durée $duree minutes le $dateaction");
   }
 
   // Helpers BDD
   factory Historique.fromMap(Map<String, dynamic> map) {
     return Historique(
-      id_historique: map['id_historique'],
-      date_action: DateTime.parse(map['date_action']),
-      duree_totale_min: map['duree_totale_min'],
+      idhistorique: map['idhistorique'],
+      dateaction: DateTime.parse(map['dateaction']),
+      dureetotalemin: map['dureetotalemin'],
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id_historique': id_historique,
-      'date_action': date_action.toIso8601String(),
-      'duree_totale_min': duree_totale_min,
+      'idhistorique': idhistorique,
+      'dateaction': dateaction.toIso8601String(),
+      'dureetotalemin': dureetotalemin,
     };
   }
 }

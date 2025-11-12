@@ -1,16 +1,16 @@
 class FeedbackRecette {
-  int id_recette;
+  int idrecette;
   int favori;
   int note;
 
   FeedbackRecette({
-    required this.id_recette,
+    required this.idrecette,
     required this.favori,
     required this.note,
   });
 
   // Getters
-  int getIdRecette() => id_recette;
+  int getIdRecette() => idrecette;
   int getFavori() => favori;
   int getNote() => note;
 
@@ -26,7 +26,7 @@ class FeedbackRecette {
   // Helpers BDD
   factory FeedbackRecette.fromMap(Map<String, dynamic> map) {
     return FeedbackRecette(
-      id_recette: map['id_recette'],
+      idrecette: map['idrecette'],
       favori: map['favori'] ?? 0,
       note: map['note'] ?? 0,
     );
@@ -34,7 +34,7 @@ class FeedbackRecette {
 
   Map<String, dynamic> toMap() {
     return {
-      'id_recette': id_recette,
+      'idrecette': idrecette,
       'favori': favori,
       'note': note,
     };
