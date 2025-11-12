@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart'; // <--- 1. AJOUTE CET IMPORT
 
 /// Fichier: core/services/database_service.dart
 /// Author: Mohamed KOSBAR
@@ -26,8 +27,8 @@ class DatabaseService {
   // initialisation et connexion au fichier .db
   Future<Database> _initDatabase() async {
     // 1. je trouve l'endroit sécurisé où stocker le fichier
-    final documentsDirectory = await getApplicationDocumentsDirectory();
-    final path = join(documentsDirectory.path, 'app_recettes.db');
+    final documentsDirectory = await getDownloadsDirectory();
+    final path = join(documentsDirectory!.path, 'app_recettes.db');
 
     // 2. j'ouvre (ou crée) la base de données à la version 1
     return await openDatabase(

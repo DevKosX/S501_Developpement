@@ -3,16 +3,23 @@ import 'package:provider/provider.dart';
 
 // 1. J'importe le service de BDD
 import 'core/services/database_service.dart';
+import 'dart:io' show Platform; // pour détecter l'OS (Linux, Windows, Mac)
+import 'package:sqflite_common_ffi/sqflite_ffi.dart'; // pour la BDD sur desktop
 
 // 2. J'importe TOUS les modèles de repositories (Contrats ET Implémentations)
 
-import 'core/models/feedback_recette_model.dart';
-import 'core/models/frigo_item_model.dart';
-import 'core/models/aliment_model.dart';
-import 'core/models/historique_model.dart';
-import 'core/models/profil_model.dart';
-import 'core/models/recette_model.dart';
-import 'core/models/recette_aliment_model.dart';
+
+/// on a pas besoin de faire ces imports ils sont fait directement
+
+
+
+//import 'core/models/feedback_recette_model.dart';
+//import 'core/models/frigo_item_model.dart';
+//import 'core/models/aliment_model.dart';
+//import 'core/models/historique_model.dart';
+//import 'core/models/profil_model.dart';
+//import 'core/models/recette_model.dart';
+//import 'core/models/recette_aliment_model.dart';
 
 
 import 'core/repositories/aliment_repository.dart';
@@ -44,6 +51,17 @@ import 'app.dart'; // (le fichier lib/app.dart)
 void main() async {
   // j'assure que Flutter est prêt
   WidgetsFlutterBinding.ensureInitialized();
+
+  // --- 2. CORRECTION "INTELLIGENTE" (la partie importante) ---
+  // je vérifie si on est sur un OS de bureau
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    // si oui, j'initialise la version FFI (desktop)
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+  // si on est sur Android ou iOS, on ne fait rien, ça marche tout seul.
+  // --- FIN DE LA CORRECTION ---
+
 
   // j'initialise la BDD et j'attends qu'elle soit créée
   await DatabaseService.instance.database;
