@@ -1,0 +1,101 @@
+id_recette,titre,instructions,type_recette,score,note_base,image,difficulte
+1,Omelette,"1. Battre les œufs. 2. Saler, poivrer. 3. Cuire à la poêle avec du beurre.",Plat,4.5,4,omelette.jpg,Facile
+2,Pâtes au beurre,1. Cuire les pâtes. 2. Égoutter. 3. Ajouter le beurre et le sel.,Plat,4.0,4,pates_beurre.jpg,Facile
+3,Salade de tomates,"1. Couper les tomates et l'oignon. 2. Assaisonner avec huile, sel, poivre.",Entrée,4.2,5,salade_tomate.jpg,Facile
+4,Poulet grillé,"1. Badigeonner le poulet d'huile. 2. Saler, poivrer. 3. Griller à la poêle.",Plat,4.6,5,poulet_grille.jpg,Moyen
+5,Riz blanc,1. Cuire le riz dans l'eau bouillante salée 10 min. 2. Égoutter.,Accompagnement,3.8,3,riz.jpg,Facile
+6,Crêpes (4p),"1. Mélanger farine, œufs, lait, sucre. 2. Laisser reposer 30min. 3. Cuire.",Dessert,4.7,5,crepes.jpg,Moyen
+7,Purée,1. Cuire les pdt. 2. Écraser avec lait et beurre chaud. 3. Saler.,Accompagnement,4.3,4,puree.jpg,Facile
+8,Croque-Monsieur,"1. Beurre sur pain. 2. Ajouter jambon, gruyère. 3. Cuire à la poêle.",Plat,4.4,4,croque.jpg,Facile
+9,Œufs brouillés,"1. Battre œufs, lait, sel, poivre. 2. Cuire doucement au bain-marie.",Plat,4.1,4,oeufs_brouilles.jpg,Facile
+10,Pâtes sauce tomate,"1. Cuire pâtes. 2. Faire revenir ail, oignon, tomates. 3. Mélanger.",Plat,4.5,5,pates_tomate.jpg,Moyen
+11,Vinaigrette simple,"1. Mélanger huile, vinaigre, moutarde. 2. Saler, poivrer.",Sauce,4.0,4,vinaigrette.jpg,Facile
+12,Sauce au yaourt,"1. Mélanger yaourt, citron, sel.",Sauce,4.2,4,sauce_yaourt.jpg,Facile
+13,Poulet crème-champignons,1. Cuire poulet et oignons. 2. Ajouter champignons. 3. Ajouter crème.,Plat,4.7,5,poulet_creme.jpg,Moyen
+14,Pâtes Carbonara (simple),1. Cuire pâtes. 2. Cuire lardons. 3. Mélanger œufs et parmesan. 4. Tout combiner.,Plat,4.6,5,carbo.jpg,Moyen
+15,Salade composée,1. Laver laitue. 2. Couper tomates. 3. Ajouter maïs et thon. 4. Assaisonner.,Entrée,4.3,4,salade_composee.jpg,Facile
+16,Avocat toasté,"1. Toaster le pain. 2. Écraser l'avocat dessus. 3. Saler, poivrer, filet de citron.",Entrée,4.5,4,avocat_toast.jpg,Facile
+17,Guacamole simple,"1. Écraser avocats. 2. Ajouter oignon, citron, sel.",Entrée,4.4,4,guacamole.jpg,Facile
+18,Sandwich jambon-fromage,1. Beurrer le pain. 2. Mettre jambon et gruyère.,Plat,4.0,3,sandwich.jpg,Facile
+19,Poivrons farcis au riz,1. Cuire riz. 2. Vider poivrons. 3. Farcir avec riz et oignon. 4. Cuire au four.,Plat,4.2,4,poivrons_farcis.jpg,Moyen
+20,Saumon poêlé,"1. Cuire saumon côté peau 5min. 2. Retourner 2min. 3. Saler, poivrer.",Plat,4.8,5,saumon.jpg,Facile
+21,Omelette champignons,1. Battre œufs. 2. Cuire champignons. 3. Mélanger et cuire.,Plat,4.4,4,omelette_champ.jpg,Facile
+22,Salade concombre crème,1. Couper concombre. 2. Mélanger avec crème et sel.,Entrée,4.1,4,salade_concombre.jpg,Facile
+23,Poulet citron-miel,"1. Mélanger citron, miel, huile. 2. Badigeonner poulet. 3. Cuire.",Plat,4.6,5,poulet_citron.jpg,Moyen
+24,Gratin dauphinois (simple),"1. Couper pdt. 2. Mettre dans plat avec ail, crème, lait. 3. Cuire 1h.",Accompagnement,4.5,5,gratin.jpg,Moyen
+25,Mousse au chocolat (2 ingr),1. Fondre chocolat. 2. Monter blancs en neige. 3. Mélanger doucement.,Dessert,4.7,5,mousse.jpg,Facile
+26,Banane au chocolat,1. Couper banane. 2. Fondre chocolat. 3. Verser sur banane.,Dessert,4.3,4,banane_choco.jpg,Facile
+27,Gâteau au yaourt,"1. Mélanger 1 pot yaourt, 2 pots farine, 1.5 pot sucre, 0.5 pot huile, 2 œufs. 2. Cuire.",Dessert,4.5,4,gateau_yaourt.jpg,Facile
+28,Pomme au four,1. Retirer trognon. 2. Mettre beurre et sucre. 3. Cuire 30min.,Dessert,4.1,4,pomme_four.jpg,Facile
+29,Pain perdu,1. Tremper pain dans lait+œuf+sucre. 2. Cuire au beurre.,Dessert,4.4,4,pain_perdu.jpg,Facile
+30,Lait au miel,1. Chauffer lait. 2. Ajouter miel.,Boisson,4.0,3,lait_miel.jpg,Facile
+31,Pâtes Cacio e Pepe ,1. Cuire pâtes. 2. Mélanger pecorino et poivre. 3. Émulsionner avec eau de cuisson.,Plat,4.6,5,cacio.jpg,Moyen
+32,Pizza Margherita ,"1. Faire pâte (farine, levure). 2. Étaler. 3. Ajouter tomate et mozzarella. 4. Cuire.",Plat,4.7,5,pizza.jpg,Moyen
+33,Risotto champignons ,"1. Revenir oignon, riz. 2. Ajouter bouillon louche/louche. 3. Ajouter champignons, parmesan.",Plat,4.5,4,risotto.jpg,Moyen
+34,Hachis Parmentier ,"1. Cuire bœuf haché+oignon. 2. Faire purée (PDT, lait, beurre). 3. Monter plat. 4. Gratiner.",Plat,4.4,4,hachis.jpg,Moyen
+35,Quiche Lorraine ,1. Foncer pâte. 2. Mettre lardons. 3. Verser mélange œufs+crème. 4. Cuire.,Plat,4.6,5,quiche.jpg,Moyen
+36,Tortilla espagnole ,1. Cuire PDT+oignons. 2. Mélanger aux œufs battus. 3. Cuire des 2 côtés.,Plat,4.3,4,tortilla.jpg,Facile
+37,Tacos au bœuf ,"1. Cuire bœuf haché. 2. Garnir tortillas chaudes avec bœuf, laitue, tomate.",Plat,4.5,4,tacos.jpg,Facile
+38,Quesadillas poulet ,1. Mettre poulet cuit et mozzarella entre 2 tortillas. 2. Dorer à la poêle.,Plat,4.4,4,quesadilla.jpg,Facile
+39,Riz sauté aux œufs ,"1. Cuire riz (la veille). 2. Faire revenir riz, petits pois, sauce soja. 3. Ajouter œufs brouillés.",Plat,4.2,4,riz_saute.jpg,Facile
+40,Nouilles poulet ,"1. Cuire nouilles. 2. Saisir poulet, oignon, poivron. 3. Mélanger avec sauce soja.",Plat,4.5,4,nouilles_poulet.jpg,Moyen
+41,Curry de poulet ,"1. Dorer poulet, oignon. 2. Ajouter pâte de curry. 3. Ajouter lait de coco. 4. Laisser mijoter.",Plat,4.6,5,curry.jpg,Moyen
+42,Cheeseburger ,1. Former steaks (bœuf haché). 2. Cuire. 3. Poser cheddar. 4. Mettre dans pain burger.,Plat,4.3,4,burger.jpg,Facile
+43,Mac and Cheese ,"1. Faire béchamel (beurre, farine, lait). 2. Ajouter cheddar. 3. Mélanger aux pâtes cuites.",Plat,4.4,4,mac_cheese.jpg,Moyen
+44,Couscous poulet ,"1. Cuire poulet, carottes, courgettes dans bouillon. 2. Préparer la semoule. 3. Servir.",Plat,4.7,5,couscous.jpg,Moyen
+45,Wraps Falafel ,"1. Écraser pois chiches, ail. 2. Former boules et cuire. 3. Mettre dans pain pita avec laitue.",Plat,4.1,4,falafel.jpg,Moyen
+46,Dal de lentilles ,"1. Cuire lentilles corail avec oignon, ail, tomate, curry. 2. Servir avec riz.",Plat,4.3,4,dal.jpg,Facile
+47,Bœuf Bourguignon ,"1. Dorer bœuf. 2. Ajouter oignons, carottes, vin rouge, bouillon. 3. Mijoter 3h.",Plat,4.8,5,bourguignon.jpg,Difficile
+48,Pâtes au Pesto ,"1. Cuire pâtes. 2. Égoutter (garder 1 louche d'eau). 3. Mélanger pâtes, pesto, eau.",Plat,4.2,4,pates_pesto.jpg,Facile
+49,Shepherd's Pie ,"1. Cuire bœuf haché, oignon, carotte, petits pois. 2. Couvrir de purée (PDT). 3. Gratiner.",Plat,4.4,4,shepherd.jpg,Moyen
+50,Paella au poulet ,"1. Dorer poulet, poivrons. 2. Ajouter riz, safran, bouillon. 3. Cuire sans remuer.",Plat,4.6,5,paella.jpg,Moyen
+51,Pâtes Arrabbiata ,"1. Revenir ail, piment. 2. Ajouter tomates. 3. Mijoter. 4. Mélanger aux pâtes.",Plat,4.3,4,arrabbiata.jpg,Facile
+52,Gnocchis Gorgonzola ,1. Fondre gorgonzola dans la crème. 2. Poivrer. 3. Mélanger aux gnocchis cuits.,Plat,4.5,4,gnocchi.jpg,Facile
+53,Pâtes au Saumon ,"1. Cuire pâtes. 2. Cuire saumon. 3. Émietter. 4. Mélanger pâtes, saumon, crème, citron.",Plat,4.6,5,pates_saumon.jpg,Moyen
+54,Spaghetti Aglio e Olio ,"1. Cuire pâtes. 2. Chauffer huile, ail, piment. 3. Mélanger. 4. Ajouter parmesan.",Plat,4.2,4,aglio_olio.jpg,Facile
+55,Souvlaki Poulet ,"1. Couper poulet. 2. Mariner (huile, citron). 3. Mettre sur piques. 4. Griller.",Plat,4.4,4,souvlaki.jpg,Moyen
+56,Moussaka ,"1. Griller aubergines. 2. Cuire bœuf+tomate. 3. Monter (viande, aubergine). 4. Béchamel (optionnel).",Plat,4.5,4,moussaka.jpg,Moyen
+57,Salade Grecque ,"1. Couper tomate, concombre, oignon. 2. Ajouter feta, olives. 3. Assaisonner huile olive.",Plat,4.3,4,salade_grecque.jpg,Facile
+58,Fish and Chips ,"1. Paner poisson (farine, œuf). 2. Frire. 3. Servir avec frites (PDT).",Plat,4.2,3,fish_chips.jpg,Moyen
+59,Goulash ,"1. Dorer bœuf, oignons. 2. Ajouter paprika, bouillon, tomate. 3. Mijoter 2h.",Plat,4.6,4,goulash.jpg,Moyen
+60,Gratin de Crozets ,"1. Cuire crozets. 2. Mettre dans plat avec lardons, crème, gruyère. 3. Gratiner.",Plat,4.4,4,crozets.jpg,Facile
+61,Chili con Carne ,"1. Dorer bœuf, oignon. 2. Ajouter tomate, haricots, maïs, piment. 3. Mijoter.",Plat,4.7,5,chili.jpg,Moyen
+62,Poulet Yassa ,"1. Mariner poulet (citron, moutarde, oignon). 2. Griller poulet. 3. Cuire marinade. 4. Servir.",Plat,4.6,5,yassa.jpg,Moyen
+63,Mafé ,"1. Dorer poulet. 2. Ajouter tomate, pâte d'arachide, bouillon. 3. Mijoter. Servir riz.",Plat,4.5,4,mafe.jpg,Moyen
+64,Jambalaya ,"1. Dorer poulet, chorizo, oignon, poivron. 2. Ajouter riz, tomate, bouillon. 3. Cuire 20min.",Plat,4.6,4,jambalaya.jpg,Moyen
+65,Burrito Bowl ,"1. Servir dans un bol: riz, haricots rouges, maïs, avocat, tomate.",Plat,4.3,4,burrito_bowl.jpg,Facile
+66,Pad Thaï Poulet ,"1. Cuire nouilles riz. 2. Cuire poulet, œuf. 3. Mélanger avec sauce (soja, sucre). 4. Ajouter cacahuètes.",Plat,4.5,4,pad_thai.jpg,Moyen
+67,Bœuf Loc Lac ,"1. Mariner bœuf (soja). 2. Saisir. 3. Servir sur riz, laitue, tomate.",Plat,4.4,4,loc_lac.jpg,Facile
+68,Poulet Teriyaki ,"1. Cuire poulet. 2. Napper (sauce soja, miel/sucre). 3. Réduire. Servir riz.",Plat,4.6,4,teriyaki.jpg,Facile
+69,Ramen ,"1. Cuire nouilles. 2. Chauffer bouillon. 3. Servir nouilles, bouillon, 1 œuf dur, soja.",Plat,4.2,3,ramen.jpg,Facile
+70,Bobun ,"1. Cuire vermicelles riz. 2. Cuire bœuf. 3. Mettre dans bol: vermicelles, bœuf, laitue, concombre.",Plat,4.4,4,bobun.jpg,Moyen
+71,Curry Pois Chiches ,"1. Revenir oignon, ail. 2. Ajouter curry, tomate, lait coco, pois chiches. 3. Mijoter.",Plat,4.5,4,curry_pois.jpg,Facile
+72,Shakshuka ,"1. Cuire oignon, poivron, tomate. 2. Casser œufs dessus. 3. Couvrir et cuire.",Plat,4.6,5,shakshuka.jpg,Moyen
+73,Kefta ,"1. Mélanger bœuf haché, oignon, paprika. 2. Former boulettes. 3. Cuire.",Plat,4.3,4,kefta.jpg,Facile
+74,Tajine Poulet Citron ,"1. Dorer poulet, oignon. 2. Ajouter citron, olives, bouillon. 3. Mijoter 1h.",Plat,4.6,5,tajine.jpg,Moyen
+75,Poulet Rôti PDT ,"1. Mettre poulet dans plat. 2. Entourer de PDT, huile, sel. 3. Cuire 1h30.",Plat,4.7,5,poulet_roti.jpg,Moyen
+76,Ratatouille ,"1. Cuire oignon, poivron, courgette, aubergine. 2. Ajouter tomates. 3. Mijoter.",Plat,4.4,4,ratatouille.jpg,Moyen
+77,Salade Niçoise ,"1. Base: laitue. 2. Ajouter: thon, œuf dur, tomate, haricots verts, olives.",Plat,4.3,4,nicoise.jpg,Facile
+78,Crêpes Salées Jambon ,"1. Faire pâte (farine, œuf, lait). 2. Cuire crêpe. 3. Garnir jambon, gruyère.",Plat,4.1,3,crepe_salee.jpg,Facile
+79,Pâtes Bolognaise ,"1. Cuire bœuf haché, oignon, carotte. 2. Ajouter tomate. 3. Mijoter. 4. Servir sur pâtes.",Plat,4.8,5,bolognaise.jpg,Moyen
+80,Pilaf de Riz ,"1. Revenir oignon. 2. Ajouter riz, cuire jusqu'à translucide. 3. Ajouter bouillon. 4. Couvrir, cuire 15min.",Plat,4.0,3,pilaf.jpg,Facile
+81,Pâtes Puttanesca ,"1. Cuire pâtes. 2. Revenir ail, anchois, câpres, olives. 3. Ajouter tomate. 4. Mélanger.",Plat,4.5,4,puttanesca.jpg,Facile
+82,Soupe à l'oignon ,"1. Caraméliser oignons (longtemps). 2. Déglacer vin (opt). 3. Ajouter bouillon. 4. Gratiner (pain, gruyère).",Plat,4.6,4,soupe_oignon.jpg,Moyen
+83,Poulet Tandoori ,1. Mariner poulet dans yaourt + épices tandoori (2h). 2. Cuire au four chaud.,Plat,4.4,4,tandoori.jpg,Moyen
+84,Oyakodon ,"1. Cuire poulet, oignon, sauce (soja, sucre). 2. Verser œuf battu. 3. Servir sur riz.",Plat,4.5,4,oyakodon.jpg,Moyen
+85,Tzatziki ,"1. Râper concombre, dégorger. 2. Mélanger yaourt, ail, citron, aneth.",Entrée,4.2,4,tzatziki.jpg,Facile
+86,Gambas al Ajillo ,"1. Chauffer huile. 2. Cuire ail, piment. 3. Ajouter crevettes, cuire 2min.",Plat,4.6,5,gambas_ajillo.jpg,Facile
+87,Cordon Bleu ,"1. Ouvrir filet poulet. 2. Farcir jambon+gruyère. 3. Paner (farine, œuf, chapelure). 4. Cuire.",Plat,4.5,4,cordon_bleu.jpg,Moyen
+88,Rouleaux Printemps ,"1. Tremper galette riz. 2. Garnir (vermicelles, crevette, laitue, menthe). 3. Rouler.",Entrée,4.3,4,rouleau_printemps.jpg,Facile
+89,Sloppy Joes ,"1. Cuire bœuf haché, oignon. 2. Ajouter ketchup, moutarde. 3. Servir pain burger.",Plat,4.1,3,sloppy_joe.jpg,Facile
+90,Polenta crémeuse ,1. Cuire polenta (selon paquet) dans bouillon/lait. 2. Ajouter beurre et parmesan.,Accompagnement,4.0,4,polenta.jpg,Facile
+91,Houmous ,"1. Mixer pois chiches, tahini, ail, citron. 2. Servir avec pain pita.",Plat,4.4,4,houmous.jpg,Facile
+92,Tajine Kefta Oeufs ,"1. Faire sauce (oignon, tomate). 2. Ajouter boulettes (kefta). 3. Casser œufs. 4. Couvrir, cuire.",Plat,4.6,5,tajine_kefta.jpg,Moyen
+93,Croque Madame ,"1. Faire croque (pain, jambon, gruyère). 2. Napper béchamel (opt). 3. Cuire. 4. Poser 1 œuf au plat dessus.",Plat,4.5,4,croque_madame.jpg,Facile
+94,Soupe Tom Yum ,"1. Chauffer bouillon, pâte tom yum. 2. Ajouter crevettes, champignons. 3. Finir lait coco.",Plat,4.3,4,tom_yum.jpg,Facile
+95,Bibimbap ,"1. Servir riz. 2. Poser bœuf haché cuit, carotte, épinards. 3. Ajouter 1 œuf plat. 4. Sauce gochujang.",Plat,4.6,5,bibimbap.jpg,Moyen
+96,Pâtes Crevettes Ail ,"1. Cuire pâtes. 2. Revenir ail, piment. 3. Ajouter crevettes, puis tomates. 4. Mélanger.",Plat,4.5,4,pates_crevettes.jpg,Facile
+97,Boulettes Viande ,"1. Mélanger bœuf, œuf, chapelure. 2. Former boules. 3. Cuire. 4. Sauce (crème, bouillon).",Plat,4.4,4,boulettes.jpg,Moyen
+98,Salade Lyonnaise ,"1. Cuire œuf poché. 2. Dorer lardons. 3. Faire croûtons (pain, ail). 4. Assembler avec laitue.",Entrée,4.3,4,salade_lyonnaise.jpg,Moyen
+99,Lomo Saltado,"1. Saisir bœuf, oignon, tomate. 2. Ajouter sauce soja. 3. Servir avec riz et frites (PDT).",Plat,4.6,4,lomo_saltado.jpg,Moyen
+100,Currywurst,1. Cuire saucisses. 2. Couper. 3. Napper (ketchup + curry poudre). Servir frites (PDT).,Plat,4.0,3,currywurst.jpg,Facile
