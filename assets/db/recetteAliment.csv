@@ -246,7 +246,7 @@ id_recetteAliment,id_recette,id_aliment,quantite,unite,remarque
 245,64,41,50,cl,
 246,65,11,150,g,cuit
 247,65,70,100,g,
-02:00,65,26,100,g,
+248,65,26,100,g,
 249,65,34,1,pcs,
 250,65,6,1,pcs,
 251,66,73,150,g,
