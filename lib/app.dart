@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'ui/static/ecran_principal.dart'; // On appelle la structure globale
 
 class AppRecettes extends StatelessWidget {
   const AppRecettes({super.key});
@@ -7,12 +8,14 @@ class AppRecettes extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'App Recettes',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: const AccueilPage(),
-      debugShowCheckedModeBanner: false,
+      // Au lieu d'afficher une page simple, on affiche la STRUCTURE (avec le menu en bas)
+      home: const EcranPrincipal(),
     );
   }
 }
