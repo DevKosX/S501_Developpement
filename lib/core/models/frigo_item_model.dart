@@ -1,14 +1,14 @@
 
 
 class Frigo {
-  //  ATTRIBUTS 
+
   int id_frigo;
-  int id_aliment; // Clé étrangère
+  int id_aliment;
   double quantite;
   DateTime date_ajout;
   DateTime date_peremption;
 
-  //  CONSTRUCTEUR 
+
   Frigo({
     required this.id_frigo,
     required this.id_aliment,
@@ -38,10 +38,9 @@ class Frigo {
     return date_peremption;
   }
 
-  // HELPERS BDD 
 
-  /// Crée une instance de Frigo à partir d'un map (lu depuis la BDD).
-  /// La BDD stocke les dates comme Texte (ISO 8601).
+
+
   factory Frigo.fromMap(Map<String, dynamic> map) {
     return Frigo(
       id_frigo: map['id_frigo'],
@@ -54,14 +53,20 @@ class Frigo {
     );
   }
 
-  /// Convertit l'instance de Frigo en map (pour écrire dans la BDD).
+
   Map<String, dynamic> toMap() {
-    return {
-      'id_frigo': id_frigo,
+    final map = {
       'id_aliment': id_aliment,
       'quantite': quantite,
-      'date_ajout': date_ajout.toIso8601String(), // Stocke en texte
-      'date_peremption': date_peremption.toIso8601String(), // Stocke en texte
+      'date_ajout': date_ajout.toIso8601String(),
+      'date_peremption': date_peremption.toIso8601String(),
     };
+
+
+    if (id_frigo != 0) {
+      map['id_frigo'] = id_frigo;
+    }
+
+    return map;
   }
 }

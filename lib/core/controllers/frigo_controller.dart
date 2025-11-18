@@ -1,27 +1,21 @@
-
 import 'package:flutter/material.dart';
 import '../models/frigo_item_model.dart';
+import '../models/aliment_model.dart';
 import '../repositories/frigo_repository.dart';
 
 class FrigoController extends ChangeNotifier {
   final FrigoRepository _repository;
 
-
   List<Frigo> _contenuFrigo = [];
   bool _isLoading = false;
 
-
   List<Frigo> get contenuFrigo => _contenuFrigo;
   bool get isLoading => _isLoading;
-
 
   FrigoController(this._repository) {
     chargerContenuFrigo();
   }
 
-
-
-  /// Charge (ou recharge) la liste des items du frigo.
   Future<void> chargerContenuFrigo() async {
     _isLoading = true;
     notifyListeners();
@@ -29,49 +23,75 @@ class FrigoController extends ChangeNotifier {
     try {
       _contenuFrigo = await _repository.getContenuFrigo();
     } catch (e) {
-      print("ERREUR chargement frigo: $e");
+      print(e);
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  /// Demande au repository d'ajouter un item.
-  Future<void> ajouterItem(Frigo item) async {
-    _isLoading = true;
-    notifyListeners();
-
+  Future<void> ajouterAlimentDuCatalogue(Aliment aliment) async {
+    Frigo? itemExistant;
     try {
-      await _repository.addItemAuFrigo(item);
-      // Après l'ajout, on recharge toute la liste
-      await chargerContenuFrigo(); 
+      itemExistant = _contenuFrigo.firstWhere(
+              (item) => item.id_aliment == aliment.id_aliment
+      );
     } catch (e) {
-      print("ERREUR ajout item frigo: $e");
-      _isLoading = false;
-      notifyListeners();
+      itemExistant = null;
     }
-    // isLoading est remis à false par chargerContenuFrigo
+
+    if (itemExistant != null) {
+      final itemModifie = Frigo(
+        id_frigo: itemExistant.id_frigo,
+        id_aliment: itemExistant.id_aliment,
+        quantite: itemExistant.quantite + 1.0,
+        date_ajout: itemExistant.date_ajout,
+        date_peremption: itemExistant.date_peremption,
+      );
+
+      await _repository.updateItemFrigo(itemModifie);
+    } else {
+      final nouvelItem = Frigo(
+        id_frigo: 0,
+        id_aliment: aliment.id_aliment,
+        quantite: 1.0,
+        date_ajout: DateTime.now(),
+        date_peremption: DateTime.now().add(const Duration(days: 7)),
+      );
+
+      await _repository.addItemAuFrigo(nouvelItem);
+    }
+
+    await chargerContenuFrigo();
   }
 
-  /// Demande au repository de supprimer un item.
-  Future<void> supprimerItem(int id_frigo) async {
+  Future<void> diminuerQuantite(Aliment aliment) async {
     try {
-      await _repository.deleteItemFrigo(id_frigo);
-      // Recharge la liste pour mettre à jour l'UI
+      final itemExistant = _contenuFrigo.firstWhere(
+              (item) => item.id_aliment == aliment.id_aliment
+      );
+
+      if (itemExistant.quantite > 1) {
+        final itemModifie = Frigo(
+          id_frigo: itemExistant.id_frigo,
+          id_aliment: itemExistant.id_aliment,
+          quantite: itemExistant.quantite - 1.0,
+          date_ajout: itemExistant.date_ajout,
+          date_peremption: itemExistant.date_peremption,
+        );
+        await _repository.updateItemFrigo(itemModifie);
+      } else {
+        await _repository.deleteItemFrigo(itemExistant.id_frigo);
+      }
+
       await chargerContenuFrigo();
     } catch (e) {
-      print("ERREUR suppression item frigo: $e");
+      print(e);
     }
   }
 
-  /// Demande au repository de mettre à jour un item.
-  Future<void> mettreAJourItem(Frigo item) async {
-    try {
-      await _repository.updateItemFrigo(item);
-      // Recharge la liste
-      await chargerContenuFrigo();
-    } catch (e) {
-      print("ERREUR màj item frigo: $e");
-    }
+  Future<void> supprimerItem(int idFrigo) async {
+    await _repository.deleteItemFrigo(idFrigo);
+    await chargerContenuFrigo();
   }
 }
