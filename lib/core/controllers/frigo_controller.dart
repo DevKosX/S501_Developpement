@@ -23,7 +23,7 @@ class FrigoController extends ChangeNotifier {
     try {
       _contenuFrigo = await _repository.getContenuFrigo();
     } catch (e) {
-      print("ERREUR chargement frigo: $e");
+      print(e);
     }
 
     _isLoading = false;
@@ -41,7 +41,6 @@ class FrigoController extends ChangeNotifier {
     }
 
     if (itemExistant != null) {
-      // MODIFICATION : On incrémente
       final itemModifie = Frigo(
         id_frigo: itemExistant.id_frigo,
         id_aliment: itemExistant.id_aliment,
@@ -51,10 +50,7 @@ class FrigoController extends ChangeNotifier {
       );
 
       await _repository.updateItemFrigo(itemModifie);
-      print("UPDATE: ${aliment.nom} passé à ${itemModifie.quantite}");
-
     } else {
-      // CRÉATION
       final nouvelItem = Frigo(
         id_frigo: 0,
         id_aliment: aliment.id_aliment,
@@ -64,12 +60,10 @@ class FrigoController extends ChangeNotifier {
       );
 
       await _repository.addItemAuFrigo(nouvelItem);
-      print("INSERT: ${aliment.nom} ajouté pour la première fois");
     }
 
     await chargerContenuFrigo();
   }
-
 
   Future<void> diminuerQuantite(Aliment aliment) async {
     try {
@@ -78,7 +72,6 @@ class FrigoController extends ChangeNotifier {
       );
 
       if (itemExistant.quantite > 1) {
-
         final itemModifie = Frigo(
           id_frigo: itemExistant.id_frigo,
           id_aliment: itemExistant.id_aliment,
@@ -88,13 +81,12 @@ class FrigoController extends ChangeNotifier {
         );
         await _repository.updateItemFrigo(itemModifie);
       } else {
-
         await _repository.deleteItemFrigo(itemExistant.id_frigo);
       }
 
       await chargerContenuFrigo();
     } catch (e) {
-      print("Erreur diminution: $e");
+      print(e);
     }
   }
 

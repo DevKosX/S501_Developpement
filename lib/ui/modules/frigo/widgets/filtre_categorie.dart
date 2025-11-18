@@ -5,7 +5,7 @@ class FiltreCategorie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Tu pourras rendre cette liste dynamique plus tard si besoin
+
     final filters = ['Légumineuses', 'Épices', 'Herbes', 'Condiments', 'Boissons', 'Autres'];
 
     return SingleChildScrollView(

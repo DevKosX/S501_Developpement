@@ -5,6 +5,7 @@ import '../../../core/controllers/aliment_controller.dart';
 import '../../../core/controllers/frigo_controller.dart';
 import '../../../core/models/aliment_model.dart';
 import 'package:s501_developpement/ui/modules/frigo/widgets/tuile_ingredient.dart';
+
 class EcranFrigo extends StatefulWidget {
   const EcranFrigo({super.key});
 
@@ -13,31 +14,42 @@ class EcranFrigo extends StatefulWidget {
 }
 
 class _EcranFrigoState extends State<EcranFrigo> {
-  // --- VARIABLES D'ÉTAT ---
   String _recherche = "";
   String _categorieSelectionnee = "Tout";
 
-  // Liste des catégories
-  final List<String> _categories = ['Tout', 'Légume', 'Fruit', 'Viande', 'Épices', 'Produit laitier', 'Autre'];
+
+  final List<String> _categories = [
+    'Tout',
+    'Légume',
+    'Fruit',
+    'Viande',
+    'Poisson',
+    'Crèmerie',
+    'Épicerie',
+    'Boulangerie',
+    'Charcuterie',
+    'Condiment',
+    'Boisson'
+  ];
 
   @override
   Widget build(BuildContext context) {
     final alimentController = context.watch<AlimentController>();
-    // On écoute le FrigoController pour mettre à jour le Total et les badges
     final frigoController = context.watch<FrigoController>();
 
-    // --- FILTRAGE DE LA LISTE ---
+    // Filtrage
     List<Aliment> alimentsAffiches = alimentController.catalogueAliments.where((aliment) {
       final matchRecherche = aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
-      // Gestion du cas où la catégorie est vide ou nulle
-      final catAliment = (aliment.categorie.isEmpty) ? "Autre" : aliment.categorie;
+
+
+      final catAliment = aliment.categorie.isEmpty ? "Autre" : aliment.categorie;
+
 
       final matchCategorie = _categorieSelectionnee == "Tout" ||
-          catAliment.toLowerCase().contains(_categorieSelectionnee.toLowerCase());
+          catAliment.toLowerCase() == _categorieSelectionnee.toLowerCase();
 
       return matchRecherche && matchCategorie;
     }).toList();
-
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -46,14 +58,13 @@ class _EcranFrigoState extends State<EcranFrigo> {
           : ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // --- TITRE ---
           Text(
             "Mon Frigo",
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
 
-          // --- CARD 1 : RECHERCHE & FILTRES ---
+
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -66,7 +77,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Barre de recherche
+                // Recherche
                 TextField(
                   onChanged: (value) => setState(() => _recherche = value),
                   decoration: InputDecoration(
@@ -86,7 +97,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
                 ),
                 const SizedBox(height: 10),
 
-                // Filtres (Wrap pour le retour à la ligne)
+                // Catégories
                 SizedBox(
                   width: double.infinity,
                   child: Wrap(
@@ -124,7 +135,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
           const SizedBox(height: 20),
 
-          // --- CARD 2 : GRILLE D'AJOUT ---
+
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -145,18 +156,16 @@ class _EcranFrigoState extends State<EcranFrigo> {
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
 
-                    // --- CALCUL ET AFFICHAGE DU TOTAL ---
+
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(8)),
                       child: Builder(
                           builder: (context) {
-                            // Calcul mathématique de la somme des quantités
                             double sommeTotale = 0;
                             for (var item in frigoController.contenuFrigo) {
                               sommeTotale += item.quantite;
                             }
-
                             return Text(
                               "Total: ${sommeTotale.toInt()}",
                               style: TextStyle(color: Colors.orange.shade900, fontWeight: FontWeight.bold, fontSize: 12),
@@ -184,7 +193,6 @@ class _EcranFrigoState extends State<EcranFrigo> {
                   itemBuilder: (context, index) {
                     final aliment = alimentsAffiches[index];
 
-                    // Recherche de la quantité pour le badge (x1, x2...)
                     double quantiteTrouvee = 0;
                     try {
                       quantiteTrouvee = frigoController.contenuFrigo
@@ -210,7 +218,6 @@ class _EcranFrigoState extends State<EcranFrigo> {
     );
   }
 
-  /// --- FONCTION POUR AFFICHER LE PANNEAU DE GESTION ---
   void _afficherFicheGestion(BuildContext context, Aliment aliment) {
     showModalBottomSheet(
       context: context,
@@ -219,11 +226,9 @@ class _EcranFrigoState extends State<EcranFrigo> {
       ),
       backgroundColor: Colors.white,
       builder: (ctx) {
-        // Utilisation de Consumer pour mettre à jour le chiffre en temps réel dans le panneau
         return Consumer<FrigoController>(
           builder: (context, frigoCtrl, child) {
 
-            // Recherche de la quantité actuelle
             double qte = 0;
             try {
               qte = frigoCtrl.contenuFrigo
@@ -236,17 +241,24 @@ class _EcranFrigoState extends State<EcranFrigo> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Image et Nom
                   Row(
                     children: [
                       Container(
-                        height: 60, width: 60,
+                        height: 80, width: 80,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           image: DecorationImage(
-                            image: NetworkImage(aliment.image),
-                            fit: BoxFit.cover,
+
+                              image: AssetImage("assets/images/${aliment.image}"),
+                              fit: BoxFit.cover,
+                              onError: (exception, stackTrace) {}
                           ),
+                        ),
+
+                        child: Image.asset(
+                          "assets/images/${aliment.image}",
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e, s) => const Icon(Icons.fastfood, size: 40, color: Colors.grey),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -257,11 +269,33 @@ class _EcranFrigoState extends State<EcranFrigo> {
                             Text(
                               aliment.nom,
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
+                            const SizedBox(height: 4),
                             Text(
                               "Catégorie: ${aliment.categorie}",
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: TextStyle(color: Colors.grey[600], fontSize: 14),
                             ),
+                            const SizedBox(height: 8),
+
+                            // ✅ NUTRISCORE RÉEL DEPUIS LA BDD
+                            if (aliment.nutriscore.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _getNutriscoreColor(aliment.nutriscore),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  "Nutriscore ${aliment.nutriscore.toUpperCase()}",
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -270,7 +304,6 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
                   const SizedBox(height: 30),
 
-                  // Compteur + / -
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
@@ -280,7 +313,6 @@ class _EcranFrigoState extends State<EcranFrigo> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // BOUTON MOINS
                         IconButton(
                           onPressed: qte > 0
                               ? () => frigoCtrl.diminuerQuantite(aliment)
@@ -290,13 +322,11 @@ class _EcranFrigoState extends State<EcranFrigo> {
                           color: Colors.red,
                         ),
 
-                        // QUANTITÉ AU CENTRE
                         Text(
                           qte > 0 ? "${qte.toInt()}" : "0",
                           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
 
-                        // BOUTON PLUS
                         IconButton(
                           onPressed: () => frigoCtrl.ajouterAlimentDuCatalogue(aliment),
                           icon: const Icon(Icons.add_circle),
@@ -309,7 +339,6 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
                   const SizedBox(height: 20),
 
-                  // Bouton Terminé
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -330,5 +359,16 @@ class _EcranFrigoState extends State<EcranFrigo> {
         );
       },
     );
+  }
+
+  Color _getNutriscoreColor(String score) {
+    switch (score.toUpperCase()) {
+      case 'A': return const Color(0xFF038141);
+      case 'B': return const Color(0xFF85BB2F);
+      case 'C': return const Color(0xFFFECB02);
+      case 'D': return const Color(0xFFEE8100);
+      case 'E': return const Color(0xFFE63E11);
+      default: return Colors.grey;
+    }
   }
 }

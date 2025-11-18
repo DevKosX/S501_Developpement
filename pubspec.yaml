@@ -13,6 +13,7 @@
     flutter:
       sdk: flutter
 
+
     # --- DÉPENDANCES ESSENTIELLES ---
 
     # 1. Pour la gestion d'état (vos "Controllers")
@@ -34,4 +35,8 @@
 
   flutter:
     uses-material-design: true
+    assets:
+      - assets/db/aliments.csv
+      - assets/db/recettes.csv
+      - assets/db/recetteAliment.csv
     
