@@ -133,6 +133,23 @@ class RecetteController extends ChangeNotifier {
     }
   }
 
+
+  Future<void> chargerRecettesRecommandees() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Appel du méthode de repository pour obtenir les recettes recommandées
+      _listeRecettes = await _repository.getRecettesRecommandees();
+      print("CTRL: Recettes chargées par recommandation");
+    } catch (e) {
+      print("ERREUR chargement recommandations: $e");
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
 }
 
 

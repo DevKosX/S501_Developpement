@@ -19,6 +19,7 @@ abstract class RecetteRepository {
   Future<void> toggleFavori(Recette recette);
   Future<void> noterRecette(Recette recette, int note);
   Future<void> creerRecetteUtilisateur(Recette recette);
+  Future<List<Recette>> getRecettesRecommandees();
 
 
   ///ajout de 3 methodes essenetielles pour recette_aliments
@@ -150,8 +151,9 @@ class RecetteRepositoryImpl implements RecetteRepository {
   Future<List<Map<String, dynamic>>> getIngredientsByRecette(int idRecette) async {
     final db = await _dbService.database;
 
+    //j'ai ajoute l'id_aliment
     final result = await db.rawQuery('''
-      SELECT A.nom, A.marque, A.categorie, A.nutriscore, 
+      SELECT A.id_aliment,A.nom, A.marque,A.categorie, A.nutriscore, 
              RA.quantite, RA.unite, RA.remarque
       FROM RecetteAliment RA
       JOIN Aliments A ON A.id_aliment = RA.id_aliment
@@ -194,4 +196,74 @@ class RecetteRepositoryImpl implements RecetteRepository {
     await db.delete('RecetteAliment', where: 'id_recette = ?', whereArgs: [idRecette]);
     print("REPO: ingrédients supprimés pour la recette $idRecette");
   }
+
+  /// Méthode : getRecettesRecommandees
+  /// Rôle : je veux récupérer une liste de recettes recommandées pour l'utilisateur
+  /// en fonction de plusieurs critères : notes, favoris, historique, frigo.
+  @override
+  Future<List<Recette>> getRecettesRecommandees() async {
+    final db = await _dbService.database;
+
+    // 1. Récupération des données
+    final List<Recette> toutesLesRecettes = await getRecettes();
+    final List<Map<String, dynamic>> rawFrigo = await db.query('Frigo');
+    final List<Map<String, dynamic>> rawHistorique = await db.query('Historique');
+    final List<Map<String, dynamic>> rawFeedbacks = await db.query('FeedbackRecette');
+
+    List<Map<String, dynamic>> recettesAvecScore = [];
+
+    // 2. Calcul du score pour chaque recette
+    for (var recette in toutesLesRecettes) {
+      double score = 0.0;
+
+      // A. Notes & Favoris
+      var feedbackList = rawFeedbacks.where((f) => f['id_recette'] == recette.id_recette).toList();
+      var feedback = feedbackList.isNotEmpty ? feedbackList.first : null;
+
+      if (feedback != null) {
+        int noteUser = feedback['note'] as int? ?? 0;
+        score += (noteUser > 0) ? noteUser.toDouble() : recette.note_base;
+        if ((feedback['favori'] as int? ?? 0) == 1) score += 20.0;
+      } else {
+        score += recette.note_base;
+      }
+
+      // B. Historique (+1 par réalisation)
+      int nbFoisFaite = rawHistorique.where((h) => h['id_recette'] == recette.id_recette).length;
+      score += nbFoisFaite * 1.0;
+
+      // C. Frigo & Anti-Gaspi
+      List<Map<String, dynamic>> ingredientsRecette = await getIngredientsByRecette(recette.id_recette);
+
+      for (var ingredient in ingredientsRecette) {
+        int idAlimentRecette = ingredient['id_aliment'];
+        var itemsCorrespondants = rawFrigo.where((item) => item['id_aliment'] == idAlimentRecette);
+
+        if (itemsCorrespondants.isNotEmpty) {
+          score += 10.0; // Présent dans le frigo
+
+          var itemFrigo = itemsCorrespondants.first;
+          if (itemFrigo['date_peremption'] != null) {
+            DateTime datePeremption = DateTime.parse(itemFrigo['date_peremption']);
+            DateTime now = DateTime.now();
+            Duration difference = datePeremption.difference(now);
+
+            // Bonus urgence (périme dans <= 3 jours)
+            if (difference.inDays <= 3 && difference.inDays > -2) {
+              score += 15.0; 
+            }
+          }
+        }
+      }
+
+      recettesAvecScore.add({'recette': recette, 'score': score});
+    }
+
+    // 3. Tri (Score décroissant)
+    recettesAvecScore.sort((a, b) => (b['score'] as double).compareTo(a['score'] as double));
+
+    return recettesAvecScore.map((e) => e['recette'] as Recette).toList();
+  }
+
+
 }
