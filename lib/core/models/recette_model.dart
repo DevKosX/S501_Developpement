@@ -13,6 +13,9 @@ class Recette {
   int note_base;
   String image;
   String difficulte;
+  // Champ non stocké en BDD, juste pour l'affichage UI
+  int nombreManquants;
+
 
   // --- CONSTRUCTEUR ---
   /// Puisque tous mes attributs sont non-nullables j'ai rendu tous les paramètres du constructeur 'required' pour avoir une recette bien complette
@@ -25,6 +28,7 @@ class Recette {
     required this.note_base,
     required this.image,
     required this.difficulte,
+    this.nombreManquants = 0,
   });
 
   // --- GETTERS ---
@@ -78,6 +82,8 @@ class Recette {
       image: map['image'] ?? "",
       difficulte: map['difficulte'] ?? "Moyenne",
     );
+
+
   }
 
   /// Convertit cet objet Recette en Map (pour l'envoyer à SQLite)
