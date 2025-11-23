@@ -46,19 +46,28 @@ class RecetteController extends ChangeNotifier {
 
   Future<void> chargerRecettes() async {
     _isLoading = true;
-    notifyListeners(); // je dis à la vue d'afficher un chargement
+    notifyListeners();
 
-    try {
-      // j'appelle le repository pour avoir les vraies données
-      _listeRecettes = await _repository.getRecettes();
-    } catch (e) {
-      print("ERREUR lors du chargement des recettes: $e");
-      // ici on pourrait gérer l'erreur (ex: afficher un message)
-    }
+    //----------------------------------------------------
+    // 🔥 DONNÉES DE TEST POUR AFFICHER LE FRONT HISTORIQUE
+    //----------------------------------------------------
+    _listeRecettes = [
+      Recette(
+        id_recette: 1,
+        titre: "Poulet rôti aux herbes",
+        instructions: "Test instructions...",
+        type_recette: "plat",
+        score: 4.0,
+        note_base: 10,
+        image: "", // tu peux mettre un asset ici si tu veux
+        difficulte: "Moyen",
+      ),
+    ];
 
     _isLoading = false;
-    notifyListeners(); // je dis à la vue que les données sont prêtes
+    notifyListeners();
   }
+
 
   /// méthode appelée quand l'utilisateur clique sur le cœur
   Future<void> toggleFavori(Recette recette) async {
