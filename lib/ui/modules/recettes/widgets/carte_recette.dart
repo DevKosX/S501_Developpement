@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import '../../../../core/models/recette_model.dart';
 import '../ecran_detail_recette.dart'; // Pour la navigation vers le détail
 
+
+
+/// Fichier: core/ui/module/recettes/liste_recettes.dart
+/// Author: Mohamed KOSBAR
+/// Implémentation du 23 novembre 2025
+///
+
+
 class CarteRecette extends StatelessWidget {
   final Recette recette;
   final bool estFaisable;
