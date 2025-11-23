@@ -25,19 +25,19 @@ class HistoriqueController extends ChangeNotifier {
 
   // Méthode asynchrone pour charger l'historique depuis la base de données
   Future<void> chargerHistorique() async {
-    // 🔥 DONNÉES DE TEST POUR AFFICHER LE FRONT
-    _historiqueList = [
-      Historique(
-        idhistorique: 1,
-        idrecette: 1,
-        dateaction: DateTime(2025, 11, 4),
-        dureetotalemin: 90,
-      )
-    ];
+    _isLoading = true;          // début de chargement
+    notifyListeners();          // notifie la vue pour afficher un loader
 
-    notifyListeners();
+    try {
+      // appel au repository pour récupérer la liste historique
+      _historiqueList = await _repository.getHistorique();
+    } catch (e) {
+      print("Erreur lors du chargement de l'historique : $e");
+    }
+
+    _isLoading = false;         // fin du chargement
+    notifyListeners();          // notifie la vue que les données sont prêtes
   }
-
 
   // Enregistre une nouvelle action puis recharge la liste
   Future<void> enregistrerAction(Historique action) async {
