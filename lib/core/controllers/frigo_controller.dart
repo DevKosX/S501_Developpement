@@ -45,6 +45,7 @@ class FrigoController extends ChangeNotifier {
         id_frigo: itemExistant.id_frigo,
         id_aliment: itemExistant.id_aliment,
         quantite: itemExistant.quantite + 1.0,
+        unite: itemExistant.unite,
         date_ajout: itemExistant.date_ajout,
         date_peremption: itemExistant.date_peremption,
       );
@@ -55,6 +56,7 @@ class FrigoController extends ChangeNotifier {
         id_frigo: 0,
         id_aliment: aliment.id_aliment,
         quantite: 1.0,
+        unite: "piece",
         date_ajout: DateTime.now(),
         date_peremption: DateTime.now().add(const Duration(days: 7)),
       );
@@ -76,6 +78,7 @@ class FrigoController extends ChangeNotifier {
           id_frigo: itemExistant.id_frigo,
           id_aliment: itemExistant.id_aliment,
           quantite: itemExistant.quantite - 1.0,
+          unite: itemExistant.unite,
           date_ajout: itemExistant.date_ajout,
           date_peremption: itemExistant.date_peremption,
         );

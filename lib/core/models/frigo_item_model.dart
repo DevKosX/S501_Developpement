@@ -1,10 +1,9 @@
-
-
 class Frigo {
 
   int id_frigo;
   int id_aliment;
   double quantite;
+  String unite;
   DateTime date_ajout;
   DateTime date_peremption;
 
@@ -13,6 +12,7 @@ class Frigo {
     required this.id_frigo,
     required this.id_aliment,
     required this.quantite,
+    required this.unite,
     required this.date_ajout,
     required this.date_peremption,
   });
@@ -30,6 +30,10 @@ class Frigo {
     return quantite;
   }
 
+  String getUnite(){
+    return unite;
+  }
+
   DateTime getDateAjout() {
     return date_ajout;
   }
@@ -38,9 +42,6 @@ class Frigo {
     return date_peremption;
   }
 
-
-
-
   factory Frigo.fromMap(Map<String, dynamic> map) {
     return Frigo(
       id_frigo: map['id_frigo'],
@@ -48,6 +49,7 @@ class Frigo {
       quantite: (map['quantite'] is int) 
           ? (map['quantite'] as int).toDouble() 
           : (map['quantite'] ?? 0.0),
+      unite: map['unite'] ?? "",
       date_ajout: DateTime.parse(map['date_ajout']),
       date_peremption: DateTime.parse(map['date_peremption']),
     );
@@ -58,6 +60,7 @@ class Frigo {
     final map = {
       'id_aliment': id_aliment,
       'quantite': quantite,
+      'unite' : unite,
       'date_ajout': date_ajout.toIso8601String(),
       'date_peremption': date_peremption.toIso8601String(),
     };

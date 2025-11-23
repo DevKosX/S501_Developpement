@@ -20,7 +20,7 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'app_recettes_v2.db');
+    final path = join(dbPath, 'app_recettes_v3.db'); //troisieme version
 
     return await openDatabase(
       path,
@@ -82,6 +82,7 @@ class DatabaseService {
           id_frigo INTEGER PRIMARY KEY AUTOINCREMENT,
           id_aliment INTEGER,
           quantite REAL,
+          unite TEXT,
           date_ajout TEXT,
           date_peremption TEXT,
           FOREIGN KEY (id_aliment) REFERENCES Aliments(id_aliment)
