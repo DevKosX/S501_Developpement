@@ -25,7 +25,7 @@ class _EcranPrincipalState extends State<EcranPrincipal> {
   final List<Widget> _ecrans = [
     const Scaffold(body: Center(child: Text("Page Accueil"))),    // 0
     const EcranFrigo(),                                           // 1 (Défaut)
-    const Scaffold(body: Center(child: Text("Page Recettes"))),   // 2
+    const EcranRecettes(),   // 2
     const Scaffold(body: Center(child: Text("Page Favoris"))),    // 3
     const Scaffold(body: Center(child: Text("Page Historique"))), // 4
     const Scaffold(body: Center(child: Text("Page Profil"))),     // 5

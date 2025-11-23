@@ -8,9 +8,10 @@ class Recette {
   int id_recette;
   String titre;
   String instructions;
-  String type_recette;
+  int tempsPreparation;
+  String typeRecette;
   double score;
-  int note_base;
+  int noteBase;
   String image;
   String difficulte;
   // Champ non stocké en BDD, juste pour l'affichage UI
@@ -23,9 +24,10 @@ class Recette {
     required this.id_recette,
     required this.titre,
     required this.instructions,
-    required this.type_recette,
+    required this.tempsPreparation,
+    required this.typeRecette,
     required this.score,
-    required this.note_base,
+    required this.noteBase,
     required this.image,
     required this.difficulte,
     this.nombreManquants = 0,
@@ -46,7 +48,7 @@ class Recette {
   }
 
   String getTypeRecette() {
-    return type_recette;
+    return typeRecette;
   }
 
   double getScore() {
@@ -54,7 +56,7 @@ class Recette {
   }
 
   int getNoteBase() {
-    return note_base;
+    return noteBase;
   }
 
   String getImage(){
@@ -74,11 +76,12 @@ class Recette {
       id_recette: map['id_recette'],
       titre: map['titre'],
       instructions: map['instructions'] ?? "", // Gestion des valeurs nulles
-      type_recette: map['type_recette'] ?? "Inconnu",
+      tempsPreparation: map['temps_preparation'] ?? 0,
+      typeRecette: map['type_recette'] ?? "Inconnu",
       score: (map['score'] is int)
           ? (map['score'] as int).toDouble()
           : (map['score'] ?? 0.0), // Conversion sûre pour le double
-      note_base: map['note_base'] ?? 0,
+      noteBase: map['note_base'] ?? 0,
       image: map['image'] ?? "",
       difficulte: map['difficulte'] ?? "Moyenne",
     );
@@ -92,9 +95,10 @@ class Recette {
       'id_recette': id_recette,
       'titre': titre,
       'instructions': instructions,
-      'type_recette': type_recette,
+      'temps_preparation': tempsPreparation, // On remet l'underscore pour le SQL
+      'type_recette': typeRecette,
       'score': score,
-      'note_base': note_base,
+      'note_base': noteBase,
       'image': image,
       'difficulte': difficulte,
     };

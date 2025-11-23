@@ -19,6 +19,7 @@ abstract class RecetteRepository {
   Future<void> toggleFavori(Recette recette);
   Future<void> noterRecette(Recette recette, int note);
   Future<void> creerRecetteUtilisateur(Recette recette);
+  Future<Map<String, List<Recette>>> getRecettesTrieesParFrigo();
 
 
   ///ajout de 3 methodes essenetielles pour recette_aliments
@@ -130,6 +131,66 @@ class RecetteRepositoryImpl implements RecetteRepository {
     print("REPO: nouvelle recette créée en BDD");
   }
 
+
+  @override
+  Future<Map<String, List<Recette>>> getRecettesTrieesParFrigo() async {
+    final db = await _dbService.database;
+
+    // 1. Je récupère TOUT ce dont j'ai besoin (3 requêtes SQL)
+    final recettesMaps = await db.query('Recettes');
+    final liaisonsMaps = await db.query('RecetteAliment');
+    final frigoMaps = await db.query(
+        'Frigo'); // Je regarde directement la table Frigo
+
+    // 2. Je convertis les Recettes en objets Dart
+    List<Recette> toutesLesRecettes = List.generate(
+        recettesMaps.length, (i) => Recette.fromMap(recettesMaps[i]));
+
+    // 3. Je fais une liste simple des IDs d'aliments qui sont dans mon frigo
+    // (Set est plus rapide pour la recherche)
+    Set<int> idsDansFrigo = frigoMaps
+        .map((e) => e['id_aliment'] as int)
+        .toSet();
+
+    List<Recette> faisables = [];
+    List<Recette> manquantes = [];
+
+
+    for (var recette in toutesLesRecettes) {
+      // Je trouve les ingrédients nécessaires pour cette recette
+      var ingredientsDeLaRecette = liaisonsMaps
+          .where((l) => l['id_recette'] == recette.id_recette)
+          .toList();
+
+      int nbManquants = 0;
+
+      for (var liaison in ingredientsDeLaRecette) {
+        int idAlimentNecessaire = liaison['id_aliment'] as int;
+
+        // Si l'aliment n'est PAS dans le frigo, ça manque !
+        if (!idsDansFrigo.contains(idAlimentNecessaire)) {
+          nbManquants++;
+        }
+      }
+
+      // Je stocke le résultat dans l'objet pour l'afficher plus tard
+      recette.nombreManquants = nbManquants;
+
+      if (nbManquants == 0) {
+        faisables.add(recette);
+      } else {
+        manquantes.add(recette);
+      }
+    }
+
+    manquantes.sort((a, b) => a.nombreManquants.compareTo(b.nombreManquants));
+
+    // 6. Je renvoie le tout
+    return {
+      "faisables": faisables,
+      "manquantes": manquantes,
+    };
+  }
 
 
   // --------------------------------------------------------------------------

@@ -20,7 +20,7 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'app_recettes.db');
+    final path = join(dbPath, 'app_recettes_v2.db');
 
     return await openDatabase(
       path,
@@ -36,6 +36,7 @@ class DatabaseService {
           id_recette INTEGER PRIMARY KEY,
           titre TEXT,
           instructions TEXT,
+          temps_preparation INT,
           type_recette TEXT,
           score REAL,
           note_base INTEGER,
@@ -115,7 +116,7 @@ class DatabaseService {
       );
 
       await _importerCSV(txn, 'assets/db/recettes.csv',
-          'INSERT INTO Recettes (id_recette, titre, instructions, type_recette, score, note_base, image, difficulte) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+          'INSERT INTO Recettes (id_recette, titre, instructions, temps_preparation, type_recette, score, note_base, image, difficulte) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
 
       await _importerCSV(txn, 'assets/db/recetteAliment.csv',

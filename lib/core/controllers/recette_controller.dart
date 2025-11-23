@@ -20,12 +20,16 @@ class RecetteController extends ChangeNotifier {
   // --- ÉTAT (ce que la vue va afficher) ---
   // je garde une liste de toutes les recettes à afficher
   List<Recette> _listeRecettes = [];
+  List<Recette> _recettesFaisables = [];
+  List<Recette> _recettesManquantes = [];
 
   // je garde un booléen pour savoir si je suis en train de charger
   bool _isLoading = false;
 
   // --- GETTERS (pour la vue) ---
   List<Recette> get listeRecettes => _listeRecettes;
+  List<Recette> get recettesFaisables => _recettesFaisables;
+  List<Recette> get recettesManquantes => _recettesManquantes;
 
   bool get isLoading => _isLoading;
 
@@ -91,6 +95,27 @@ class RecetteController extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> getRecettesTrieesParFrigo() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // On récupère le Map depuis le repository
+      final result = await _repository.getRecettesTrieesParFrigo();
+
+      // On stocke les résultats dans les variables de classe qu'on a créées en haut
+      // On utilise 'as List<Recette>' pour être sûr du type, ou '?? []' pour éviter les nulls
+      _recettesFaisables = result["faisables"] ?? [];
+      _recettesManquantes = result["manquantes"] ?? [];
+
+    } catch (e) {
+      print("Erreur tri frigo: $e");
+    }
+
+    _isLoading = false;
+    notifyListeners(); // La vue va se mettre à jour avec les nouvelles listes
   }
 
 

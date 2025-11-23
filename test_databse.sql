@@ -2,7 +2,7 @@ CREATE TABLE Recettes (
     id_recette INT AUTO_INCREMENT PRIMARY KEY,
     titre VARCHAR(255),
     instructions TEXT,
-    type_recette VARCHAR(100),
+    typeRecette VARCHAR(100),
     score REAL,
     note_base INT,
     image VARCHAR(255),
@@ -60,7 +60,7 @@ CREATE TABLE FeedbackRecette (
     FOREIGN KEY (id_recette) REFERENCES Recettes(id_recette)
 );
 
-INSERT INTO Recettes (titre, instructions, type_recette, score, note_base, image, difficulte) VALUES
+INSERT INTO Recettes (titre, instructions, typeRecette, score, note_base, image, difficulte) VALUES
 ('No-Bake Nut Cookies', 'In a heavy saucepan, mix brown sugar, milk, vanilla, and butter. Bring to boil...', 'Dessert', 4.5, 10, 'https://loremflickr.com/320/240/cookie', 'Facile'),
 ('Jewell Ball''S Chicken', 'Place chipped beef on bottom of baking dish. Arrange chicken over beef...', 'Plat principal', 4.2, 8, 'https://loremflickr.com/320/240/chicken', 'Moyenne'),
 ('Creamy Corn', 'In a slow cooker, combine all ingredients. Cook until creamy...', 'Accompagnement', 4.6, 9, 'https://loremflickr.com/320/240/corn', 'Facile'),
