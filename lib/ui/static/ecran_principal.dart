@@ -28,8 +28,7 @@ class _EcranPrincipalState extends State<EcranPrincipal> {
     const EcranRecettes(),   // 2
     const Scaffold(body: Center(child: Text("Page Favoris"))),    // 3
     const Scaffold(body: Center(child: Text("Page Historique"))), // 4
-    const Scaffold(body: Center(child: Text("Page Profil"))),     // 5
-    // Note: J'ai mis des Scaffold temporaires pour ceux que tu n'as pas encore codés
+    const EcranProfil(), // 5    // Note: J'ai mis des Scaffold temporaires pour ceux que tu n'as pas encore codés
     // Tu pourras remplacer par "const EcranRecettes()" quand le fichier sera prêt.
   ];
 
