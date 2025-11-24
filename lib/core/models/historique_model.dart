@@ -30,19 +30,20 @@ class Historique {
   // Helpers BDD
   factory Historique.fromMap(Map<String, dynamic> map) {
     return Historique(
-      idhistorique: map['idhistorique'],
-      idrecette: map['id_recette'] ?? 0,
-      dateaction: DateTime.parse(map['dateaction']),
-      dureetotalemin: map['dureetotalemin'],
+      idhistorique: map['id_historique'],
+      idrecette: map['id_recette'],
+      dateaction: DateTime.parse(map['date_action']),
+      dureetotalemin: map['duree_totale_min'],
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'idhistorique': idhistorique,
-      'idrecette': idrecette,
-      'dateaction': dateaction.toIso8601String(),
-      'dureetotalemin': dureetotalemin,
+      'id_historique': idhistorique,
+      'id_recette': idrecette,
+      'date_action': dateaction.toIso8601String(),
+      'duree_totale_min': dureetotalemin,
     };
   }
+
 }
