@@ -35,20 +35,13 @@ class TuileIngredient extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
-                    // MODIFICATION POUR LES IMAGES DU CSV
-                    // On essaie de charger l'image depuis les assets.
-                    // Si 'aliment.image' vaut 'oeuf.jpg', on cherche 'assets/images/oeuf.jpg'
+
                     child: Image.asset(
                       "assets/images/${aliment.image}",
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
-                        // Si l'image n'existe pas en local, on essaie Internet (au cas où)
-                        return Image.network(
-                          aliment.image,
-                          fit: BoxFit.contain,
-                          errorBuilder: (ctx, err, stack) =>
-                          const Icon(Icons.food_bank, size: 30, color: Colors.grey),
-                        );
+                        // Si pas d'image locale, on met juste une icône
+                        return const Icon(Icons.restaurant, size: 30, color: Colors.grey);
                       },
                     ),
                   ),
@@ -80,6 +73,7 @@ class TuileIngredient extends StatelessWidget {
                 color: Colors.green,
                 borderRadius: BorderRadius.circular(10),
               ),
+
               child: Text(
                 "x${quantiteAuFrigo.toInt()}",
                 style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),

@@ -20,7 +20,7 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'app_recettes_v3.db'); //troisieme version
+    final path = join(dbPath, 'app_recettes.db');
 
     return await openDatabase(
       path,
@@ -31,12 +31,12 @@ class DatabaseService {
 
   Future<void> _onCreate(Database db, int version) async {
     await db.transaction((txn) async {
+
       await txn.execute('''
         CREATE TABLE Recettes (
           id_recette INTEGER PRIMARY KEY,
           titre TEXT,
           instructions TEXT,
-          temps_preparation INT,
           type_recette TEXT,
           score REAL,
           note_base INTEGER,
@@ -45,15 +45,18 @@ class DatabaseService {
         );
       ''');
 
+
       await txn.execute('''
         CREATE TABLE Aliments (
           id_aliment INTEGER PRIMARY KEY,
           nom TEXT,
           categorie TEXT,
           nutriscore TEXT,
-          image TEXT
+          image TEXT,
+          type_gestion TEXT
         );
       ''');
+
 
       await txn.execute('''
         CREATE TABLE RecetteAliment (
@@ -77,12 +80,13 @@ class DatabaseService {
         );
       ''');
 
+
       await txn.execute('''
         CREATE TABLE Frigo (
           id_frigo INTEGER PRIMARY KEY AUTOINCREMENT,
           id_aliment INTEGER,
           quantite REAL,
-          unite TEXT,
+          unite TEXT,  
           date_ajout TEXT,
           date_peremption TEXT,
           FOREIGN KEY (id_aliment) REFERENCES Aliments(id_aliment)
@@ -112,12 +116,13 @@ class DatabaseService {
           'INSERT INTO Profil (id, poids, taille, objectif) VALUES (1, 0.0, 0.0, "Aucun")'
       );
 
+      // IMPORTS CSV
       await _importerCSV(txn, 'assets/db/aliments.csv',
-          'INSERT INTO Aliments (id_aliment, nom, categorie, nutriscore, image) VALUES (?, ?, ?, ?, ?)'
+          'INSERT INTO Aliments (id_aliment, nom, categorie, nutriscore, image, type_gestion) VALUES (?, ?, ?, ?, ?, ?)'
       );
 
       await _importerCSV(txn, 'assets/db/recettes.csv',
-          'INSERT INTO Recettes (id_recette, titre, instructions, temps_preparation, type_recette, score, note_base, image, difficulte) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          'INSERT INTO Recettes (id_recette, titre, instructions, type_recette, score, note_base, image, difficulte) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
       );
 
       await _importerCSV(txn, 'assets/db/recetteAliment.csv',
@@ -134,11 +139,15 @@ class DatabaseService {
       for (int i = 1; i < rows.length; i++) {
         List<dynamic> row = rows[i];
         if (row.length > 1) {
+
+          if (row.length >= 6 && row[5] is String) {
+            row[5] = row[5].toString().trim();
+          }
           await txn.rawInsert(sqlQuery, row);
         }
       }
     } catch (e) {
-      print("Erreur lors de l'importation du CSV ($assetPath) : $e");
+      print("Erreur CSV $assetPath : $e");
     }
   }
 }
