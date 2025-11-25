@@ -7,6 +7,8 @@ class Aliment {
   String categorie;
   String nutriscore;
   String image;
+  double poids_unitaire;
+
 
  
   Aliment({
@@ -15,6 +17,8 @@ class Aliment {
     required this.categorie,
     required this.nutriscore,
     required this.image,
+    required this.poids_unitaire,
+
   });
 
   
@@ -46,6 +50,7 @@ class Aliment {
       categorie: map['categorie'] ?? "Inconnue",
       nutriscore: map['nutriscore'] ?? "N/A",
       image: map['image'] ?? "",
+      poids_unitaire: map['poids_unitaire']?.toDouble() ?? 0.0,
     );
   }
 
@@ -57,6 +62,7 @@ class Aliment {
       'categorie': categorie,
       'nutriscore': nutriscore,
       'image': image,
+      'poids_unitaire': poids_unitaire,
     };
   }
 }
