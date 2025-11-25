@@ -123,14 +123,6 @@ class DatabaseService {
       await _importerCSV(txn, 'assets/db/recetteAliment.csv',
           'INSERT INTO RecetteAliment (id_RecetteAliment, id_recette, id_aliment, quantite, unite, remarque) VALUES (?, ?, ?, ?, ?, ?)'
       );
-
-      // --- TEST TEMPORAIRE : vérifier que les entrées avec id_recette = 5 ont bien été insérées ---
-      final testRows = await txn.rawQuery(
-        'SELECT * FROM RecetteAliment WHERE id_recette = 5'
-      );
-      print("TEST DEBUG - RecetteAliment(id_recette=5) => ${testRows.length} lignes trouvées");
-      print(testRows);
-
     });
   }
 

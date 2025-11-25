@@ -225,8 +225,6 @@ class RecetteRepositoryImpl implements RecetteRepository {
   @override
 Future<List<IngredientRecette>> getIngredientsByRecette(int idRecette) async {
   final db = await _dbService.database;
-  print("REPO: getIngredientsByRecette appelé pour recette $idRecette");
-
 
   final result = await db.rawQuery('''
     SELECT 
@@ -238,8 +236,6 @@ Future<List<IngredientRecette>> getIngredientsByRecette(int idRecette) async {
     JOIN Aliments A ON A.id_aliment = RA.id_aliment
     WHERE RA.id_recette = ?
   ''', [idRecette]);
-  print("REPO: result SQL length = ${result.length} for recette $idRecette");
-  print("REPO: sample row = ${result.isNotEmpty ? result.first : 'empty'}");
 
   print("REPO: ${result.length} ingrédients trouvés pour la recette $idRecette");
 

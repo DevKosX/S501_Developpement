@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../core/models/recette_model.dart';
 import 'package:provider/provider.dart';
 import '../../../core/controllers/recette_controller.dart';
-import '../../../core/models/ingredient_recette_model.dart';
 
 
 
@@ -82,15 +81,33 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                   ),
                   SizedBox(height: 10),
 
-                  for (final ing in ingredients)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text(
-                        "- ${ing.quantite} ${ing.unite} ${ing.nom}"
-                        "${ing.remarque != null && ing.remarque!.isNotEmpty ? " (${ing.remarque})" : ""}",
-                        style: TextStyle(fontSize: 16, height: 1.4),
-                      ),
-                    ),
+                  Column(
+                    children: ingredients.map((ing) {
+                      final remarque = (ing.remarque != null && ing.remarque!.isNotEmpty)
+                          ? " (${ing.remarque})"
+                          : "";
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.circle, size: 8, color: Colors.orange),
+                            const SizedBox(width: 10),
+
+                            Expanded(
+                              child: Text(
+                                "${ing.quantite} ${ing.unite} ${ing.nom}$remarque",
+                                style: const TextStyle(fontSize: 16, height: 1.3),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+
 
                   SizedBox(height: 25),
 

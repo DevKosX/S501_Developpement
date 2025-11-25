@@ -129,10 +129,8 @@ class RecetteController extends ChangeNotifier {
   ///méthode pour recuper la liste des ingrédients pour une recette
   Future<void> loadIngredients(int idRecette) async {
     try {
-      print("CTRL: loadIngredients appelé pour $idRecette");
       ingredients = await _repository.getIngredientsByRecette(idRecette);
       print("CTRL: ${ingredients.length} ingrédients récupérés pour la recette $idRecette");
-      print("CTRL: loaded ${ingredients.length} ingredients");
       notifyListeners();
     } catch (e) {
       print("ERREUR ingredients CTRL → $e");
