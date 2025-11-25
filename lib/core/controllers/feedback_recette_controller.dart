@@ -38,4 +38,8 @@ class FeedbackRecetteController extends ChangeNotifier {
     await _repository.toggleFavori(feedback);
     await chargerFeedbacks();
   }
+
+  Future<List<Map<String, dynamic>>> getFavorisAvecDetails() async {
+    return await _repository.getFavorisAvecDetails();
+  }
 }

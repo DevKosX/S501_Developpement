@@ -19,14 +19,14 @@ class _EcranPrincipalState extends State<EcranPrincipal> {
   // --- CONFIGURATION DE L'ACCUEIL ---
   // 0 = Accueil, 1 = Frigo, 2 = Recettes...
   // Tu veux que Frigo soit l'ouverture, donc on met 1.
-  int _indexSelectionne = 1;
+  int _indexSelectionne = 3;
 
   // La liste de tes 6 pages
   final List<Widget> _ecrans = [
     const EcranAccueil(),                                         // 0
     const EcranFrigo(),                                           // 1 (Défaut)
     const EcranRecettes(),                                        // 2
-    const Scaffold(body: Center(child: Text("Page Favoris"))),    // 3
+     const EcranFavoris(),                                        
     const EcranHistorique(),                                      // 4
     const EcranProfil(), // 5    // Note: J'ai mis des Scaffold temporaires pour ceux que tu n'as pas encore codés
     // Tu pourras remplacer par "const EcranRecettes()" quand le fichier sera prêt.

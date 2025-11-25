@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 
 // 1. J'importe le service de BDD
@@ -53,16 +54,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // --- 2. CORRECTION "INTELLIGENTE" (la partie importante) ---
-  // je vérifie si on est sur un OS de bureau
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    // si oui, j'initialise la version FFI (desktop)
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
+  // je vérifie d'abord si on n'est PAS sur le web
+  if (!kIsWeb) {
+    // puis je vérifie si on est sur un OS de bureau
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      // si oui, j'initialise la version FFI (desktop)
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    }
   }
-  // si on est sur Android ou iOS, on ne fait rien, ça marche tout seul.
-  // --- FIN DE LA CORRECTION ---
-
-
+  // si on est sur le web, Android ou iOS, on ne fait rien, ça marche tout seul.
   // j'initialise la BDD et j'attends qu'elle soit créée
   await DatabaseService.instance.database;
 

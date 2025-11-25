@@ -6,6 +6,7 @@ abstract class FeedbackRecetteRepository {
   Future<List<FeedbackRecette>> getFeedbacks();
   Future<void> toggleFavori(FeedbackRecette feedback);
   Future<void> noterRecette(FeedbackRecette feedback, int note);
+  Future<List<Map<String, dynamic>>> getFavorisAvecDetails();
 }
 
 class FeedbackRecetteRepositoryImpl implements FeedbackRecetteRepository {
@@ -49,5 +50,30 @@ class FeedbackRecetteRepositoryImpl implements FeedbackRecetteRepository {
       await db.insert('FeedbackRecette', {'idrecette': id, 'note': note, 'favori': 0});
     }
     print("REPO: note $note enregistrée pour la recette $id");
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getFavorisAvecDetails() async {
+    final db = await _dbService.database;
+    final result = await db.rawQuery('''
+      SELECT 
+        R.id_recette,
+        R.titre,
+        R.instructions,
+        R.temps_preparation,
+        R.type_recette,
+        R.score,
+        R.note_base,
+        R.image,
+        R.difficulte,
+        F.favori,
+        F.note
+      FROM FeedbackRecette F
+      INNER JOIN Recettes R ON R.id_recette = F.idrecette
+      WHERE F.favori = 1
+      ORDER BY R.titre ASC
+    ''');
+    print("REPO: ${result.length} recettes favorites trouvées");
+    return result;
   }
 }

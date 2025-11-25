@@ -1,21 +1,39 @@
 import 'package:flutter/material.dart';
-import 'ui/static/ecran_principal.dart'; // On appelle la structure globale
+import 'package:provider/provider.dart';
+import 'ui/static/ecran_principal.dart';
+import 'core/controllers/feedback_recette_controller.dart';
+import 'core/controllers/historique_controller.dart';
+import 'core/repositories/feedback_recette_repository.dart';
+import 'core/repositories/historique_repository.dart';
 
 class AppRecettes extends StatelessWidget {
   const AppRecettes({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'App Recettes',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.white,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => FeedbackRecetteController(
+            FeedbackRecetteRepositoryImpl(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => HistoriqueController(
+            HistoriqueRepositoryImpl(),
+          ),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'App Recettes',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+          useMaterial3: true,
+          scaffoldBackgroundColor: Colors.white,
+        ),
+        home: const EcranPrincipal(),
       ),
-      // Au lieu d'afficher une page simple, on affiche la STRUCTURE (avec le menu en bas)
-      home: const EcranPrincipal(),
     );
   }
 }
