@@ -69,7 +69,7 @@ class FeedbackRecetteRepositoryImpl implements FeedbackRecetteRepository {
         F.favori,
         F.note
       FROM FeedbackRecette F
-      INNER JOIN Recettes R ON R.id_recette = F.idrecette
+      INNER JOIN Recettes R ON R.id_recette = F.id_recette
       WHERE F.favori = 1
       ORDER BY R.titre ASC
     ''');
