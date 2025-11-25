@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/recette_model.dart';
 import '../repositories/recette_repository.dart';
 import '../models/recette_aliment_model.dart';
+import '../models/ingredient_recette_model.dart';
+
 
 
 /// Fichier: core/controllers/recette_controller.dart
@@ -22,6 +24,7 @@ class RecetteController extends ChangeNotifier {
   List<Recette> _listeRecettes = [];
   List<Recette> _recettesFaisables = [];
   List<Recette> _recettesManquantes = [];
+  List<IngredientRecette> ingredients = [];
 
   // je garde un booléen pour savoir si je suis en train de charger
   bool _isLoading = false;
@@ -124,16 +127,16 @@ class RecetteController extends ChangeNotifier {
   // --------------------------------------------------------------------------
 
   ///méthode pour recuper la liste des ingrédients pour une recette
-  Future<List<Map<String, dynamic>>> getIngredientsByRecette(int idRecette) async {
+  Future<void> loadIngredients(int idRecette) async {
     try {
-      final ingredients = await _repository.getIngredientsByRecette(idRecette);
+      ingredients = await _repository.getIngredientsByRecette(idRecette);
       print("CTRL: ${ingredients.length} ingrédients récupérés pour la recette $idRecette");
-      return ingredients;
+      notifyListeners();
     } catch (e) {
-      print("ERREUR: impossible de charger les ingrédients → $e");
-      return [];
+      print("ERREUR ingredients CTRL → $e");
     }
   }
+
 
   ///méthode qui ajoute des ingrédients à une reccette crée
   Future<void> addIngredientToRecette(RecetteAliment recetteAliment) async {
