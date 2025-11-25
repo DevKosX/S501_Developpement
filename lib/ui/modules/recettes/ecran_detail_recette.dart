@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Import nécessaire pour le Provider
 import '../../../core/models/recette_model.dart';
-
-
-
-
+import '../../../core/controllers/recette_controller.dart'; // Import du contrôleur pour la logique
 
 
 /// Fichier: core/ui/module/recettes/ecran_detail_recettes.dart
 /// Author: Mohamed KOSBAR
 /// Implémentation du 22 novembre 2025
 ///
-
-
 
 class EcranDetailRecette extends StatelessWidget {
   final Recette recette;
@@ -21,6 +17,27 @@ class EcranDetailRecette extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // --- AJOUT DU BOUTON FAVORIS ICI ---
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        elevation: 4,
+        onPressed: () {
+          // On appelle le contrôleur pour basculer le favori dans la BDD
+          context.read<RecetteController>().toggleFavori(recette);
+
+          // On affiche un petit message de confirmation en bas
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Favoris mis à jour pour ${recette.titre}"),
+              duration: const Duration(seconds: 1),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        },
+        child: const Icon(Icons.favorite, color: Colors.red),
+      ),
+      // -----------------------------------
+
       body: CustomScrollView(
         slivers: [
           // --- 1. GRANDE IMAGE EN HAUT ---
