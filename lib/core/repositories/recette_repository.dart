@@ -1,3 +1,4 @@
+import 'package:s501_developpement/core/models/ingredient_recette_model.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/recette_model.dart';
 import '../models/recette_aliment_model.dart';
@@ -25,7 +26,8 @@ abstract class RecetteRepository {
 
   ///ajout de 3 methodes essenetielles pour recette_aliments
 
-  Future<List<Map<String, dynamic>>> getIngredientsByRecette(int idRecette);
+  Future<List<IngredientRecette>> getIngredientsByRecette(int idRecette);
+  Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette);
   Future<void> addIngredientToRecette(RecetteAliment recetteAliment);
   Future<void> deleteIngredientsByRecette(int idRecette);
 }
@@ -194,36 +196,75 @@ class RecetteRepositoryImpl implements RecetteRepository {
   }
 
 
-  // --------------------------------------------------------------------------
-  // === NOUVELLES MÉTHODES LIÉES À RecetteAliment ===
-  // --------------------------------------------------------------------------
-
-  /// Méthode : getIngredientsByRecette
-  /// Rôle : je veu récupèrer une liste complète des ingrdients (avec quantité, unité, remarque) pour une recette donnée.
+   /// Méthode : getIngredientsByRecette
   ///
-  ///   Implémentation SQL :
-  /// SELECT A.nom, A.marque, A.categorie, A.nutriscore,
-  ///        RA.quantite, RA.unite, RA.remarque
+  /// Rôle :
+  ///   Récupère la liste complète des ingrédients d’une recette donnée,
+  ///   en fusionnant la table pivot RecetteAliment (quantité, unité, remarque)
+  ///   avec la table Aliments (nom de l’aliment).
+  ///
+  /// Pourquoi on retourne une liste d'objets IngredientRecette :
+  ///   - l’UI n’a pas besoin des IDs, nutriscore, catégorie ou marque
+  ///   - seul le "nom", "quantité", "unité" et "remarque" sont utiles pour l’affichage
+  ///   - cela évite de manipuler des Maps brutes dans l’interface
+  ///   - facilite fortement l'affichage : “2 g de sucre”, “3 tomates”, etc.
+  ///
+  /// Implémentation SQL :
+  /// SELECT A.nom,
+  ///        RA.quantite,
+  ///        RA.unite,
+  ///        RA.remarque
   /// FROM RecetteAliment RA
   /// JOIN Aliments A ON A.id_aliment = RA.id_aliment
   /// WHERE RA.id_recette = ?
+  ///
+  /// Retour :
+  ///   Une liste typée de IngredientRecette prête à être affichée dans l’UI.
+
 
   @override
-  Future<List<Map<String, dynamic>>> getIngredientsByRecette(int idRecette) async {
-    final db = await _dbService.database;
+Future<List<IngredientRecette>> getIngredientsByRecette(int idRecette) async {
+  final db = await _dbService.database;
 
-    //j'ai ajoute l'id_aliment
-    final result = await db.rawQuery('''
-      SELECT A.id_aliment,A.nom, A.marque,A.categorie, A.nutriscore, 
-             RA.quantite, RA.unite, RA.remarque
-      FROM RecetteAliment RA
-      JOIN Aliments A ON A.id_aliment = RA.id_aliment
-      WHERE RA.id_recette = ?
-    ''', [idRecette]);
+  final result = await db.rawQuery('''
+    SELECT 
+      A.nom,
+      RA.quantite,
+      RA.unite,
+      RA.remarque
+    FROM RecetteAliment RA
+    JOIN Aliments A ON A.id_aliment = RA.id_aliment
+    WHERE RA.id_recette = ?
+  ''', [idRecette]);
 
-    print("REPO: ${result.length} ingrédients trouvés pour la recette $idRecette");
-    return result;
-  }
+  print("REPO: ${result.length} ingrédients trouvés pour la recette $idRecette");
+
+  // Conversion en une liste d'objets IngredientRecette
+  return result.map((row) {
+    return IngredientRecette(
+      nom: row["nom"] as String,
+      quantite: (row["quantite"] as num).toDouble(),
+      unite: row["unite"] as String,
+      remarque: row["remarque"] as String?,
+    );
+  }).toList();
+}
+
+/// Version RAW pour la logique interne (ex: recommandations, frigo)
+Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette) async {
+  final db = await _dbService.database;
+
+  return await db.rawQuery('''
+    SELECT 
+      RA.id_aliment,
+      RA.quantite,
+      RA.unite,
+      RA.remarque
+    FROM RecetteAliment RA
+    WHERE RA.id_recette = ?
+  ''', [idRecette]);
+}
+
 
   /// Méthode : addIngredientToRecette
   /// Rôle : je veux ajouter un ingrédient (ligne) dans la table pivot RecetteAliment avec ses attributs
@@ -294,7 +335,8 @@ class RecetteRepositoryImpl implements RecetteRepository {
       score += nbFoisFaite * 1.0;
 
       // C. Frigo & Anti-Gaspi
-      List<Map<String, dynamic>> ingredientsRecette = await getIngredientsByRecette(recette.id_recette);
+      List<Map<String, dynamic>> ingredientsRecette = await getIngredientsRaw(recette.id_recette);
+
 
       for (var ingredient in ingredientsRecette) {
         int idAlimentRecette = ingredient['id_aliment'];

@@ -29,6 +29,29 @@ class FeedbackRecetteController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> enregistrerFeedback({
+    required int idRecette,
+    required int note,
+    required String commentaire,
+  }) async {
+    await _repository.enregistrerFeedback(
+      idRecette: idRecette,
+      note: note,
+      commentaire: commentaire,
+    );
+
+    await chargerFeedbacks();
+  }
+
+  Future<FeedbackRecette?> getFeedbackPourRecette(int idRecette) async {
+    try {
+      return await _repository.getFeedbackByRecette(idRecette);
+    } catch (e) {
+      print("Erreur getFeedbackPourRecette : $e");
+      return null;
+    }
+  }
+
   Future<void> noterRecette(FeedbackRecette feedback, int note) async {
     await _repository.noterRecette(feedback, note);
     await chargerFeedbacks();

@@ -1,19 +1,19 @@
 
 class Historique {
-  int idhistorique;
+  int? idhistorique;
   DateTime dateaction;
   int dureetotalemin;
   int idrecette;
 
   Historique({
-    required this.idhistorique,
+    this.idhistorique,
     required this.dateaction,
     required this.dureetotalemin,
     required this.idrecette,
   });
 
   // Getters
-  int getIdHistorique() => idhistorique;
+  int? getIdHistorique() => idhistorique;
   DateTime getDateAction() => dateaction;
   int getDuree() => dureetotalemin;
 
@@ -27,7 +27,6 @@ class Historique {
     print("Action enregistrée : Recette $idrecette, Durée $duree minutes le $dateaction");
   }
 
-  // Helpers BDD
   factory Historique.fromMap(Map<String, dynamic> map) {
     return Historique(
       idhistorique: map['id_historique'],
@@ -39,11 +38,11 @@ class Historique {
 
   Map<String, dynamic> toMap() {
     return {
-      'id_historique': idhistorique,
       'id_recette': idrecette,
       'date_action': dateaction.toIso8601String(),
       'duree_totale_min': dureetotalemin,
     };
   }
+
 
 }

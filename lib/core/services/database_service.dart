@@ -104,6 +104,7 @@ class DatabaseService {
           id_recette INTEGER PRIMARY KEY,
           favori INTEGER,
           note INTEGER,
+          commentaire TEXT,
           FOREIGN KEY (id_recette) REFERENCES Recettes(id_recette)
         );
       ''');
