@@ -37,7 +37,12 @@ class _EcranHistoriqueState extends State<EcranHistorique> {
   Widget build(BuildContext context) {
     return Consumer2<HistoriqueController, RecetteController>(
       builder: (context, histCtrl, recCtrl, _) {
-        final items = histCtrl.historiqueList;
+        // --- RÉCUPÉRATION ---
+        final items = [...histCtrl.historiqueList];
+
+        // --- TRI DU PLUS RÉCENT AU PLUS ANCIEN ---
+        items.sort((a, b) => b.dateaction.compareTo(a.dateaction));
+
         final recettes = recCtrl.listeRecettes;
 
         return Scaffold(

@@ -7,7 +7,7 @@ abstract class FeedbackRecetteRepository {
   Future<void> toggleFavori(FeedbackRecette feedback);
   Future<void> noterRecette(FeedbackRecette feedback, int note);
   Future<List<Map<String, dynamic>>> getFavorisAvecDetails();
-
+  Future<FeedbackRecette?> getFeedbackByRecette(int idRecette);
   Future<void> enregistrerFeedback({
     required int idRecette,
     required int note,
@@ -17,6 +17,22 @@ abstract class FeedbackRecetteRepository {
 
 class FeedbackRecetteRepositoryImpl implements FeedbackRecetteRepository {
   final DatabaseService _dbService = DatabaseService.instance;
+
+  @override
+  Future<FeedbackRecette?> getFeedbackByRecette(int idRecette) async {
+    final db = await _dbService.database;
+
+    final result = await db.query(
+      'FeedbackRecette',
+      where: 'id_recette = ?',
+      whereArgs: [idRecette],
+    );
+
+    if (result.isEmpty) return null;
+
+    print("DEBUG → Feedback trouvé : ${result.first}");
+    return FeedbackRecette.fromMap(result.first);
+  }
 
   @override
   Future<List<FeedbackRecette>> getFeedbacks() async {
@@ -74,7 +90,7 @@ class FeedbackRecetteRepositoryImpl implements FeedbackRecetteRepository {
 
     if (result.isNotEmpty) {
       int currentStatus = result.first['favori'] as int? ?? 0;
-      int newStatus = (currentStatus == 1) ? 0 : 1;
+      int newStatus = currentStatus == 1 ? 0 : 1;
 
       await db.update(
         'FeedbackRecette',

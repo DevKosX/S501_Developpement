@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/models/historique_model.dart';
 import '../../../../core/models/recette_model.dart';
 import 'image_recette.dart';
+import 'package:provider/provider.dart';
+import '../../../../core/controllers/feedback_recette_controller.dart';
+
 
 class CarteHistorique extends StatelessWidget {
   final Historique historique;
@@ -80,37 +83,61 @@ class CarteHistorique extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // ETOILES + NOTE
-                Row(
-                  children: [
-                    ...List.generate(
-                        recette?.score.toInt() ?? 0,
-                        (i) => const Icon(Icons.star,
-                            size: 18, color: Colors.amber)),
-                    ...List.generate(
-                        5 - (recette?.score.toInt() ?? 0),
-                        (i) => const Icon(Icons.star_border,
-                            size: 18, color: Colors.amber)),
-                    const SizedBox(width: 6),
-                    Text("${recette?.score ?? 0}/5"),
-                  ],
+                FutureBuilder(
+                  future: context.read<FeedbackRecetteController>()
+                      .getFeedbackPourRecette(historique.idrecette),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Row(
+                        children: const [
+                          Icon(Icons.star_border, size: 18, color: Colors.amber),
+                          SizedBox(width: 6),
+                          Text("Aucune note"),
+                        ],
+                      );
+                    }
+
+                    final feedback = snapshot.data!;
+                    final noteUser = feedback.note;
+
+                    return Row(
+                      children: [
+                        ...List.generate(
+                          noteUser,
+                          (i) => const Icon(Icons.star, size: 18, color: Colors.amber),
+                        ),
+                        ...List.generate(
+                          5 - noteUser,
+                          (i) => const Icon(Icons.star_border, size: 18, color: Colors.amber),
+                        ),
+                        const SizedBox(width: 6),
+                        Text("$noteUser/5"),
+                      ],
+                    );
+                  },
                 ),
+
 
                 const SizedBox(height: 14),
 
-                // COMMENTAIRE (placeholder)
-                Container(
-                  width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    "\"Commentaire non implémenté\"",
-                    style: TextStyle(color: Colors.grey),
-                  ),
+                // COMMENTAIRE
+                FutureBuilder(
+                  future: context.read<FeedbackRecetteController>()
+                      .getFeedbackPourRecette(historique.idrecette),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return _commentBox("Aucun commentaire");
+                    }
+
+                    final feedback = snapshot.data!;
+                    final texte = (feedback.commentaire != null && feedback.commentaire!.isNotEmpty)
+                        ? feedback.commentaire!
+                        : "Aucun commentaire";
+
+                    return _commentBox('"$texte"');
+                  },
                 ),
+
 
                 const SizedBox(height: 14),
 
@@ -133,6 +160,21 @@ class CarteHistorique extends StatelessWidget {
             ),
           )
         ],
+      ),
+    );
+  }
+
+  Widget _commentBox(String txt) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        txt,
+        style: const TextStyle(color: Colors.grey),
       ),
     );
   }

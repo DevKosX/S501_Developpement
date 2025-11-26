@@ -43,6 +43,14 @@ class FeedbackRecetteController extends ChangeNotifier {
     await chargerFeedbacks();
   }
 
+  Future<FeedbackRecette?> getFeedbackPourRecette(int idRecette) async {
+    try {
+      return await _repository.getFeedbackByRecette(idRecette);
+    } catch (e) {
+      print("Erreur getFeedbackPourRecette : $e");
+      return null;
+    }
+  }
 
   Future<void> noterRecette(FeedbackRecette feedback, int note) async {
     await _repository.noterRecette(feedback, note);

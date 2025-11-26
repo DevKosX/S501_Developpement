@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/controllers/feedback_recette_controller.dart';
 import '../../../../core/models/recette_model.dart';
+import '../../../../core/controllers/historique_controller.dart';
+import '../../../../core/models/historique_model.dart';
+
 
 class DialogFeedback extends StatefulWidget {
   final Recette recette;
@@ -140,18 +143,35 @@ class _DialogFeedbackState extends State<DialogFeedback> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: note == 0 ? null : () async {
-                      final controller = context.read<FeedbackRecetteController>();
+                      final feedbackCtrl = context.read<FeedbackRecetteController>();
+                      final histoCtrl = context.read<HistoriqueController>();
 
-                      await controller.enregistrerFeedback(
+                      // 1. Enregistrer le feedback
+                      await feedbackCtrl.enregistrerFeedback(
                         idRecette: widget.recette.id_recette,
                         note: note,
                         commentaire: commentaireController.text.trim(),
                       );
 
-                      Navigator.pop(context);
-                      Navigator.pop(context); // ferme le dialog
-                      Navigator.pop(context); // retourne à l’écran des recettes
+                      // 2. Enregistrer l’historique
+                      await histoCtrl.enregistrerAction(
+                        Historique(
+                          idhistorique: null,
+                          idrecette: widget.recette.id_recette,
+                          dateaction: DateTime.now(),
+                          dureetotalemin: widget.recette.tempsPreparation,
+                        ),
+                      );
+
+                      // Rafraîchir l'historique AVANT de quitter
+                      await context.read<HistoriqueController>().chargerHistorique();
+
+                      // 3. Navigation
+                      Navigator.pop(context); // ferme DialogFeedback
+                      Navigator.pop(context); // quitte écran cuisson
+                      Navigator.pop(context); // retourne à l'écran des recettes
                     },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
                       foregroundColor: Colors.white,
@@ -162,12 +182,14 @@ class _DialogFeedbackState extends State<DialogFeedback> {
                       disabledBackgroundColor: Colors.orange.withOpacity(0.4),
                       disabledForegroundColor: Colors.white.withOpacity(0.7),
                     ),
+
                     child: const Text(
                       "Enregistrer",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
+
               ],
             )
           ],
