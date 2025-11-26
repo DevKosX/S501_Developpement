@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../core/models/recette_model.dart';
 import 'package:provider/provider.dart';
 import '../../../core/controllers/recette_controller.dart';
+import '../recettes/pages_cuisson/ecran_etape_cuisson.dart';
+
 
 /// Fichier: core/ui/module/recettes/ecran_detail_recettes.dart
 /// Author: Mohamed KOSBAR, Yassine BEN ABA
@@ -118,6 +120,45 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                   Column(
                     children: _buildEtapes(widget.recette.instructions),
                   ),
+
+                  const SizedBox(height: 30),
+
+                  Center(
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final etapes = _decouperEtapes(widget.recette.instructions);
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EcranEtapeCuisson(
+                                titre: widget.recette.titre,
+                                etapes: etapes,
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          "🍳 Commencer à cuisiner",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                 ],
               ),
             ),
@@ -186,6 +227,23 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
     }
 
     return etapesWidgets;
+  }
+
+  List<String> _decouperEtapes(String instructions) {
+    final regex = RegExp(r'(\d+)\.\s');
+    final matches = regex.allMatches(instructions);
+    List<String> result = [];
+
+    for (int i = 0; i < matches.length; i++) {
+      final start = matches.elementAt(i).end;
+      final end = i + 1 < matches.length
+          ? matches.elementAt(i + 1).start
+          : instructions.length;
+
+      result.add(instructions.substring(start, end).trim());
+    }
+
+    return result;
   }
 }
 
