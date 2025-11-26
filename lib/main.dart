@@ -116,7 +116,8 @@ void main() async {
           ),
           ChangeNotifierProvider(
             create: (context) => FrigoController(
-              context.read<FrigoRepository>(), // j'injecte le repo
+              context.read<FrigoRepository>(),
+              context.read<AlimentRepository>(),
             ),
           ),
           ChangeNotifierProvider(
