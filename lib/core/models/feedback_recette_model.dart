@@ -2,12 +2,15 @@ class FeedbackRecette {
   int idrecette;
   int favori;
   int note;
+  String? commentaire;
 
   FeedbackRecette({
     required this.idrecette,
     required this.favori,
     required this.note,
+    this.commentaire,
   });
+
 
   // Getters
   int getIdRecette() => idrecette;
@@ -29,6 +32,7 @@ class FeedbackRecette {
       idrecette: map['idrecette'],
       favori: map['favori'] ?? 0,
       note: map['note'] ?? 0,
+      commentaire: map['commentaire'],
     );
   }
 
@@ -37,6 +41,7 @@ class FeedbackRecette {
       'idrecette': idrecette,
       'favori': favori,
       'note': note,
+      'commentaire': commentaire,
     };
   }
 }

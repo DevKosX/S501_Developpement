@@ -135,11 +135,13 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => EcranEtapeCuisson(
+                                recette: widget.recette,   // <-- IMPORTANT
                                 titre: widget.recette.titre,
                                 etapes: etapes,
                               ),
                             ),
                           );
+
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,

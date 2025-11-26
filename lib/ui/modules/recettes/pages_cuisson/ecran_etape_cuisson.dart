@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:s501_developpement/core/models/recette_model.dart';
+import 'package:s501_developpement/ui/modules/recettes/pages_cuisson/dialog_feedback.dart';
 
 class EcranEtapeCuisson extends StatefulWidget {
   final String titre;
   final List<String> etapes; // = étapes déjà découpées
   final int indexDepart; // permet de commencer à l’étape 0
+  final Recette recette;
 
   const EcranEtapeCuisson({
     super.key,
     required this.titre,
     required this.etapes,
     this.indexDepart = 0,
+    required this.recette, 
   });
 
   @override
@@ -87,16 +91,29 @@ class _EcranEtapeCuissonState extends State<EcranEtapeCuisson> {
 
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: index == total - 1 ? null : () {
-                      setState(() => index++);
+                    onPressed: () {
+                      if (index == total - 1) {
+                        // DERNIÈRE ÉTAPE → ouvrir le feedback
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) => DialogFeedback(recette: widget.recette),
+                        );
+                      } else {
+                        setState(() => index++);
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
                       foregroundColor: Colors.white,
                     ),
-                    child: const Text("Suivant →"),
+                    child: Text(
+                      index == total - 1 ? "Terminer ✓" : "Suivant →",
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
+
               ],
             ),
           ],
