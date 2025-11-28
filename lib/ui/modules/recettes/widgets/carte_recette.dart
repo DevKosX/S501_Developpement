@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/models/recette_model.dart';
-import '../ecran_detail_recette.dart'; // Pour la navigation vers le détail
+import '../../../../core/models/feedback_recette_model.dart';
+import '../../../../core/controllers/feedback_recette_controller.dart';
+import '../ecran_detail_recette.dart';
 
 
 
@@ -90,6 +93,65 @@ class CarteRecette extends StatelessWidget {
                     ),
                   ),
                 ),
+              
+              // BOUTON FAVORI - Très visible en bas à droite de l'image
+              Positioned(
+                bottom: 12,
+                right: 12,
+                child: Consumer<FeedbackRecetteController>(
+                  builder: (context, controller, _) {
+                    // Chercher si cette recette est déjà en favoris
+                    final estFavori = controller.feedbacks
+                        .any((f) => f.idrecette == recette.id_recette && f.favori == 1);
+                    
+                    return GestureDetector(
+                      onTap: () async {
+                        final feedback = FeedbackRecette(
+                          idrecette: recette.id_recette,
+                          favori: estFavori ? 0 : 1,
+                          note: 0,
+                        );
+                        await controller.toggleFavori(feedback);
+                        
+                        // Message de confirmation
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                estFavori 
+                                  ? '💔 Retiré des favoris' 
+                                  : '❤️ Ajouté aux favoris',
+                              ),
+                              duration: const Duration(seconds: 2),
+                              backgroundColor: estFavori ? Colors.grey[700] : Colors.pink,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          estFavori ? Icons.favorite : Icons.favorite_border,
+                          color: estFavori ? Colors.red : Colors.grey[600],
+                          size: 24,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           ),
 

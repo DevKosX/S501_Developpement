@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/recette_model.dart';
+import '../../../core/models/feedback_recette_model.dart';
 import 'package:provider/provider.dart';
 import '../../../core/controllers/recette_controller.dart';
+import '../../../core/controllers/feedback_recette_controller.dart';
 import '../recettes/pages_cuisson/ecran_etape_cuisson.dart';
 
 
@@ -31,24 +33,69 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
     final ingredients = context.watch<RecetteController>().ingredients;
 
     return Scaffold(
-      // --- AJOUT DU BOUTON FAVORIS ICI ---
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        elevation: 4,
-        onPressed: () {
-          // On appelle le contrôleur pour basculer le favori dans la BDD
-          context.read<RecetteController>().toggleFavori(widget.recette);
+      // --- BOUTON FAVORIS AMÉLIORÉ - Plus visible et animé ---
+      floatingActionButton: Consumer<FeedbackRecetteController>(
+        builder: (context, controller, _) {
+          final estFavori = controller.feedbacks
+              .any((f) => f.idrecette == widget.recette.id_recette && f.favori == 1);
+          
+          return FloatingActionButton.extended(
+            backgroundColor: estFavori ? Colors.red : Colors.white,
+            elevation: 8,
+            onPressed: () async {
+              final feedback = FeedbackRecette(
+                idrecette: widget.recette.id_recette,
+                favori: estFavori ? 0 : 1,
+                note: 0,
+              );
+              await controller.toggleFavori(feedback);
 
-          // On affiche un petit message de confirmation en bas
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Favoris mis à jour pour ${widget.recette.titre}"),
-              duration: const Duration(seconds: 1),
-              backgroundColor: Colors.orange,
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(
+                          estFavori ? Icons.heart_broken : Icons.favorite,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          estFavori 
+                            ? 'Retiré des favoris' 
+                            : 'Ajouté aux favoris !',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    duration: const Duration(seconds: 2),
+                    backgroundColor: estFavori ? Colors.grey[800] : Colors.pink,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                );
+              }
+            },
+            icon: Icon(
+              estFavori ? Icons.favorite : Icons.favorite_border,
+              color: estFavori ? Colors.white : Colors.red,
+              size: 28,
+            ),
+            label: Text(
+              estFavori ? 'En favoris' : 'Ajouter',
+              style: TextStyle(
+                color: estFavori ? Colors.white : Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
           );
         },
-        child: const Icon(Icons.favorite, color: Colors.red),
       ),
       // -----------------------------------
 

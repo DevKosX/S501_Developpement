@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/controllers/feedback_recette_controller.dart';
 import '../../../core/models/feedback_recette_model.dart';
 import '../../../core/models/recette_model.dart';
+import '../recettes/ecran_detail_recette.dart';
 
 class EcranFavoris extends StatefulWidget {
   const EcranFavoris({super.key});
@@ -392,8 +393,28 @@ class _EcranFavorisState extends State<EcranFavoris> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      // Créer un objet Recette à partir des données
+                      final recette = Recette(
+                        id_recette: recetteData['id_recette'] as int,
+                        titre: recetteData['titre'] as String? ?? 'Sans titre',
+                        instructions: recetteData['instructions'] as String? ?? '',
+                        tempsPreparation: recetteData['temps_preparation'] as int? ?? 0,
+                        typeRecette: recetteData['type_recette'] as String? ?? 'Autre',
+                        score: (recetteData['score'] is int)
+                            ? (recetteData['score'] as int).toDouble()
+                            : (recetteData['score'] as double? ?? 0.0),
+                        noteBase: recetteData['note_base'] as int? ?? 0,
+                        image: recetteData['image'] as String? ?? '',
+                        difficulte: recetteData['difficulte'] as String? ?? 'Moyenne',
+                      );
+
                       // Navigation vers le détail de la recette
-                      // Navigator.pushNamed(context, '/recette_detail', arguments: idRecette);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EcranDetailRecette(recette: recette),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.pink,
