@@ -44,6 +44,8 @@ class RecetteRepositoryImpl implements RecetteRepository {
   /// Rôle : Récupère toutes les recettes stockées dans la base SQLite.
   ///   Implémentation SQL
   /// SELECT * FROM Recettes
+
+
   @override
   Future<List<Recette>> getRecettes() async {
     // j'attends que la connexion à la BDD soit prête
@@ -64,10 +66,12 @@ class RecetteRepositoryImpl implements RecetteRepository {
   /// Calcule le score en fonction de :
   /// 1. Note de base du recette (Attribut note_base)
   /// 2. Note que l'utilisateur a donné (Table FeedbackRecette)
-  /// 3. La date de péremption des aliments (Table Frigo)
+  /// 3. La QUANTITÉ disponible dans le frigo vs requise (Table Frigo vs RecetteAliment)
+  ///    (Avec conversion d'unités kg->g, l->ml, etc.)
+  /// 4. La date de péremption des aliments (Table Frigo)
   /// ... et met à jour la base de données.
   Future<void> _calculerEtMettreAJourScores(Database db) async {
-    print("REPO: Début du recalcul des scores avec critères péremption & notes...");
+    print("REPO: Début du recalcul des scores avec QUANTITÉS (CONVERTIES) & PÉREMPTION...");
 
     // 1. Récupération des données brutes
     final recettesMaps = await db.query('Recettes');
@@ -96,10 +100,10 @@ class RecetteRepositoryImpl implements RecetteRepository {
 
       if (noteUtilisateur > 0) {
         // Si l'utilisateur a noté, on privilégie sa note (x2 pour lui donner du poids)
-        nouveauScore += noteUtilisateur.toDouble() * 2; // Ex: 5/5 -> +10 points
+        nouveauScore += noteUtilisateur.toDouble() * 2; 
       } else {
         // Sinon, on utilise la note de base de la recette
-        nouveauScore += noteBase; // Ex: 4/5 -> +4 points
+        nouveauScore += noteBase; 
       }
 
       // Bonus si c'est un favori (toujours utile pour la personnalisation)
@@ -107,22 +111,41 @@ class RecetteRepositoryImpl implements RecetteRepository {
         nouveauScore += 5.0;
       }
 
-      // --- CRITÈRE 3 : DATE DE PÉREMPTION (ANTI-GASPI) ---
+      // --- CRITÈRE 3 & 4 : QUANTITÉ & DATE DE PÉREMPTION (ANTI-GASPI) ---
       // On regarde les ingrédients nécessaires pour cette recette
       var ingredientsDeLaRecette = liaisonsMaps
           .where((l) => l['id_recette'] == idRecette);
       
       for (var liaison in ingredientsDeLaRecette) {
         int idAlimentNecessaire = liaison['id_aliment'] as int;
+        
+        // Quantité et Unité requises par la recette
+        double qteRequise = (liaison['quantite'] as num).toDouble();
+        String uniteRequise = (liaison['unite'] as String? ?? "").toLowerCase();
 
         // On cherche cet aliment dans le frigo
         var itemsFrigo = frigoMaps.where((f) => f['id_aliment'] == idAlimentNecessaire);
 
         for (var item in itemsFrigo) {
-          // Si l'ingrédient est présent, on donne un petit bonus de base (+1)
-          nouveauScore += 1.0; 
+          // Quantité et Unité disponibles dans le frigo
+          double qteDispo = (item['quantite'] as num).toDouble();
+          String uniteDispo = (item['unite'] as String? ?? "").toLowerCase();
 
-          // Vérification de la date de péremption pour le bonus Anti-Gaspi
+          // --- LOGIQUE QUANTITÉ (AVEC CONVERSION) ---
+          
+          // On normalise tout (kg -> g, l -> ml, etc.) pour comparer des pommes avec des pommes
+          double qteRequiseNorm = _normaliserQuantite(qteRequise, uniteRequise);
+          double qteDispoNorm = _normaliserQuantite(qteDispo, uniteDispo);
+
+          if (qteDispoNorm >= qteRequiseNorm) {
+            // On a ASSEZ (après conversion) : Gros Bonus !
+            nouveauScore += 3.0; 
+          } else {
+            // On en a, mais PAS ASSEZ : Petit Bonus quand même
+            nouveauScore += 1.0;
+          }
+
+          // --- LOGIQUE PÉREMPTION (Anti-Gaspi) ---
           if (item['date_peremption'] != null) {
             try {
               DateTime datePeremption = DateTime.parse(item['date_peremption'] as String);
@@ -132,7 +155,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
 
               // Logique Anti-Gaspi :
               if (joursRestants < 0) {
-                // Périmé : on baisse légèrement le score (on évite de recommander du périmé)
+                // Périmé : on baisse légèrement le score
                 nouveauScore -= 2.0; 
               } else if (joursRestants <= 2) {
                 // Urgence absolue (0 à 2 jours) : GROS BONUS pour inciter à cuisiner
@@ -143,7 +166,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
                 nouveauScore += 8.0;
               } else {
                 // Pas d'urgence immédiate mais c'est bien de l'utiliser
-                nouveauScore += 2.0;
+                nouveauScore += 2.0; 
               }
             } catch (e) {
               print("Erreur parse date: $e");
@@ -161,7 +184,55 @@ class RecetteRepositoryImpl implements RecetteRepository {
         whereArgs: [idRecette],
       );
     }
-    print("REPO: Fin du recalcul des scores.");
+    print("REPO: Fin du recalcul des scores (Quantités converties incluses).");
+  }
+
+  /// Méthode utilitaire pour convertir les unités en standard
+  /// Poids -> Grammes
+  /// Volume -> Millilitres
+  /// Autres (pcs, c.à.s) -> Valeur brute ou estimation
+  double _normaliserQuantite(double qte, String unite) {
+    String u = unite.trim().toLowerCase();
+
+    switch (u) {
+      // Poids
+      case 'kg':
+      case 'kilogramme':
+      case 'kilo':
+        return qte * 1000;
+      case 'mg':
+      case 'milligramme':
+        return qte / 1000;
+      case 'g':
+      case 'gramme':
+        return qte;
+
+      // Volume
+      case 'l':
+      case 'litre':
+        return qte * 1000;
+      case 'dl':
+      case 'décilitre':
+        return qte * 100;
+      case 'cl':
+      case 'centilitre':
+        return qte * 10;
+      case 'ml':
+      case 'millilitre':
+        return qte;
+      
+      // Mesures ménagères (Estimations)
+      case 'c.à.s':
+      case 'cuillère à soupe':
+        return qte * 15; // env. 15g/ml
+      case 'c.à.c':
+      case 'cuillère à café':
+        return qte * 5; // env. 5g/ml
+      
+      // Par défaut (pcs, unités, ou inconnu), on ne touche pas
+      default:
+        return qte;
+    }
   }
 
 
@@ -173,7 +244,6 @@ class RecetteRepositoryImpl implements RecetteRepository {
     final db = await _dbService.database;
 
     // ÉTAPE A : Mettre à jour les scores d'abord !
-    // C'est ici qu'on appelle la fonction de calcul séparée.
     await _calculerEtMettreAJourScores(db);
 
     // ÉTAPE B : Récupérer les recettes fraîchement notées
@@ -187,12 +257,14 @@ class RecetteRepositoryImpl implements RecetteRepository {
         recettesMaps.length, (i) => Recette.fromMap(recettesMaps[i]));
 
     // 3. Je fais une liste simple des IDs d'aliments qui sont dans mon frigo
+    // (Set est plus rapide pour la recherche)
     Set<int> idsDansFrigo = frigoMaps
         .map((e) => e['id_aliment'] as int)
         .toSet();
 
     List<Recette> faisables = [];
     List<Recette> manquantes = [];
+
 
     // ÉTAPE C : Séparer Cuisinable / À compléter
     for (var recette in toutesLesRecettes) {
@@ -222,8 +294,8 @@ class RecetteRepositoryImpl implements RecetteRepository {
       }
     }
 
-    // Les listes sont déjà triées par Score grâce au SQL "ORDER BY score DESC" récupéré plus haut.
-    // Sauf pour les manquantes où on préfère trier par "moins d'ingrédients manquants" d'abord.
+    // Le tri "faisables" est déjà fait par le "ORDER BY score DESC" du SQL ci-dessus.
+    // Pour les manquantes, on trie par "ce qu'il manque le moins"
     manquantes.sort((a, b) => a.nombreManquants.compareTo(b.nombreManquants));
 
     // 6. Je renvoie le tout
@@ -233,10 +305,12 @@ class RecetteRepositoryImpl implements RecetteRepository {
     };
   }
 
+
   /// Méthode : toggleFavori
   /// Rôle : permet d'activer ou désactivé le statut "favori" d’une recette.
   ///    Implémentation SQL :
   /// SELECT * FROM FeedbackRecette WHERE id_recette = ? UPDATE ou INSERT selon existence
+
   @override
   Future<void> toggleFavori(Recette recette) async {
     final db = await _dbService.database;
@@ -266,6 +340,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
   /// Rôle : je veux enregistrer ou mettr à jour la note donnée par l’utilisateur à une recette je veux la changer en gros.
   ///   Implémentation SQL :
   /// SELECT * FROM FeedbackRecette WHERE id_recette = ?
+
   @override
   Future<void> noterRecette(Recette recette, int note) async {
     final db = await _dbService.database;
@@ -289,6 +364,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
   /// Rôle : methode qui ajoute une nouvelle recette par un utilisateur dans la base.
   ///    Implémentation SQL :
   /// INSERT INTO Recettes (...)
+
   @override
   Future<void> creerRecetteUtilisateur(Recette recette) async {
     final db = await _dbService.database;
@@ -328,6 +404,8 @@ class RecetteRepositoryImpl implements RecetteRepository {
   ///
   /// Retour :
   ///   Une liste typée de IngredientRecette prête à être affichée dans l’UI.
+
+
   @override
 Future<List<IngredientRecette>> getIngredientsByRecette(int idRecette) async {
   final db = await _dbService.database;
@@ -378,6 +456,7 @@ Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette) async {
   ///   Implémentation SQL :
   /// INSERT INTO RecetteAliment (id_recette, id_aliment, quantite, unite, remarque)
   /// VALUES (?, ?, ?, ?, ?)
+
   @override
   Future<void> addIngredientToRecette(RecetteAliment recetteAliment) async {
     final db = await _dbService.database;
@@ -395,6 +474,7 @@ Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette) async {
   ///
   ///    Implémentation SQL :
   /// DELETE FROM RecetteAliment WHERE id_recette = ?
+
   @override
   Future<void> deleteIngredientsByRecette(int idRecette) async {
     final db = await _dbService.database;
@@ -415,10 +495,12 @@ Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette) async {
     // On récupère simplement les recettes triées par le score calculé précédemment
     final maps = await db.query(
       'Recettes',
-      orderBy: 'score DESC',
+      orderBy: 'score DESC', // On utilise directement le score sauvegardé
       limit: 10
     );
 
     return List.generate(maps.length, (i) => Recette.fromMap(maps[i]));
   }
+
+
 }
