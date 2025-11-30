@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/recette_model.dart';
 import '../models/recette_aliment_model.dart';
 import '../services/database_service.dart';
+import 'dart:math';
 
 /// Fichier: core/repositories/recette_repository.dart
 /// Author: Mohamed KOSBAR
@@ -71,102 +72,75 @@ class RecetteRepositoryImpl implements RecetteRepository {
   /// 4. La date de péremption des aliments (Table Frigo)
   /// ... et met à jour la base de données.
   Future<void> _calculerEtMettreAJourScores(Database db) async {
-    print("REPO: Début du recalcul des scores avec QUANTITÉS (CONVERTIES) & PÉREMPTION...");
+    print("REPO: Début du recalcul (Méthode Tangente Hyperbolique - Tanh)...");
 
-    // 1. Récupération des données brutes
     final recettesMaps = await db.query('Recettes');
     final liaisonsMaps = await db.query('RecetteAliment');
     final frigoMaps = await db.query('Frigo');
     final feedbacksMaps = await db.query('FeedbackRecette');
-
     final DateTime now = DateTime.now();
 
-    // 2. Boucle sur chaque recette pour calculer son score individuel
     for (var mapRecette in recettesMaps) {
       int idRecette = mapRecette['id_recette'] as int;
       
-      // CRITÈRE 1 : La note de base de la recette
-      double noteBase = (mapRecette['note_base'] as int? ?? 0).toDouble();
+      // 1. CALCUL DU SCORE BRUT (CUMULATIF)
+      // On garde exactement ta logique : on additionne tout sans limite.
       
-      double nouveauScore = 0.0;
+      double noteBase = (mapRecette['note_base'] as int? ?? 0).toDouble();
+      double scoreBrut = 0.0;
 
-      // --- CALCUL BASE + USER ---
-      // On cherche si l'utilisateur a noté cette recette dans la table Feedback
+      // --- Critères Notes & Favoris ---
       var feedbackList = feedbacksMaps.where((f) => f['id_recette'] == idRecette).toList();
       var feedback = feedbackList.isNotEmpty ? feedbackList.first : null;
-      
-      // CRITÈRE 2 : La note de l'utilisateur
       int noteUtilisateur = feedback != null ? (feedback['note'] as int? ?? 0) : 0;
 
       if (noteUtilisateur > 0) {
-        // Si l'utilisateur a noté, on privilégie sa note (x2 pour lui donner du poids)
-        nouveauScore += noteUtilisateur.toDouble() * 2; 
+        scoreBrut += noteUtilisateur.toDouble() * 2; 
       } else {
-        // Sinon, on utilise la note de base de la recette
-        nouveauScore += noteBase; 
+        scoreBrut += noteBase; 
       }
 
-      // Bonus si c'est un favori (toujours utile pour la personnalisation)
       if (feedback != null && (feedback['favori'] as int? ?? 0) == 1) {
-        nouveauScore += 5.0;
+        scoreBrut += 5.0;
       }
 
-      // --- CRITÈRE 3 & 4 : QUANTITÉ & DATE DE PÉREMPTION (ANTI-GASPI) ---
-      // On regarde les ingrédients nécessaires pour cette recette
-      var ingredientsDeLaRecette = liaisonsMaps
-          .where((l) => l['id_recette'] == idRecette);
+      // --- Critères Frigo & Péremption ---
+      var ingredientsDeLaRecette = liaisonsMaps.where((l) => l['id_recette'] == idRecette);
       
       for (var liaison in ingredientsDeLaRecette) {
         int idAlimentNecessaire = liaison['id_aliment'] as int;
-        
-        // Quantité et Unité requises par la recette
         double qteRequise = (liaison['quantite'] as num).toDouble();
         String uniteRequise = (liaison['unite'] as String? ?? "").toLowerCase();
 
-        // On cherche cet aliment dans le frigo
         var itemsFrigo = frigoMaps.where((f) => f['id_aliment'] == idAlimentNecessaire);
 
         for (var item in itemsFrigo) {
-          // Quantité et Unité disponibles dans le frigo
           double qteDispo = (item['quantite'] as num).toDouble();
           String uniteDispo = (item['unite'] as String? ?? "").toLowerCase();
 
-          // --- LOGIQUE QUANTITÉ (AVEC CONVERSION) ---
-          
-          // On normalise tout (kg -> g, l -> ml, etc.) pour comparer des pommes avec des pommes
           double qteRequiseNorm = _normaliserQuantite(qteRequise, uniteRequise);
           double qteDispoNorm = _normaliserQuantite(qteDispo, uniteDispo);
 
           if (qteDispoNorm >= qteRequiseNorm) {
-            // On a ASSEZ (après conversion) : Gros Bonus !
-            nouveauScore += 3.0; 
+            scoreBrut += 3.0; 
           } else {
-            // On en a, mais PAS ASSEZ : Petit Bonus quand même
-            nouveauScore += 1.0;
+            scoreBrut += 1.0;
           }
 
-          // --- LOGIQUE PÉREMPTION (Anti-Gaspi) ---
           if (item['date_peremption'] != null) {
             try {
               DateTime datePeremption = DateTime.parse(item['date_peremption'] as String);
-              
-              // Différence en jours entre la péremption et aujourd'hui
               int joursRestants = datePeremption.difference(now).inDays;
 
-              // Logique Anti-Gaspi :
+              // Ta logique de bonus puissants
               if (joursRestants < 0) {
-                // Périmé : on baisse légèrement le score
-                nouveauScore -= 2.0; 
+                scoreBrut -= 2.0; 
               } else if (joursRestants <= 2) {
-                // Urgence absolue (0 à 2 jours) : GROS BONUS pour inciter à cuisiner
-                nouveauScore += 15.0; 
-                print("DEBUG: Urgence péremption pour recette $idRecette (alim $idAlimentNecessaire)");
+                scoreBrut += 13.0; // Gros impact
               } else if (joursRestants <= 5) {
-                 // Urgence modérée (3 à 5 jours) : BONUS MOYEN
-                nouveauScore += 8.0;
+                scoreBrut += 8.0;
               } else {
-                // Pas d'urgence immédiate mais c'est bien de l'utiliser
-                nouveauScore += 2.0; 
+                scoreBrut += 2.0; 
               }
             } catch (e) {
               print("Erreur parse date: $e");
@@ -175,16 +149,37 @@ class RecetteRepositoryImpl implements RecetteRepository {
         }
       }
 
-      // 3. SAUVEGARDE EN BDD (UPDATE)
-      // On met à jour le champ 'score' de la table Recettes
+      // Sécurité : pas de score négatif dans la tangente
+      if (scoreBrut < 0) scoreBrut = 0.0;
+
+      // ---------------------------------------------------------------------
+      // 2. APPLICATION DE LA TANGENTE HYPERBOLIQUE (Tanh)
+      // Formule : ScoreFinal = 5 * tanh(ScoreBrut / Facteur)
+      // ---------------------------------------------------------------------
+      
+      // RÉGLAGE DE LA SENSIBILITÉ ("Facteur")
+      // Vu que tu as des bonus de +13 et +8, tes scores bruts peuvent monter vers 40-50.
+      // - Avec Facteur = 30.0 : Un score de 30 donne ~3.8/5. Un score de 60 donne ~4.8/5.
+      // - Si tu trouves que tout le monde a 5/5 trop vite, AUGMENTE ce chiffre (ex: 40 ou 50).
+      double facteurSensibilite = 35.0; 
+
+      // Calcul mathématique de tanh(x) = (e^2x - 1) / (e^2x + 1)
+      double x = scoreBrut / facteurSensibilite;
+      double e2x = exp(2 * x); // exp vient de dart:math
+      double tanhValue = (e2x - 1) / (e2x + 1);
+
+      // Résultat final borné entre 0.0 et 5.0
+      double scoreFinal = 5.0 * tanhValue;
+
+      // 3. SAUVEGARDE
       await db.update(
         'Recettes',
-        {'score': double.parse(nouveauScore.toStringAsFixed(1))},
+        {'score': double.parse(scoreFinal.toStringAsFixed(2))},
         where: 'id_recette = ?',
         whereArgs: [idRecette],
       );
     }
-    print("REPO: Fin du recalcul des scores (Quantités converties incluses).");
+    print("REPO: Fin du recalcul (Scores lissés par Tanh sur 5.0).");
   }
 
   /// Méthode utilitaire pour convertir les unités en standard
@@ -295,8 +290,21 @@ class RecetteRepositoryImpl implements RecetteRepository {
     }
 
     // Le tri "faisables" est déjà fait par le "ORDER BY score DESC" du SQL ci-dessus.
-    // Pour les manquantes, on trie par "ce qu'il manque le moins"
-    manquantes.sort((a, b) => a.nombreManquants.compareTo(b.nombreManquants));
+
+    // Pour les manquantes, on trie par "ce qu'il manque le moins" et "meilleur score" en second
+    manquantes.sort((a, b) {
+      // 1. Critère Principal : Nombre d'ingrédients manquants (Croissant / Petit vers Grand)
+      int compareManquants = a.nombreManquants.compareTo(b.nombreManquants);
+      
+      if (compareManquants != 0) {
+        // S'ils ont un nombre différent de manquants, on trie là-dessus
+        return compareManquants;
+      } else {
+        // 2. Critère Secondaire : Si même nombre de manquants -> Score (Décroissant / Grand vers Petit)
+        // Note l'inversion : b.compareTo(a)
+        return b.score.compareTo(a.score);
+      }
+    });
 
     // 6. Je renvoie le tout
     return {
