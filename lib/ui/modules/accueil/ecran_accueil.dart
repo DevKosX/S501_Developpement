@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 // --- IMPORTS NÉCESSAIRES ---
-// Assurez-vous que les chemins correspondent à votre structure de projet
 import '../../../core/models/recette_model.dart';
 import '../../../core/repositories/recette_repository.dart';
-
+// 1. IMPORT AJOUTÉ : Nécessaire pour naviguer vers le détail
+import '../recettes/ecran_detail_recette.dart';
 
 /// Fichier: lib/ui/modules/accueil/ecran_accueil.dart
 /// Author: Rafi Bettaieb
@@ -15,7 +15,8 @@ import '../../../core/repositories/recette_repository.dart';
 /// Il est conçu pour être responsive et s'adapte aux différentes tailles d'écran.
 /// Il utilise le repository pour charger les recettes depuis la base de données.
 /// Il affiche les 5 recettes les mieux notées .
-
+/// Si l'utilisateur clique sur une recette, il est redirigé vers l'écran de détail de cette recette.
+/// 
 class EcranAccueil extends StatefulWidget {
   const EcranAccueil({super.key});
 
@@ -67,16 +68,17 @@ class _EcranAccueilState extends State<EcranAccueil> {
               height: screenSize.height * 0.40, // 40% de la hauteur écran
               child: Stack(
                 children: [
-                  // Image de fond
-                  Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage("https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
+  // Image de fond
+  Container(
+    width: double.infinity,
+    decoration: const BoxDecoration(
+      image: DecorationImage(
+        // CHANGEMENT ICI : On utilise AssetImage avec le chemin local
+        image: AssetImage("assets/images/acceuil_hero.jpg"), 
+        fit: BoxFit.cover,
+      ),
+    ),
+  ),
                   // Dégradé sombre pour lisibilité texte
                   Container(
                     decoration: BoxDecoration(
@@ -284,98 +286,115 @@ class _EcranAccueilState extends State<EcranAccueil> {
 
   // --- WIDGET LOCAL : CARTE RECETTE (Optimisé pour Grille) ---
   Widget _buildRecetteGridCard(Recette recette, Size screenSize) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+    // 2. WRAP AVEC GESTURE DETECTOR pour rendre la carte cliquable
+    return GestureDetector(
+      onTap: () async {
+        // Navigation vers l'écran de détail en passant la recette
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EcranDetailRecette(recette: recette),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. IMAGE (Prend le haut de la carte)
-          Expanded(
-            flex: 3, 
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                color: Colors.grey[200],
-              ),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(
-                  "assets/images/${recette.image}", // Assurez-vous d'avoir les images dans assets
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(child: Icon(Icons.restaurant, color: Colors.grey));
-                  },
+        );
+
+        // Au retour, on rafraîchit la liste pour voir les nouveaux scores (si favori changé)
+        setState(() {
+          _topRecettesFuture = _getTop5Recettes();
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. IMAGE (Prend le haut de la carte)
+            Expanded(
+              flex: 3, 
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  color: Colors.grey[200],
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  child: Image.asset(
+                    "assets/images/${recette.image}", // Assurez-vous d'avoir les images dans assets
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(child: Icon(Icons.restaurant, color: Colors.grey));
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
-          
-          // 2. INFOS (Prend le bas de la carte)
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0), // Padding ajusté
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Titre
-                  Text(
-                    recette.titre,
-                    style: TextStyle(
-                      color: const Color(0xFF0F172A),
-                      fontWeight: FontWeight.bold,
-                      fontSize: screenSize.width * 0.035, // Police adaptative
+            
+            // 2. INFOS (Prend le bas de la carte)
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0), // Padding ajusté
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Titre
+                    Text(
+                      recette.titre,
+                      style: TextStyle(
+                        color: const Color(0xFF0F172A),
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenSize.width * 0.035, // Police adaptative
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  
-                  // Ligne Score + Difficulté
-                  Row(
-                    children: [
-                      const Icon(Icons.star, size: 14, color: Colors.amber),
-                      const SizedBox(width: 4),
-                      Text(
-                        recette.score.toString(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold, 
-                          fontSize: 12,
-                          color: Colors.grey
+                    
+                    // Ligne Score + Difficulté
+                    Row(
+                      children: [
+                        const Icon(Icons.star, size: 14, color: Colors.amber),
+                        const SizedBox(width: 4),
+                        Text(
+                          recette.score.toString(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold, 
+                            fontSize: 12,
+                            color: Colors.grey
+                          ),
                         ),
-                      ),
-                      const Spacer(),
-                      // Badge Difficulté
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
+                        const Spacer(),
+                        // Badge Difficulté
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            recette.difficulte,
+                            style: TextStyle(fontSize: 10, color: Colors.orange[800]),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        child: Text(
-                          recette.difficulte,
-                          style: TextStyle(fontSize: 10, color: Colors.orange[800]),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

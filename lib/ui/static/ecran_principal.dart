@@ -19,7 +19,8 @@ class _EcranPrincipalState extends State<EcranPrincipal> {
   // --- CONFIGURATION DE L'ACCUEIL ---
   // 0 = Accueil, 1 = Frigo, 2 = Recettes...
   // Tu veux que Frigo soit l'ouverture, donc on met 1.
-  int _indexSelectionne = 3;
+  // Lancement de l'app : Acceuil (index 0)
+  int _indexSelectionne = 0;
 
   // La liste de tes 6 pages
   final List<Widget> _ecrans = [
