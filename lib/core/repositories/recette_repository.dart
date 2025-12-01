@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/recette_model.dart';
 import '../models/recette_aliment_model.dart';
 import '../services/database_service.dart';
+import 'dart:math';
 
 /// Fichier: core/repositories/recette_repository.dart
 /// Author: Mohamed KOSBAR
@@ -20,12 +21,11 @@ abstract class RecetteRepository {
   Future<void> toggleFavori(Recette recette);
   Future<void> noterRecette(Recette recette, int note);
   Future<void> creerRecetteUtilisateur(Recette recette);
+
+  // Cette méthode s'occupe maintenant de TOUT : Calculer le score puis trier
   Future<Map<String, List<Recette>>> getRecettesTrieesParFrigo();
+
   Future<List<Recette>> getRecettesRecommandees();
-
-
-  ///ajout de 3 methodes essenetielles pour recette_aliments
-
   Future<List<IngredientRecette>> getIngredientsByRecette(int idRecette);
   Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette);
   Future<void> addIngredientToRecette(RecetteAliment recetteAliment);
@@ -60,6 +60,259 @@ class RecetteRepositoryImpl implements RecetteRepository {
     // j'utilise la méthode .fromMap() que j'ai codée dans mon Modèle pour ça.
     return List.generate(maps.length, (i) => Recette.fromMap(maps[i]));
   }
+
+  /// -----------------------------------------------------------------------
+  /// PARTIE 1 : CALCUL DU SCORE (MÉTHODE PRIVÉE)
+  /// -----------------------------------------------------------------------
+  /// Calcule le score en fonction de :
+  /// 1. Note de base du recette (Attribut note_base)
+  /// 2. Note que l'utilisateur a donné (Table FeedbackRecette)
+  /// 3. La QUANTITÉ disponible dans le frigo vs requise (Table Frigo vs RecetteAliment)
+  ///    (Avec conversion d'unités kg->g, l->ml, etc.)
+  /// 4. La date de péremption des aliments (Table Frigo)
+  /// ... et met à jour la base de données.
+  Future<void> _calculerEtMettreAJourScores(Database db) async {
+    print("REPO: Début du recalcul (Méthode Tangente Hyperbolique - Tanh)...");
+
+    final recettesMaps = await db.query('Recettes');
+    final liaisonsMaps = await db.query('RecetteAliment');
+    final frigoMaps = await db.query('Frigo');
+    final feedbacksMaps = await db.query('FeedbackRecette');
+    final DateTime now = DateTime.now();
+
+    for (var mapRecette in recettesMaps) {
+      int idRecette = mapRecette['id_recette'] as int;
+      
+      // 1. CALCUL DU SCORE BRUT (CUMULATIF)
+      // On garde exactement ta logique : on additionne tout sans limite.
+      
+      double noteBase = (mapRecette['note_base'] as int? ?? 0).toDouble();
+      double scoreBrut = 0.0;
+
+      // --- Critères Notes & Favoris ---
+      var feedbackList = feedbacksMaps.where((f) => f['id_recette'] == idRecette).toList();
+      var feedback = feedbackList.isNotEmpty ? feedbackList.first : null;
+      int noteUtilisateur = feedback != null ? (feedback['note'] as int? ?? 0) : 0;
+
+      if (noteUtilisateur > 0) {
+        scoreBrut += noteUtilisateur.toDouble() * 2; 
+      } else {
+        scoreBrut += noteBase; 
+      }
+
+      if (feedback != null && (feedback['favori'] as int? ?? 0) == 1) {
+        scoreBrut += 5.0;
+      }
+
+      // --- Critères Frigo & Péremption ---
+      var ingredientsDeLaRecette = liaisonsMaps.where((l) => l['id_recette'] == idRecette);
+      
+      for (var liaison in ingredientsDeLaRecette) {
+        int idAlimentNecessaire = liaison['id_aliment'] as int;
+        double qteRequise = (liaison['quantite'] as num).toDouble();
+        String uniteRequise = (liaison['unite'] as String? ?? "").toLowerCase();
+
+        var itemsFrigo = frigoMaps.where((f) => f['id_aliment'] == idAlimentNecessaire);
+
+        for (var item in itemsFrigo) {
+          double qteDispo = (item['quantite'] as num).toDouble();
+          String uniteDispo = (item['unite'] as String? ?? "").toLowerCase();
+
+          double qteRequiseNorm = _normaliserQuantite(qteRequise, uniteRequise);
+          double qteDispoNorm = _normaliserQuantite(qteDispo, uniteDispo);
+
+          if (qteDispoNorm >= qteRequiseNorm) {
+            scoreBrut += 3.0; 
+          } else {
+            scoreBrut += 1.0;
+          }
+
+          if (item['date_peremption'] != null) {
+            try {
+              DateTime datePeremption = DateTime.parse(item['date_peremption'] as String);
+              int joursRestants = datePeremption.difference(now).inDays;
+
+              // Ta logique de bonus puissants
+              if (joursRestants < 0) {
+                scoreBrut -= 2.0; 
+              } else if (joursRestants <= 2) {
+                scoreBrut += 13.0; // Gros impact
+              } else if (joursRestants <= 5) {
+                scoreBrut += 8.0;
+              } else {
+                scoreBrut += 2.0; 
+              }
+            } catch (e) {
+              print("Erreur parse date: $e");
+            }
+          }
+        }
+      }
+
+      // Sécurité : pas de score négatif dans la tangente
+      if (scoreBrut < 0) scoreBrut = 0.0;
+
+      // ---------------------------------------------------------------------
+      // 2. APPLICATION DE LA TANGENTE HYPERBOLIQUE (Tanh)
+      // Formule : ScoreFinal = 5 * tanh(ScoreBrut / Facteur)
+      // ---------------------------------------------------------------------
+      
+      // RÉGLAGE DE LA SENSIBILITÉ ("Facteur")
+      // Vu que tu as des bonus de +13 et +8, tes scores bruts peuvent monter vers 40-50.
+      // - Avec Facteur = 30.0 : Un score de 30 donne ~3.8/5. Un score de 60 donne ~4.8/5.
+      // - Si tu trouves que tout le monde a 5/5 trop vite, AUGMENTE ce chiffre (ex: 40 ou 50).
+      double facteurSensibilite = 35.0; 
+
+      // Calcul mathématique de tanh(x) = (e^2x - 1) / (e^2x + 1)
+      double x = scoreBrut / facteurSensibilite;
+      double e2x = exp(2 * x); // exp vient de dart:math
+      double tanhValue = (e2x - 1) / (e2x + 1);
+
+      // Résultat final borné entre 0.0 et 5.0
+      double scoreFinal = 5.0 * tanhValue;
+
+      // 3. SAUVEGARDE
+      await db.update(
+        'Recettes',
+        {'score': double.parse(scoreFinal.toStringAsFixed(2))},
+        where: 'id_recette = ?',
+        whereArgs: [idRecette],
+      );
+    }
+    print("REPO: Fin du recalcul (Scores lissés par Tanh sur 5.0).");
+  }
+
+  /// Méthode utilitaire pour convertir les unités en standard
+  /// Poids -> Grammes
+  /// Volume -> Millilitres
+  /// Autres (pcs, c.à.s) -> Valeur brute ou estimation
+  double _normaliserQuantite(double qte, String unite) {
+    String u = unite.trim().toLowerCase();
+
+    switch (u) {
+      // Poids
+      case 'kg':
+      case 'kilogramme':
+      case 'kilo':
+        return qte * 1000;
+      case 'mg':
+      case 'milligramme':
+        return qte / 1000;
+      case 'g':
+      case 'gramme':
+        return qte;
+
+      // Volume
+      case 'l':
+      case 'litre':
+        return qte * 1000;
+      case 'dl':
+      case 'décilitre':
+        return qte * 100;
+      case 'cl':
+      case 'centilitre':
+        return qte * 10;
+      case 'ml':
+      case 'millilitre':
+        return qte;
+      
+      // Mesures ménagères (Estimations)
+      case 'c.à.s':
+      case 'cuillère à soupe':
+        return qte * 15; // env. 15g/ml
+      case 'c.à.c':
+      case 'cuillère à café':
+        return qte * 5; // env. 5g/ml
+      
+      // Par défaut (pcs, unités, ou inconnu), on ne touche pas
+      default:
+        return qte;
+    }
+  }
+
+
+  /// -----------------------------------------------------------------------
+  /// PARTIE 2 : RÉCUPÉRATION ET TRI (APPELLE PARTIE 1)
+  /// -----------------------------------------------------------------------
+  @override
+  Future<Map<String, List<Recette>>> getRecettesTrieesParFrigo() async {
+    final db = await _dbService.database;
+
+    // ÉTAPE A : Mettre à jour les scores d'abord !
+    await _calculerEtMettreAJourScores(db);
+
+    // ÉTAPE B : Récupérer les recettes fraîchement notées
+    // "ORDER BY score DESC" assure que les recettes avec le meilleur score (Note + Péremption) arrivent en premier
+    final recettesMaps = await db.query('Recettes', orderBy: 'score DESC'); 
+    final liaisonsMaps = await db.query('RecetteAliment');
+    final frigoMaps = await db.query('Frigo');
+
+    // 2. Je convertis les Recettes en objets Dart
+    List<Recette> toutesLesRecettes = List.generate(
+        recettesMaps.length, (i) => Recette.fromMap(recettesMaps[i]));
+
+    // 3. Je fais une liste simple des IDs d'aliments qui sont dans mon frigo
+    // (Set est plus rapide pour la recherche)
+    Set<int> idsDansFrigo = frigoMaps
+        .map((e) => e['id_aliment'] as int)
+        .toSet();
+
+    List<Recette> faisables = [];
+    List<Recette> manquantes = [];
+
+
+    // ÉTAPE C : Séparer Cuisinable / À compléter
+    for (var recette in toutesLesRecettes) {
+      // Je trouve les ingrédients nécessaires pour cette recette
+      var ingredientsDeLaRecette = liaisonsMaps
+          .where((l) => l['id_recette'] == recette.id_recette)
+          .toList();
+
+      int nbManquants = 0;
+
+      for (var liaison in ingredientsDeLaRecette) {
+        int idAlimentNecessaire = liaison['id_aliment'] as int;
+
+        // Si l'aliment n'est PAS dans le frigo, ça manque !
+        if (!idsDansFrigo.contains(idAlimentNecessaire)) {
+          nbManquants++;
+        }
+      }
+
+      // Je stocke le résultat dans l'objet pour l'afficher plus tard
+      recette.nombreManquants = nbManquants;
+
+      if (nbManquants == 0) {
+        faisables.add(recette);
+      } else {
+        manquantes.add(recette);
+      }
+    }
+
+    // Le tri "faisables" est déjà fait par le "ORDER BY score DESC" du SQL ci-dessus.
+
+    // Pour les manquantes, on trie par "ce qu'il manque le moins" et "meilleur score" en second
+    manquantes.sort((a, b) {
+      // 1. Critère Principal : Nombre d'ingrédients manquants (Croissant / Petit vers Grand)
+      int compareManquants = a.nombreManquants.compareTo(b.nombreManquants);
+      
+      if (compareManquants != 0) {
+        // S'ils ont un nombre différent de manquants, on trie là-dessus
+        return compareManquants;
+      } else {
+        // 2. Critère Secondaire : Si même nombre de manquants -> Score (Décroissant / Grand vers Petit)
+        // Note l'inversion : b.compareTo(a)
+        return b.score.compareTo(a.score);
+      }
+    });
+
+    // 6. Je renvoie le tout
+    return {
+      "faisables": faisables,
+      "manquantes": manquantes,
+    };
+  }
+
 
   /// Méthode : toggleFavori
   /// Rôle : permet d'activer ou désactivé le statut "favori" d’une recette.
@@ -132,67 +385,6 @@ class RecetteRepositoryImpl implements RecetteRepository {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
     print("REPO: nouvelle recette créée en BDD");
-  }
-
-
-  @override
-  Future<Map<String, List<Recette>>> getRecettesTrieesParFrigo() async {
-    final db = await _dbService.database;
-
-    // 1. Je récupère TOUT ce dont j'ai besoin (3 requêtes SQL)
-    final recettesMaps = await db.query('Recettes');
-    final liaisonsMaps = await db.query('RecetteAliment');
-    final frigoMaps = await db.query(
-        'Frigo'); // Je regarde directement la table Frigo
-
-    // 2. Je convertis les Recettes en objets Dart
-    List<Recette> toutesLesRecettes = List.generate(
-        recettesMaps.length, (i) => Recette.fromMap(recettesMaps[i]));
-
-    // 3. Je fais une liste simple des IDs d'aliments qui sont dans mon frigo
-    // (Set est plus rapide pour la recherche)
-    Set<int> idsDansFrigo = frigoMaps
-        .map((e) => e['id_aliment'] as int)
-        .toSet();
-
-    List<Recette> faisables = [];
-    List<Recette> manquantes = [];
-
-
-    for (var recette in toutesLesRecettes) {
-      // Je trouve les ingrédients nécessaires pour cette recette
-      var ingredientsDeLaRecette = liaisonsMaps
-          .where((l) => l['id_recette'] == recette.id_recette)
-          .toList();
-
-      int nbManquants = 0;
-
-      for (var liaison in ingredientsDeLaRecette) {
-        int idAlimentNecessaire = liaison['id_aliment'] as int;
-
-        // Si l'aliment n'est PAS dans le frigo, ça manque !
-        if (!idsDansFrigo.contains(idAlimentNecessaire)) {
-          nbManquants++;
-        }
-      }
-
-      // Je stocke le résultat dans l'objet pour l'afficher plus tard
-      recette.nombreManquants = nbManquants;
-
-      if (nbManquants == 0) {
-        faisables.add(recette);
-      } else {
-        manquantes.add(recette);
-      }
-    }
-
-    manquantes.sort((a, b) => a.nombreManquants.compareTo(b.nombreManquants));
-
-    // 6. Je renvoie le tout
-    return {
-      "faisables": faisables,
-      "manquantes": manquantes,
-    };
   }
 
 
@@ -304,68 +496,18 @@ Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette) async {
   /// en fonction de plusieurs critères : notes, favoris, historique, frigo.
   @override
   Future<List<Recette>> getRecettesRecommandees() async {
+    // On force aussi le recalcul ici pour être sûr que les recommandations sont à jour
     final db = await _dbService.database;
+    await _calculerEtMettreAJourScores(db);
+    
+    // On récupère simplement les recettes triées par le score calculé précédemment
+    final maps = await db.query(
+      'Recettes',
+      orderBy: 'score DESC', // On utilise directement le score sauvegardé
+      limit: 10
+    );
 
-    // 1. Récupération des données
-    final List<Recette> toutesLesRecettes = await getRecettes();
-    final List<Map<String, dynamic>> rawFrigo = await db.query('Frigo');
-    final List<Map<String, dynamic>> rawHistorique = await db.query('Historique');
-    final List<Map<String, dynamic>> rawFeedbacks = await db.query('FeedbackRecette');
-
-    List<Map<String, dynamic>> recettesAvecScore = [];
-
-    // 2. Calcul du score pour chaque recette
-    for (var recette in toutesLesRecettes) {
-      double score = 0.0;
-
-      // A. Notes & Favoris
-      var feedbackList = rawFeedbacks.where((f) => f['id_recette'] == recette.id_recette).toList();
-      var feedback = feedbackList.isNotEmpty ? feedbackList.first : null;
-
-      if (feedback != null) {
-        int noteUser = feedback['note'] as int? ?? 0;
-        score += (noteUser > 0) ? noteUser.toDouble() : recette.noteBase;
-        if ((feedback['favori'] as int? ?? 0) == 1) score += 20.0;
-      } else {
-        score += recette.noteBase;
-      }
-
-      // B. Historique (+1 par réalisation)
-      int nbFoisFaite = rawHistorique.where((h) => h['id_recette'] == recette.id_recette).length;
-      score += nbFoisFaite * 1.0;
-
-      // C. Frigo & Anti-Gaspi
-      List<Map<String, dynamic>> ingredientsRecette = await getIngredientsRaw(recette.id_recette);
-
-
-      for (var ingredient in ingredientsRecette) {
-        int idAlimentRecette = ingredient['id_aliment'];
-        var itemsCorrespondants = rawFrigo.where((item) => item['id_aliment'] == idAlimentRecette);
-
-        if (itemsCorrespondants.isNotEmpty) {
-          score += 10.0; // Présent dans le frigo
-
-          var itemFrigo = itemsCorrespondants.first;
-          if (itemFrigo['date_peremption'] != null) {
-            DateTime datePeremption = DateTime.parse(itemFrigo['date_peremption']);
-            DateTime now = DateTime.now();
-            Duration difference = datePeremption.difference(now);
-
-            // Bonus urgence (périme dans <= 3 jours)
-            if (difference.inDays <= 3 && difference.inDays > -2) {
-              score += 15.0;
-            }
-          }
-        }
-      }
-
-      recettesAvecScore.add({'recette': recette, 'score': score});
-    }
-
-    // 3. Tri (Score décroissant)
-    recettesAvecScore.sort((a, b) => (b['score'] as double).compareTo(a['score'] as double));
-
-    return recettesAvecScore.map((e) => e['recette'] as Recette).toList();
+    return List.generate(maps.length, (i) => Recette.fromMap(maps[i]));
   }
 
 

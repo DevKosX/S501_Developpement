@@ -40,7 +40,8 @@ class RecetteController extends ChangeNotifier {
   // on doit me donner le repository à la création
   RecetteController(this._repository) {
     // je charge les recettes dès que le contrôleur est créé
-    chargerRecettes();
+    // chargerRecettes(); // <-- Ancienne méthode
+    getRecettesTrieesParFrigo(); // <-- Nouvelle méthode pour avoir le tri dès le début
   }
 
   // --- MÉTHODES (appelées par la Vue) ---
@@ -75,7 +76,10 @@ class RecetteController extends ChangeNotifier {
     // OPTIONNEL : je pourrais recharger la liste pour être sûr
     // que l'UI est à jour, mais pour un favori ce n'est pas toujours nécessaire
     // si on gère l'état localement. Pour l'instant, on recharge.
-    // await chargerRecettes();
+    
+    // --- MODIFICATION POUR LE TEMPS RÉEL ---
+    // On force le re-calcul du score et le tri immédiatement après le clic
+    await getRecettesTrieesParFrigo();
 
     notifyListeners(); // je dis à la vue de se rafraîchir
   }
@@ -83,6 +87,11 @@ class RecetteController extends ChangeNotifier {
   /// méthode appelée quand l'utilisateur note une recette
   Future<void> noterRecette(Recette recette, int note) async {
     await _repository.noterRecette(recette, note);
+    
+    // --- MODIFICATION POUR LE TEMPS RÉEL ---
+    // La note change le score, donc on recharge la liste triée
+    await getRecettesTrieesParFrigo();
+
     notifyListeners();
   }
 
@@ -94,7 +103,8 @@ class RecetteController extends ChangeNotifier {
     await _repository.creerRecetteUtilisateur(nouvelleRecette);
 
     // une fois créée, je recharge la liste pour voir la nouvelle recette
-    await chargerRecettes();
+    // await chargerRecettes(); 
+    await getRecettesTrieesParFrigo(); // On recharge plutôt la liste triée pour l'intégrer correctement
 
     _isLoading = false;
     notifyListeners();
@@ -225,7 +235,7 @@ class RecetteController extends ChangeNotifier {
 
 
 
-/*  ANCIEN CODE FAUX
+/* ANCIEN CODE FAUX
 
 import '../models/recette_model.dart';
 
