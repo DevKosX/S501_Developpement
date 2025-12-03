@@ -68,7 +68,7 @@ Nous avons choisi la thematique de la **gestion culinaire** car elle repond a de
 | Fonctionnalite | Description |
 |----------------|-------------|
 | Catalogue complet | Centaines d'aliment organisees par categories |
-| Recherche avancee | Recherche par nom ou ingredient |
+| Filtre avancee | Recette cuisinable et non cuisinable |
 | Fiche recette detaillee | Ingredients, etapes de preparation, informations nutritionnelles |
 | Verification des ingredients | Indication des ingredients disponibles dans le frigo |
 
@@ -258,7 +258,7 @@ L'application dispose d'une barre de navigation avec 6 onglets :
 
 **Suivre les recommandations de santé :**
 - Calcule l'IMC
-- Donne des conseil par rapport à la valeurs et a l'objectif 
+- Donne des conseils par rapport à la valeur et a l'objectif 
 ---
 
 ## Technologies Utilisees
