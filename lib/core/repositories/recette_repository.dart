@@ -61,6 +61,8 @@ class RecetteRepositoryImpl implements RecetteRepository {
     return List.generate(maps.length, (i) => Recette.fromMap(maps[i]));
   }
 
+  
+
   /// -----------------------------------------------------------------------
   /// PARTIE 1 : CALCUL DU SCORE (MÉTHODE PRIVÉE)
   /// -----------------------------------------------------------------------
@@ -69,10 +71,8 @@ class RecetteRepositoryImpl implements RecetteRepository {
   /// 2. Note que l'utilisateur a donné (Table FeedbackRecette)
   /// 3. La QUANTITÉ disponible dans le frigo vs requise (Table Frigo vs RecetteAliment)
   ///    (Avec conversion d'unités kg->g, l->ml, etc.)
-  /// 4. La date de péremption des aliments (Table Frigo)
-  /// ... et met à jour la base de données.
   Future<void> _calculerEtMettreAJourScores(Database db) async {
-    print("REPO: Début du recalcul (Méthode Tangente Hyperbolique - Tanh)...");
+    print("REPO: Début du recalcul (Avec Difficulté Texte & Temps)...");
 
     final recettesMaps = await db.query('Recettes');
     final liaisonsMaps = await db.query('RecetteAliment');
@@ -82,31 +82,63 @@ class RecetteRepositoryImpl implements RecetteRepository {
 
     for (var mapRecette in recettesMaps) {
       int idRecette = mapRecette['id_recette'] as int;
-      
-      // 1. CALCUL DU SCORE BRUT (CUMULATIF)
-      // On garde exactement ta logique : on additionne tout sans limite.
-      
+
+      // --- RÉCUPÉRATION DES DONNÉES ---
       double noteBase = (mapRecette['note_base'] as int? ?? 0).toDouble();
+      
+      // 1. Récupération du TEXTE pour la difficulté (Valeur par défaut : "Moyen")
+      String difficulteTexte = (mapRecette['difficulte'] as String? ?? "Moyen");
+      
+      // 2. Récupération du temps (Valeur par défaut : 30 min)
+      int tempsPrep = (mapRecette['temps_preparation'] as int? ?? 30);
+
       double scoreBrut = 0.0;
 
-      // --- Critères Notes & Favoris ---
+      // --- CRITÈRES NOTES & FAVORIS ---
       var feedbackList = feedbacksMaps.where((f) => f['id_recette'] == idRecette).toList();
       var feedback = feedbackList.isNotEmpty ? feedbackList.first : null;
       int noteUtilisateur = feedback != null ? (feedback['note'] as int? ?? 0) : 0;
 
       if (noteUtilisateur > 0) {
-        scoreBrut += noteUtilisateur.toDouble() * 2; 
+        scoreBrut += noteUtilisateur.toDouble() * 2;
       } else {
-        scoreBrut += noteBase; 
+        scoreBrut += noteBase;
       }
 
       if (feedback != null && (feedback['favori'] as int? ?? 0) == 1) {
         scoreBrut += 5.0;
       }
 
-      // --- Critères Frigo & Péremption ---
+      // ---------------------------------------------------------
+      // --- NOUVEAUX CRITÈRES : DIFFICULTÉ (TEXTE) & TEMPS ---
+      // ---------------------------------------------------------
+
+      // A. Difficulté (Gestion des chaînes de caractères)
+      // On met tout en minuscule et sans espaces pour être sûr de la comparaison
+      String diffNorm = difficulteTexte.trim().toLowerCase();
+
+      if (diffNorm == 'Facile') {
+        scoreBrut += 3.0; // Gros bonus pour la simplicité
+      } else if (diffNorm == 'Moyen') {
+        scoreBrut += 1.0; // Petit bonus
+      } else {
+        // Cas 'difficile' ou autre : Pas de bonus (0.0)
+      }
+
+      // B. Temps de préparation
+      if (tempsPrep <= 15) {
+        scoreBrut += 4.0; // Bonus "Express"
+      } else if (tempsPrep <= 30) {
+        scoreBrut += 2.0; // Bonus "Rapide"
+      } else if (tempsPrep > 60) {
+        scoreBrut -= 2.0; // Malus "Long à faire"
+      }
+
+      // ---------------------------------------------------------
+      // --- CRITÈRES FRIGO & PÉREMPTION (INCHANGÉ) ---
+      // ---------------------------------------------------------
       var ingredientsDeLaRecette = liaisonsMaps.where((l) => l['id_recette'] == idRecette);
-      
+
       for (var liaison in ingredientsDeLaRecette) {
         int idAlimentNecessaire = liaison['id_aliment'] as int;
         double qteRequise = (liaison['quantite'] as num).toDouble();
@@ -122,7 +154,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
           double qteDispoNorm = _normaliserQuantite(qteDispo, uniteDispo);
 
           if (qteDispoNorm >= qteRequiseNorm) {
-            scoreBrut += 3.0; 
+            scoreBrut += 3.0;
           } else {
             scoreBrut += 1.0;
           }
@@ -132,15 +164,14 @@ class RecetteRepositoryImpl implements RecetteRepository {
               DateTime datePeremption = DateTime.parse(item['date_peremption'] as String);
               int joursRestants = datePeremption.difference(now).inDays;
 
-              // Ta logique de bonus puissants
               if (joursRestants < 0) {
-                scoreBrut -= 2.0; 
+                scoreBrut -= 2.0;
               } else if (joursRestants <= 2) {
-                scoreBrut += 13.0; // Gros impact
+                scoreBrut += 13.0;
               } else if (joursRestants <= 5) {
                 scoreBrut += 8.0;
               } else {
-                scoreBrut += 2.0; 
+                scoreBrut += 2.0;
               }
             } catch (e) {
               print("Erreur parse date: $e");
@@ -149,29 +180,22 @@ class RecetteRepositoryImpl implements RecetteRepository {
         }
       }
 
-      // Sécurité : pas de score négatif dans la tangente
       if (scoreBrut < 0) scoreBrut = 0.0;
 
       // ---------------------------------------------------------------------
-      // 2. APPLICATION DE LA TANGENTE HYPERBOLIQUE (Tanh)
-      // Formule : ScoreFinal = 5 * tanh(ScoreBrut / Facteur)
+      // --- APPLICATION DE LA TANGENTE HYPERBOLIQUE ---
       // ---------------------------------------------------------------------
       
-      // RÉGLAGE DE LA SENSIBILITÉ ("Facteur")
-      // Vu que tu as des bonus de +13 et +8, tes scores bruts peuvent monter vers 40-50.
-      // - Avec Facteur = 30.0 : Un score de 30 donne ~3.8/5. Un score de 60 donne ~4.8/5.
-      // - Si tu trouves que tout le monde a 5/5 trop vite, AUGMENTE ce chiffre (ex: 40 ou 50).
-      double facteurSensibilite = 35.0; 
+      // J'ai augmenté la sensibilité à 40 car on ajoute potentiellement +7 points
+      // avec la difficulté et le temps.
+      double facteurSensibilite = 40.0;
 
-      // Calcul mathématique de tanh(x) = (e^2x - 1) / (e^2x + 1)
       double x = scoreBrut / facteurSensibilite;
-      double e2x = exp(2 * x); // exp vient de dart:math
+      double e2x = exp(2 * x);
       double tanhValue = (e2x - 1) / (e2x + 1);
 
-      // Résultat final borné entre 0.0 et 5.0
       double scoreFinal = 5.0 * tanhValue;
 
-      // 3. SAUVEGARDE
       await db.update(
         'Recettes',
         {'score': double.parse(scoreFinal.toStringAsFixed(2))},
@@ -179,9 +203,8 @@ class RecetteRepositoryImpl implements RecetteRepository {
         whereArgs: [idRecette],
       );
     }
-    print("REPO: Fin du recalcul (Scores lissés par Tanh sur 5.0).");
+    print("REPO: Fin du recalcul (Scores lissés).");
   }
-
   /// Méthode utilitaire pour convertir les unités en standard
   /// Poids -> Grammes
   /// Volume -> Millilitres
