@@ -12,7 +12,6 @@ Application mobile Flutter de recommandation adaptative de recettes et de gestio
 4. [Installation](#installation)
 5. [Utilisation](#utilisation)
 6. [Technologies Utilisees](#technologies-utilisees)
-7. [Equipe](#equipe)
 
 ---
 
@@ -38,8 +37,7 @@ Notre application repond a ces enjeux en proposant :
 
 1. **Recommandation locale** : Tous les calculs de recommandation sont effectues directement sur le smartphone
 2. **Donnees isolees** : Les traces d'utilisation restent sur l'appareil de l'utilisateur
-3. **Souverainete des donnees** : L'utilisateur peut supprimer ou exporter ses donnees a tout moment
-4. **Fonctionnement hors-ligne** : Aucune connexion internet n'est requise
+3. **Fonctionnement hors-ligne** : Aucune connexion internet n'est requise
 
 ### Thematique Choisie
 
@@ -58,7 +56,7 @@ Nous avons choisi la thematique de la **gestion culinaire** car elle repond a de
 
 | Fonctionnalite | Description |
 |----------------|-------------|
-| Catalogue d'aliments | Plus de 200 aliments disponibles avec images et informations nutritionnelles |
+| Catalogue d'aliments | Plus de 90 aliments disponibles avec et informations nutritionnelles |
 | Gestion des quantites | Ajout, modification et suppression avec saisie manuelle ou boutons rapides |
 | Unites intelligentes | Recuperation automatique des unites depuis les recettes (g, ml, pcs...) |
 | Categories dynamiques | Filtrage par categorie recupere dynamiquement depuis la base de donnees |
@@ -69,9 +67,8 @@ Nous avons choisi la thematique de la **gestion culinaire** car elle repond a de
 
 | Fonctionnalite | Description |
 |----------------|-------------|
-| Catalogue complet | Centaines de recettes organisees par categories |
+| Catalogue complet | Centaines d'aliment organisees par categories |
 | Recherche avancee | Recherche par nom ou ingredient |
-| Filtres multicriteres | Filtrage par categorie, temps de preparation, difficulte |
 | Fiche recette detaillee | Ingredients, etapes de preparation, informations nutritionnelles |
 | Verification des ingredients | Indication des ingredients disponibles dans le frigo |
 
@@ -81,15 +78,14 @@ Nous avons choisi la thematique de la **gestion culinaire** car elle repond a de
 |----------------|-------------|
 | Suggestions personnalisees | Recommandations basees sur le contenu du frigo |
 | Adaptation continue | Evolution des suggestions en fonction de l'utilisation |
-| Historique des preferences | Prise en compte des recettes consultees et realisees |
-| Score de faisabilite | Pourcentage d'ingredients disponibles pour chaque recette |
+| Historique des preferences | Prise en compte des recettes realisees et mise en favoris |
+| Score de faisabilite | Nombre d'ingredients manquant pour chaque recette |
 
 ### Informations Nutritionnelles
 
 | Fonctionnalite | Description |
 |----------------|-------------|
 | Nutriscore | Affichage du score nutritionnel (A a E) avec code couleur |
-| Valeurs nutritionnelles | Calories, proteines, glucides, lipides par aliment |
 | Aide a la decision | Informations pour des choix alimentaires eclaires |
 
 ---
@@ -102,8 +98,8 @@ Notre algorithme de recommandation repose sur plusieurs criteres :
 
 1. **Disponibilite des ingredients** : Priorisation des recettes realisables avec le contenu actuel du frigo
 2. **Historique d'utilisation** : Prise en compte des recettes deja consultees ou realisees
-3. **Preferences implicites** : Analyse des categories de recettes les plus consultees
-4. **Saisonnalite** : Adaptation des suggestions selon la periode de l'annee
+3. **Preferences implicites** : Analyse des categories de recettes les plus réalisés
+
 
 ### Representation des Donnees
 
@@ -117,7 +113,7 @@ Les donnees sont representees sous forme relationnelle dans une base SQLite loca
 
 La recommandation evolue au fur et a mesure de l'utilisation :
 
-- Chaque consultation de recette est enregistree
+
 - Les ajouts/suppressions du frigo influencent les suggestions
 - Les preferences de categories sont mises a jour dynamiquement
 
@@ -189,14 +185,23 @@ flutter build appbundle --release
 
 ### Navigation Principale
 
-L'application dispose d'une barre de navigation avec 4 onglets :
+L'application dispose d'une barre de navigation avec 6 onglets :
 
 | Onglet | Description |
 |--------|-------------|
 | Accueil | Dashboard avec suggestions et resume du frigo |
 | Recettes | Catalogue de recettes avec filtres et recherche |
 | Frigo | Gestion du contenu du frigo |
+| Favoris | Gestion des favoris |
+| Historique | Gestion de l'historique |
 | Profil | Parametres et preferences utilisateur |
+
+### Guide du Module Accueil
+
+**Consulter l'accueil :**
+- Voir les 5 recettes avec le score le plus élever 
+
+
 
 ### Guide du Module Frigo
 
@@ -227,7 +232,6 @@ L'application dispose d'une barre de navigation avec 4 onglets :
 
 **Parcourir les recettes :**
 - Faire defiler pour decouvrir les recettes
-- Utiliser les filtres de categorie (Entrees, Plats, Desserts...)
 - Utiliser la barre de recherche
 
 **Consulter une recette :**
@@ -238,8 +242,23 @@ L'application dispose d'une barre de navigation avec 4 onglets :
 
 **Verification des ingredients :**
 - Les ingredients presents dans le frigo sont mis en evidence
-- Un indicateur montre le pourcentage d'ingredients disponibles
+- Un indicateur montre le Nombre d'ingredients manquants
 
+### Guide du Module Historique
+
+**Parcourir l'historique :**
+- Consulter les recettes qui ont était effectuer par l'utilisateurs
+
+### Guide du Module Favoris
+
+**Parcourir les favoris :**
+- Consulter les recettes qui ont était mise en favoris
+
+### Guide du Module Profil
+
+**Suivre les recommandations de santé :**
+- Calcule l'IMC
+- Donne des conseil par rapport à la valeurs et a l'objectif 
 ---
 
 ## Technologies Utilisees
@@ -280,16 +299,7 @@ L'application dispose d'une barre de navigation avec 4 onglets :
 - La reactivite de l'interface
 
 ---
-## Equipe
 
-| Membre | Role |
-|--------|------|
-| Mohamed | Chef de projet, Page Recettes |
-| Yassine | Base de donnees, Page Historique |
-| Rafi | Base de donnees, Accueil,Recette |
-| Cheick |Page Profil |
-| Lacine | Feedback recette, Page Historique |
-| David | Frigo et Gestion des Aliment |
 
 
 
