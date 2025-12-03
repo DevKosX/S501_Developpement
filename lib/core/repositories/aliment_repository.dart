@@ -1,42 +1,29 @@
-
-
 import 'package:sqflite/sqflite.dart';
 import '../models/aliment_model.dart';
-import '../services/database_service.dart'; 
+import '../services/database_service.dart';
 
-
+/// Interface abstraite - LE CONTRAT
 abstract class AlimentRepository {
-  /// Récupère l'intégralité du catalogue d'aliments.
   Future<List<Aliment>> getAliments();
-
-  /// Récupère un aliment par son ID.
   Future<Aliment?> getAlimentById(int id);
-  
- 
-  // Future<void> addAliment(Aliment aliment);
+  Future<String> getUniteParDefaut(int idAliment);
+  Future<List<String>> getCategories(); // <-- Cette ligne doit être présente !
 }
 
-
+/// Implémentation concrète
 class AlimentRepositoryImpl implements AlimentRepository {
-  // Accès au Singleton de la BDD
   final DatabaseService _dbService = DatabaseService.instance;
 
   @override
   Future<List<Aliment>> getAliments() async {
     final db = await _dbService.database;
-    
-    // Requête SQL pour lire toute la table 'Aliments'
     final List<Map<String, dynamic>> maps = await db.query('Aliments');
-
-    // Transformation des Maps en objets Aliment
     return List.generate(maps.length, (i) => Aliment.fromMap(maps[i]));
   }
 
   @override
   Future<Aliment?> getAlimentById(int id) async {
     final db = await _dbService.database;
-    
-    // Requête SQL pour trouver UN aliment par son ID
     final List<Map<String, dynamic>> maps = await db.query(
       'Aliments',
       where: 'id_aliment = ?',
@@ -46,19 +33,44 @@ class AlimentRepositoryImpl implements AlimentRepository {
     if (maps.isNotEmpty) {
       return Aliment.fromMap(maps.first);
     }
-    return null; // Retourne null si non trouvé
+    return null;
   }
-  
-  // Exemple d'implémentation pour un ajout
-  /*
+
   @override
-  Future<void> addAliment(Aliment aliment) async {
+  Future<String> getUniteParDefaut(int idAliment) async {
     final db = await _dbService.database;
-    await db.insert(
-      'Aliments',
-      aliment.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT unite, COUNT(*) as count
+      FROM RecetteAliment
+      WHERE id_aliment = ?
+      GROUP BY unite
+      ORDER BY count DESC
+      LIMIT 1
+    ''', [idAliment]);
+
+    if (result.isNotEmpty && result.first['unite'] != null) {
+      return result.first['unite'] as String;
+    }
+
+    return "pcs";
   }
-  */
+
+  @override
+  Future<List<String>> getCategories() async {
+    final db = await _dbService.database;
+
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT DISTINCT categorie 
+      FROM Aliments 
+      WHERE categorie IS NOT NULL AND categorie != ''
+      ORDER BY categorie ASC
+    ''');
+
+    List<String> categories = result
+        .map((map) => map['categorie'] as String)
+        .toList();
+
+    return categories;
+  }
 }

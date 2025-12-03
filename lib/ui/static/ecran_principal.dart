@@ -19,17 +19,17 @@ class _EcranPrincipalState extends State<EcranPrincipal> {
   // --- CONFIGURATION DE L'ACCUEIL ---
   // 0 = Accueil, 1 = Frigo, 2 = Recettes...
   // Tu veux que Frigo soit l'ouverture, donc on met 1.
-  int _indexSelectionne = 1;
+  // Lancement de l'app : Acceuil (index 0)
+  int _indexSelectionne = 0;
 
   // La liste de tes 6 pages
   final List<Widget> _ecrans = [
-    const Scaffold(body: Center(child: Text("Page Accueil"))),    // 0
+    const EcranAccueil(),                                         // 0
     const EcranFrigo(),                                           // 1 (Défaut)
-    const EcranRecettes(),   // 2
-    const Scaffold(body: Center(child: Text("Page Favoris"))),    // 3
-    const Scaffold(body: Center(child: Text("Page Historique"))), // 4
-    const Scaffold(body: Center(child: Text("Page Profil"))),     // 5
-    // Note: J'ai mis des Scaffold temporaires pour ceux que tu n'as pas encore codés
+    const EcranRecettes(),                                        // 2
+     const EcranFavoris(),                                        
+    const EcranHistorique(),                                      // 4
+    const EcranProfil(), // 5    // Note: J'ai mis des Scaffold temporaires pour ceux que tu n'as pas encore codés
     // Tu pourras remplacer par "const EcranRecettes()" quand le fichier sera prêt.
   ];
 

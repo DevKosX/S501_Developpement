@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/recette_model.dart';
 import '../repositories/recette_repository.dart';
 import '../models/recette_aliment_model.dart';
+import '../models/ingredient_recette_model.dart';
+
 
 
 /// Fichier: core/controllers/recette_controller.dart
@@ -22,6 +24,7 @@ class RecetteController extends ChangeNotifier {
   List<Recette> _listeRecettes = [];
   List<Recette> _recettesFaisables = [];
   List<Recette> _recettesManquantes = [];
+  List<IngredientRecette> ingredients = [];
 
   // je garde un booléen pour savoir si je suis en train de charger
   bool _isLoading = false;
@@ -37,7 +40,8 @@ class RecetteController extends ChangeNotifier {
   // on doit me donner le repository à la création
   RecetteController(this._repository) {
     // je charge les recettes dès que le contrôleur est créé
-    chargerRecettes();
+    // chargerRecettes(); // <-- Ancienne méthode
+    getRecettesTrieesParFrigo(); // <-- Nouvelle méthode pour avoir le tri dès le début
   }
 
   // --- MÉTHODES (appelées par la Vue) ---
@@ -72,7 +76,10 @@ class RecetteController extends ChangeNotifier {
     // OPTIONNEL : je pourrais recharger la liste pour être sûr
     // que l'UI est à jour, mais pour un favori ce n'est pas toujours nécessaire
     // si on gère l'état localement. Pour l'instant, on recharge.
-    // await chargerRecettes();
+    
+    // --- MODIFICATION POUR LE TEMPS RÉEL ---
+    // On force le re-calcul du score et le tri immédiatement après le clic
+    await getRecettesTrieesParFrigo();
 
     notifyListeners(); // je dis à la vue de se rafraîchir
   }
@@ -80,6 +87,11 @@ class RecetteController extends ChangeNotifier {
   /// méthode appelée quand l'utilisateur note une recette
   Future<void> noterRecette(Recette recette, int note) async {
     await _repository.noterRecette(recette, note);
+    
+    // --- MODIFICATION POUR LE TEMPS RÉEL ---
+    // La note change le score, donc on recharge la liste triée
+    await getRecettesTrieesParFrigo();
+
     notifyListeners();
   }
 
@@ -91,7 +103,8 @@ class RecetteController extends ChangeNotifier {
     await _repository.creerRecetteUtilisateur(nouvelleRecette);
 
     // une fois créée, je recharge la liste pour voir la nouvelle recette
-    await chargerRecettes();
+    // await chargerRecettes(); 
+    await getRecettesTrieesParFrigo(); // On recharge plutôt la liste triée pour l'intégrer correctement
 
     _isLoading = false;
     notifyListeners();
@@ -124,16 +137,16 @@ class RecetteController extends ChangeNotifier {
   // --------------------------------------------------------------------------
 
   ///méthode pour recuper la liste des ingrédients pour une recette
-  Future<List<Map<String, dynamic>>> getIngredientsByRecette(int idRecette) async {
+  Future<void> loadIngredients(int idRecette) async {
     try {
-      final ingredients = await _repository.getIngredientsByRecette(idRecette);
+      ingredients = await _repository.getIngredientsByRecette(idRecette);
       print("CTRL: ${ingredients.length} ingrédients récupérés pour la recette $idRecette");
-      return ingredients;
+      notifyListeners();
     } catch (e) {
-      print("ERREUR: impossible de charger les ingrédients → $e");
-      return [];
+      print("ERREUR ingredients CTRL → $e");
     }
   }
+
 
   ///méthode qui ajoute des ingrédients à une reccette crée
   Future<void> addIngredientToRecette(RecetteAliment recetteAliment) async {
@@ -156,6 +169,23 @@ class RecetteController extends ChangeNotifier {
     } catch (e) {
       print("ERREUR: impossible de supprimer les ingrédients → $e");
     }
+  }
+
+
+  Future<void> chargerRecettesRecommandees() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Appel du méthode de repository pour obtenir les recettes recommandées
+      _listeRecettes = await _repository.getRecettesRecommandees();
+      print("CTRL: Recettes chargées par recommandation");
+    } catch (e) {
+      print("ERREUR chargement recommandations: $e");
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
 }
@@ -205,7 +235,7 @@ class RecetteController extends ChangeNotifier {
 
 
 
-/*  ANCIEN CODE FAUX
+/* ANCIEN CODE FAUX
 
 import '../models/recette_model.dart';
 

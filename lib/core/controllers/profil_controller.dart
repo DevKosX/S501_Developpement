@@ -20,52 +20,56 @@ class ProfilController extends ChangeNotifier {
 
   double get imc {
     if (profilUtilisateur != null && profilUtilisateur!.taille > 0) {
-      double tailleMetres = profilUtilisateur!.taille;
+      double tailleOriginale = profilUtilisateur!.taille;
       double poids = profilUtilisateur!.poids;
+      // On divise par 100 pour avoir des mètres (1.75), sinon la formule IMC est fausse.
+      double tailleMetres = tailleOriginale > 3.0 ? tailleOriginale / 100 : tailleOriginale;
       return poids / (tailleMetres * tailleMetres);
     }
     return 0.0;
   }
 
-
   String get messageConseil {
-      if (profilUtilisateur == null) return "Aucun profil chargé.";
+    if (profilUtilisateur == null) return "Aucun profil chargé.";
 
-      double monImc = imc;
-      String objectif = profilUtilisateur!.objectif; // Ex: "Perdre du poids", "Prendre de la masse", "Maintenir"
+    double monImc = imc;
+    String objectif = profilUtilisateur!.objectif; // "Perte de poids", "Prise de masse", "Maintien"
 
-
-      if (objectif == "Perte de poids") {
-        if (monImc > 25) {
-          return "Tu es au-dessus de la normale. Continue tes efforts, l'exercice et l'alimentation finiront par payer !";
-        } else if (monImc >= 18.5 && monImc <= 25) {
-          return "Bravo ! Tu as atteint un poids santé. Tu dois maintenant le maintenir.";
-        } else {
-          return "Attention, ton IMC est bas. Perdre plus de poids pourrait être dangereux.";
-        }
-      } 
-
-
-      else if (objectif == "Prise de masse") {
-        if (monImc < 18.5) {
-          return "Tu es en sous-poids. Il faut augmenter ton apport calorique et continuer l'entraînement.";
-        } else if (monImc >= 18.5 && monImc <= 25) {
-          return "Tu es dans la bonne zone ! Continue la musculation pour transformer ce poids en muscle.";
-        } else {
-          return "Ton poids est élevé. Assure-toi que c'est du muscle et non du gras (surveille ton % de graisse).";
-        }
-      } 
-      
-
-      else {
-        // cas par défault
-        if (monImc >= 18.5 && monImc <= 25) {
-          return "Tu es au top ! Ton poids est idéal pour ta taille.";
-        } else {
-          return "Ton poids n'est pas tout à fait dans la norme, mais l'important est de se sentir bien.";
-        }
+    // --- SCÉNARIO 1 : PERTE DE POIDS ---
+    if (objectif == "Perte de poids") {
+      if (monImc > 30) {
+        return "Votre IMC indique une obésité. L'activité douce (marche, natation) et un suivi nutritionnel sont recommandés.";
+      } else if (monImc > 25) {
+        return "Vous êtes en léger surpoids. Réduisez les sucres rapides et visez 30 min de marche active par jour.";
+      } else if (monImc >= 18.5) {
+        return "Bravo ! Vous avez atteint un poids santé. Ne cherchez pas à perdre plus, concentrez-vous sur le maintien.";
+      } else {
+        return "Attention : Votre poids est trop bas pour cet objectif. Perdre davantage pourrait être risqué.";
+      }
+    } 
+    
+    // --- SCÉNARIO 2 : PRISE DE MASSE ---
+    else if (objectif == "Prise de masse") {
+      if (monImc < 18.5) {
+        return "Vous êtes en sous-poids. Augmentez votre apport calorique (bons gras, glucides) et faites de la musculation.";
+      } else if (monImc >= 18.5 && monImc <= 25) {
+        return "Base idéale ! Pour prendre du muscle, entraînez-vous lourd et consommez environ 1.5g à 2g de protéines par kg.";
+      } else {
+        return "Vous avez du volume. Assurez-vous que c'est du muscle ! Si c'est du gras, privilégiez une prise de masse 'propre'.";
+      }
+    } 
+    
+    // --- SCÉNARIO 3 : MAINTIEN (ou autre) ---
+    else {
+      if (monImc >= 18.5 && monImc <= 25) {
+        return "Félicitations ! Votre poids est idéal pour votre taille. Continuez une alimentation équilibrée.";
+      } else if (monImc > 25) {
+        return "Un peu au-dessus de la moyenne. Rien de grave, essayez juste de bouger un peu plus au quotidien.";
+      } else {
+        return "Un peu maigre. N'hésitez pas à enrichir vos plats avec des noix, de l'avocat ou de l'huile d'olive.";
       }
     }
+  }
 
   Future<void> chargerProfil() async {
     isLoading = true;

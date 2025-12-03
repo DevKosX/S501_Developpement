@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/models/recette_model.dart';
-import '../ecran_detail_recette.dart'; // Pour la navigation vers le détail
+import '../../../../core/models/feedback_recette_model.dart';
+import '../../../../core/controllers/feedback_recette_controller.dart';
+import '../../../../core/controllers/recette_controller.dart';
+import '../ecran_detail_recette.dart';
 
-
-
-/// Fichier: core/ui/module/recettes/liste_recettes.dart
+/// Fichier: core/ui/module/recettes/widgets/carte_recette.dart
 /// Author: Mohamed KOSBAR
 /// Implémentation du 23 novembre 2025
-///
-
 
 class CarteRecette extends StatelessWidget {
   final Recette recette;
@@ -90,6 +90,74 @@ class CarteRecette extends StatelessWidget {
                     ),
                   ),
                 ),
+              
+              // BOUTON FAVORI
+              Positioned(
+                bottom: 12,
+                right: 12,
+                child: Consumer<FeedbackRecetteController>(
+                  builder: (context, feedbackCtrl, _) {
+                    // Chercher si cette recette est déjà en favoris
+                    final estFavori = feedbackCtrl.feedbacks
+                        .any((f) => f.idrecette == recette.id_recette && f.favori == 1);
+                    
+                    return GestureDetector(
+                      onTap: () async {
+                        // 1. D'ABORD : On met à jour le cœur (Visuel) via le FeedbackController
+                        // Cela garantit que l'icône change de couleur immédiatement
+                        final feedback = FeedbackRecette(
+                          idrecette: recette.id_recette,
+                          favori: estFavori ? 0 : 1, // On inverse
+                          note: 0,
+                        );
+                        
+                        await feedbackCtrl.toggleFavori(feedback);
+
+                        // 2. ENSUITE : On demande au RecetteController de recalculer les scores
+                        // Comme la BDD a été mise à jour à l'étape 1, le score prendra en compte le changement
+                        if (context.mounted) {
+                          await context.read<RecetteController>().getRecettesTrieesParFrigo();
+                        }
+                        
+                        // Message de confirmation
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                estFavori 
+                                  ? '💔 Retiré des favoris' 
+                                  : '❤️ Ajouté aux favoris',
+                              ),
+                              duration: const Duration(seconds: 1),
+                              backgroundColor: estFavori ? Colors.grey[700] : Colors.pink,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          estFavori ? Icons.favorite : Icons.favorite_border,
+                          color: estFavori ? Colors.red : Colors.grey[600],
+                          size: 24,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           ),
 
@@ -121,7 +189,7 @@ class CarteRecette extends StatelessWidget {
                     const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
                     const SizedBox(width: 4),
                     Text(
-                      "${recette.score}",
+                      "${recette.score}", // Le score se mettra à jour après l'étape 2 du onTap
                       style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
                     ),
                   ],
@@ -170,7 +238,7 @@ class CarteRecette extends StatelessWidget {
   }
 }
 
-// --- PETITS WIDGETS PRIVÉS (Utilisés seulement par la carte) ---
+// --- PETITS WIDGETS PRIVÉS ---
 
 class _GlassBadge extends StatelessWidget {
   final String text;
