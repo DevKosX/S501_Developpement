@@ -189,7 +189,7 @@ L'application dispose d'une barre de navigation avec 6 onglets :
 
 | Onglet | Description |
 |--------|-------------|
-| Accueil | Dashboard avec suggestions et resume du frigo |
+| Accueil | Dashboard des recettes avec le meilleur score |
 | Recettes | Catalogue de recettes avec filtres et recherche |
 | Frigo | Gestion du contenu du frigo |
 | Favoris | Gestion des favoris |
