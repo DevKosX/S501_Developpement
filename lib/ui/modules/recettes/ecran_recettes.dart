@@ -21,7 +21,7 @@ class EcranRecettes extends StatefulWidget {
 final List<String> categoriesRecettes = [
   'Toutes',
   'Entrée',
-  'Plat principal',
+  'Plat',
   'Dessert',
   'Boisson',
   'Petit-déjeuner',
