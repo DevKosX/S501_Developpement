@@ -24,7 +24,7 @@ final List<String> categoriesRecettes = [
   'Plat',
   'Dessert',
   'Boisson',
-  'Petit-déjeuner',
+//  'Petit-déjeuner',
   'Sauce',
   'Accompagnement',
 ];
