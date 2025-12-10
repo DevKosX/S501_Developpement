@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 // Imports de tes widgets
 import 'widgets/formulaire_imc.dart';
 import 'package:s501_developpement/ui/modules/profil/widgets/carte_conseil.dart';
+import 'package:s501_developpement/ui/modules/profil/widgets/conseils_rotatifs.dart';
 
 // Imports de la logique (Core)
 import '../../../core/controllers/profil_controller.dart';
@@ -86,15 +87,44 @@ class _EcranProfilState extends State<EcranProfil> {
               const SizedBox(height: 30),
               
               // --- LISTE DES CONSEILS GÉNÉRAUX ---
-              const Text("Conseils Santé", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 15),
+              const ConseilsRotatifs(),
+              // const SizedBox(height: 15),
               
-              const CarteConseil(
-                icon: Icons.directions_run, 
-                titre: "Activité", 
-                sousTitre: "Bougez 30min par jour",
-              ),
-              // ... tes autres cartes ...
+              // const CarteConseil(
+              //   icon: Icons.directions_run, 
+              //   titre: "Activité", 
+              //   sousTitre: "Bougez 30min par jour",
+              // ),
+
+              // const CarteConseil(
+              //   icon: Icons.water_drop, // Ou Icons.local_drink
+              //   titre: "Hydratation", 
+              //   sousTitre: "Buvez 1,5L d'eau par jour",
+              // ),
+              
+              // const CarteConseil(
+              //   icon: Icons.bed, // Ou Icons.nightlight_round
+              //   titre: "Sommeil", 
+              //   sousTitre: "Visez 7 à 8h de repos",
+              // ),
+
+              // const CarteConseil(
+              //   icon: Icons.restaurant_menu, // Ou Icons.eco pour le côté "naturel"
+              //   titre: "Nutrition", 
+              //   sousTitre: "Mangez 5 fruits et légumes",
+              // ),
+
+              // const CarteConseil(
+              //   icon: Icons.self_improvement, // Ou Icons.spa
+              //   titre: "Mental", 
+              //   sousTitre: "5 min de méditation ou calme",
+              // ),
+
+              // const CarteConseil(
+              //   icon: Icons.visibility, 
+              //   titre: "Yeux", 
+              //   sousTitre: "Pause écrans toutes les 20min",
+              //),
             ],
           ),
         ),
