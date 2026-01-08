@@ -132,6 +132,40 @@ class RecetteController extends ChangeNotifier {
   }
 
 
+  // --- NOUVEAUX ATTRIBUTS POUR LA RECHERCHE ET LE FILTRE ---
+  String _rechercheQuery = "";
+  String _categorieSelectionnee = "Toutes";
+
+  // --- GETTER POUR LA VUE (Savoir quelle catégorie est active) ---
+  String get categorieSelectionnee => _categorieSelectionnee;
+
+  // --- SETTERS (Appelés quand l'utilisateur tape ou clique) ---
+  void setRecherche(String query) {
+    _rechercheQuery = query;
+    notifyListeners(); // Met à jour l'UI instantanément
+  }
+
+  void setCategorie(String categorie) {
+    _categorieSelectionnee = categorie;
+    notifyListeners(); // Met à jour l'UI instantanément
+  }
+
+  // --- LOGIQUE DE FILTRAGE PRIVÉE ---
+  // Vérifie si une recette correspond aux critères actuels
+  bool _estAffichee(Recette recette) {
+    // 1. Filtre par texte (titre)
+    bool nomOk = recette.titre.toLowerCase().contains(_rechercheQuery.toLowerCase());
+
+    // 2. Filtre par catégorie (Si "Toutes", on prend tout, sinon on compare exactment)
+    bool catOk = _categorieSelectionnee == "Toutes" || recette.typeRecette == _categorieSelectionnee;
+
+    return nomOk && catOk;
+  }
+
+  // --- GETTERS FILTRÉS (Ceux que l'UI va utiliser à la place des listes brutes) ---
+  List<Recette> get recettesFaisablesFiltrees => _recettesFaisables.where(_estAffichee).toList();
+  List<Recette> get recettesManquantesFiltrees => _recettesManquantes.where(_estAffichee).toList();
+
   // --------------------------------------------------------------------------
   // === NOUVELLES MÉTHODES LIÉES À RecetteAliment ===
   // --------------------------------------------------------------------------

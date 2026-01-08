@@ -12,17 +12,45 @@ import 'widgets/liste_recettes.dart';
 class EcranRecettes extends StatefulWidget {
   const EcranRecettes({super.key});
 
+
+
   @override
   State<EcranRecettes> createState() => _EcranRecettesState();
 }
 
+final List<String> categoriesRecettes = [
+  'Toutes',
+  'Entrée',
+  'Plat',
+  'Dessert',
+  'Boisson',
+//  'Petit-déjeuner',
+  'Sauce',
+  'Accompagnement',
+];
+
 class _EcranRecettesState extends State<EcranRecettes> {
+
+
+// 2. Le contrôleur de recherche
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RecetteController>().getRecettesTrieesParFrigo();
     });
+    _searchController.addListener(() {
+      context.read<RecetteController>().setRecherche(_searchController.text);
+    });
+  }
+
+  // AJOUT 3 : On n'oublie pas de nettoyer le contrôleur quand on quitte la page
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -66,6 +94,65 @@ class _EcranRecettesState extends State<EcranRecettes> {
               ),
 
               const SizedBox(height: 10),
+
+              // --- BARRE DE RECHERCHE ---
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: "Rechercher une recette...",
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              // --- FILTRES PAR CATÉGORIE ---
+              SizedBox(
+                height: 45,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: categoriesRecettes.length,
+                  itemBuilder: (context, index) {
+                    final cat = categoriesRecettes[index];
+                    // On vérifie si cette catégorie est celle sélectionnée dans le contrôleur
+                    final estSelectionnee = controller.categorieSelectionnee == cat;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: ChoiceChip(
+                        label: Text(cat),
+                        selected: estSelectionnee,
+                        selectedColor: const Color(0xFFE040FB),
+                        backgroundColor: Colors.white,
+                        elevation: 2,
+                        side: BorderSide.none,
+                        labelStyle: TextStyle(
+                          color: estSelectionnee ? Colors.white : Colors.black87,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        onSelected: (_) {
+                          // On met à jour la catégorie dans le contrôleur
+                          controller.setCategorie(cat);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
 
               // --- ONGLETS ---
               Padding(
@@ -130,12 +217,12 @@ class _EcranRecettesState extends State<EcranRecettes> {
                   children: [
                     // Onglet 1
                     ListeRecettes(
-                      recettes: controller.recettesFaisables,
+                      recettes: controller.recettesFaisablesFiltrees,
                       estFaisable: true,
                     ),
                     // Onglet 2
                     ListeRecettes(
-                      recettes: controller.recettesManquantes,
+                      recettes: controller.recettesManquantesFiltrees,
                       estFaisable: false,
                     ),
                   ],
