@@ -477,7 +477,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
                                         color: Colors.grey[100],
                                         child: aliment != null
                                             ? Image.asset(
-                                          "assets/images/${aliment.image}",
+                                          "assets/images/aliments/${aliment.image}",
                                           fit: BoxFit.cover,
                                           errorBuilder: (c, e, s) => Icon(
                                             Icons.fastfood,
@@ -723,7 +723,7 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Image.asset(
-                          "assets/images/${widget.aliment.image}",
+                          "assets/images/aliments/${widget.aliment.image}",
                           fit: BoxFit.cover,
                           errorBuilder: (c, e, s) => Container(
                             color: Colors.grey[200],

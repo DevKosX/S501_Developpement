@@ -20,12 +20,13 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'app_recettes_v3.db'); //troisieme version
+    final path = join(dbPath, 'app_recettes_v4.db'); //quatrième version
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -51,7 +52,8 @@ class DatabaseService {
           nom TEXT,
           categorie TEXT,
           nutriscore TEXT,
-          image TEXT
+          image TEXT,
+          poids_unitaire REAL
         );
       ''');
 
@@ -114,7 +116,7 @@ class DatabaseService {
       );
 
       await _importerCSV(txn, 'assets/db/aliments.csv',
-          'INSERT INTO Aliments (id_aliment, nom, categorie, nutriscore, image) VALUES (?, ?, ?, ?, ?)'
+          'INSERT INTO Aliments (id_aliment, nom, categorie, nutriscore, image, poids_unitaire) VALUES (?, ?, ?, ?, ?, ?)'
       );
 
       await _importerCSV(txn, 'assets/db/recettes.csv',
@@ -126,6 +128,15 @@ class DatabaseService {
       );
     });
   }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute("ALTER TABLE Historique ADD COLUMN note INTEGER;");
+      await db.execute("ALTER TABLE Historique ADD COLUMN commentaire TEXT;");
+      await db.execute("ALTER TABLE Historique ADD COLUMN favori INTEGER DEFAULT 0;");
+    }
+  }
+
 
   Future<void> _importerCSV(Transaction txn, String assetPath, String sqlQuery) async {
     try {

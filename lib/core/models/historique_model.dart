@@ -5,27 +5,19 @@ class Historique {
   int dureetotalemin;
   int idrecette;
 
+  int? note;
+  String? commentaire;
+  bool favori;
+
   Historique({
     this.idhistorique,
     required this.dateaction,
     required this.dureetotalemin,
     required this.idrecette,
+    this.note,
+    this.commentaire,
+    this.favori = false,
   });
-
-  // Getters
-  int? getIdHistorique() => idhistorique;
-  DateTime getDateAction() => dateaction;
-  int getDuree() => dureetotalemin;
-
-  // Méthodes UML
-  static List<Historique> getHistoriqueComplet(List<Historique> historiques) {
-    return historiques;
-  }
-
-  void enregistrerAction(int idrecette, int duree) {
-    // Logique d'enregistrement (a implémenter)
-    print("Action enregistrée : Recette $idrecette, Durée $duree minutes le $dateaction");
-  }
 
   factory Historique.fromMap(Map<String, dynamic> map) {
     return Historique(
@@ -33,6 +25,9 @@ class Historique {
       idrecette: map['id_recette'],
       dateaction: DateTime.parse(map['date_action']),
       dureetotalemin: map['duree_totale_min'],
+      note: map['note'],
+      commentaire: map['commentaire'],
+      favori: map['favori'] == 1,
     );
   }
 
@@ -41,6 +36,9 @@ class Historique {
       'id_recette': idrecette,
       'date_action': dateaction.toIso8601String(),
       'duree_totale_min': dureetotalemin,
+      'note': note,
+      'commentaire': commentaire,
+      'favori': favori ? 1 : 0,
     };
   }
 
