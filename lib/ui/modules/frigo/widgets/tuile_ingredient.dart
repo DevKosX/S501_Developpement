@@ -70,7 +70,7 @@ class TuileIngredient extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Image.asset(
-                      "assets/images/${aliment.image}",
+                      "assets/images/aliments/${aliment.image}",
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         return Icon(
