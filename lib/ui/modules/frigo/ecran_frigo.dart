@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../../core/controllers/aliment_controller.dart';
 import '../../../core/controllers/frigo_controller.dart';
 import '../../../core/models/aliment_model.dart';
+import '../../../core/services/unit_service.dart';
+import '../../../core/controllers/recette_controller.dart';
 import 'package:s501_developpement/ui/modules/frigo/widgets/tuile_ingredient.dart';
 
 class EcranFrigo extends StatefulWidget {
@@ -643,12 +645,14 @@ class _FicheGestionAliment extends StatefulWidget {
 
 class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
   late TextEditingController _quantiteController;
+  late String _uniteSelectionnee;
   bool _isEditing = false;
 
   @override
   void initState() {
     super.initState();
     _quantiteController = TextEditingController();
+    _uniteSelectionnee = "pcs"; // fallback
   }
 
   @override
@@ -670,6 +674,10 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
   @override
   Widget build(BuildContext context) {
+    final recetteCtrl = context.read<RecetteController>();
+    final List<String> unitesDisponibles = recetteCtrl.unitesDisponibles.isNotEmpty
+        ? recetteCtrl.unitesDisponibles
+        : ["pcs"];
     return Consumer<FrigoController>(
       builder: (context, frigoCtrl, child) {
         double qte = 0;
@@ -685,6 +693,7 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
         // Mettre à jour le controller seulement si on n'est pas en train d'éditer
         if (!_isEditing) {
           _quantiteController.text = qte > 0 ? qte.toInt().toString() : "";
+          _uniteSelectionnee = unite;
         }
 
         return SingleChildScrollView(
@@ -787,28 +796,39 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
                 // Unité affichée
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE040FB).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFE040FB).withOpacity(0.3)),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.straighten, size: 18, color: Color(0xFFAA00FF)),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Unité: $unite",
-                        style: const TextStyle(
-                          color: Color(0xFFAA00FF),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _uniteSelectionnee,
+                      icon: const Icon(Icons.expand_more, color: Color(0xFFAA00FF)),
+                      items: unitesDisponibles.map((u) {
+                        return DropdownMenuItem(
+                          value: u,
+                          child: Text(
+                            u,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFAA00FF),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _isEditing = true;
+                          _uniteSelectionnee = value;
+                        });
+                      },
+                    ),
                   ),
                 ),
+
 
                 const SizedBox(height: 20),
 
@@ -982,7 +1002,12 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                   child: ElevatedButton(
                     onPressed: () {
                       double nouvelleQuantite = double.tryParse(_quantiteController.text) ?? 0;
-                      frigoCtrl.definirQuantite(widget.aliment, nouvelleQuantite);
+                      frigoCtrl.definirQuantite(
+                        widget.aliment,
+                        nouvelleQuantite,
+                        unite: _uniteSelectionnee,
+                      );
+
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
