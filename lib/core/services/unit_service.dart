@@ -1,12 +1,22 @@
 /// Service responsable de la gestion des unités de mesure
-/// utilisées dans les recettes (extraites depuis recetteAliment).
+/// utilisées dans les recettes (extraites depuis RecetteAliment / IngredientRecette)
+///
+/// Objectifs :
+/// - Centraliser les unités existantes
+/// - Normaliser les unités équivalentes (grammes → g)
+/// - Mettre en cache pour éviter les recalculs
+/// - Fournir une liste prête pour un Dropdown UI
+
+import '../models/ingredient_recette_model.dart';
+
 class UnitService {
   /// Cache mémoire partagé dans toute l'application
   static Set<String>? _cachedUnits;
 
   /// Mapping pour normaliser les unités équivalentes
-  /// (ex: "grammes" → "g")
+  /// (clé = valeur brute, valeur = unité canonique)
   static const Map<String, String> _unitAliases = {
+    // --- POIDS ---
     'g': 'g',
     'gramme': 'g',
     'grammes': 'g',
@@ -15,6 +25,11 @@ class UnitService {
     'kilogramme': 'kg',
     'kilogrammes': 'kg',
 
+    'mg': 'mg',
+    'milligramme': 'mg',
+    'milligrammes': 'mg',
+
+    // --- VOLUME ---
     'ml': 'ml',
     'millilitre': 'ml',
     'millilitres': 'ml',
@@ -27,6 +42,7 @@ class UnitService {
     'litre': 'l',
     'litres': 'l',
 
+    // --- UNITÉS ---
     'pcs': 'pcs',
     'pc': 'pcs',
     'piece': 'pcs',
@@ -37,24 +53,37 @@ class UnitService {
     'unites': 'pcs',
     'unité': 'pcs',
     'unités': 'pcs',
+
+    // --- MESURES MÉNAGÈRES ---
+    'c.à.s': 'c.à.s',
+    'cuillère à soupe': 'c.à.s',
+
+    'c.à.c': 'c.à.c',
+    'cuillère à café': 'c.à.c',
   };
 
-  /// Extrait les unités depuis la table recette_aliment
+  // ---------------------------------------------------------------------------
+  // EXTRACTION & CACHE
+  // ---------------------------------------------------------------------------
+
+  /// Extrait les unités depuis des objets IngredientRecette
   /// et les met en cache pour éviter tout recalcul.
-  static Set<String> extractUnits(List<Map<String, dynamic>> recetteAliments) {
-    // Si déjà calculé, on retourne directement le cache
+  static Set<String> extractUnitsFromIngredients(
+    List<IngredientRecette> ingredients,
+  ) {
+    // Si déjà calculé → on retourne le cache
     if (_cachedUnits != null) {
       return _cachedUnits!;
     }
 
     final Set<String> units = {};
 
-    for (final ra in recetteAliments) {
-      final rawUnit = ra['unite'];
+    for (final ingredient in ingredients) {
+      final rawUnit = ingredient.unite;
 
-      if (rawUnit == null) continue;
+      if (rawUnit.isEmpty) continue;
 
-      final normalized = _normalizeUnit(rawUnit.toString());
+      final normalized = _normalizeUnit(rawUnit);
 
       if (normalized.isNotEmpty) {
         units.add(normalized);
@@ -65,7 +94,21 @@ class UnitService {
     return units;
   }
 
-  /// Normalise une unité brute (CSV / DB)
+  /// Retourne les unités sous forme de liste triée
+  /// directement exploitable dans un DropdownButton
+  static List<String> getUnitsAsList(
+    List<IngredientRecette> ingredients,
+  ) {
+    final units = extractUnitsFromIngredients(ingredients).toList();
+    units.sort();
+    return units;
+  }
+
+  // ---------------------------------------------------------------------------
+  // UTILITAIRES
+  // ---------------------------------------------------------------------------
+
+  /// Normalise une unité brute (CSV / DB / saisie utilisateur)
   /// Exemple : " Grammes " → "g"
   static String _normalizeUnit(String unit) {
     final cleaned = unit.trim().toLowerCase();
@@ -75,22 +118,14 @@ class UnitService {
     return _unitAliases[cleaned] ?? cleaned;
   }
 
-  /// Retourne les unités sous forme de liste triée
-  /// (utile directement pour un Dropdown)
-  static List<String> getUnitsAsList(List<Map<String, dynamic>> recetteAliments) {
-    final units = extractUnits(recetteAliments).toList();
-    units.sort();
-    return units;
-  }
-
-  /// Permet de vider le cache (utile si les recettes changent)
-  static void clearCache() {
-    _cachedUnits = null;
-  }
-
   /// Vérifie si une unité est connue par le système
   static bool isUnitSupported(String unit) {
     final normalized = _normalizeUnit(unit);
     return _unitAliases.values.contains(normalized);
+  }
+
+  /// Vide le cache (à appeler si les recettes / ingrédients changent)
+  static void clearCache() {
+    _cachedUnits = null;
   }
 }

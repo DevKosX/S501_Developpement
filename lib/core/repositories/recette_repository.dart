@@ -21,6 +21,7 @@ abstract class RecetteRepository {
   Future<void> toggleFavori(Recette recette);
   Future<void> noterRecette(Recette recette, int note);
   Future<void> creerRecetteUtilisateur(Recette recette);
+  Future<List<IngredientRecette>> getAllIngredientsRecettes();
 
   // Cette méthode s'occupe maintenant de TOUT : Calculer le score puis trier
   Future<Map<String, List<Recette>>> getRecettesTrieesParFrigo();
@@ -117,9 +118,9 @@ class RecetteRepositoryImpl implements RecetteRepository {
       // On met tout en minuscule et sans espaces pour être sûr de la comparaison
       String diffNorm = difficulteTexte.trim().toLowerCase();
 
-      if (diffNorm == 'Facile') {
+      if (diffNorm == 'facile') {
         scoreBrut += 3.0; // Gros bonus pour la simplicité
-      } else if (diffNorm == 'Moyen') {
+      } else if (diffNorm == 'moyen') {
         scoreBrut += 1.0; // Petit bonus
       } else {
         // Cas 'difficile' ou autre : Pas de bonus (0.0)
@@ -532,6 +533,32 @@ Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette) async {
 
     return List.generate(maps.length, (i) => Recette.fromMap(maps[i]));
   }
+
+
+  @override
+  Future<List<IngredientRecette>> getAllIngredientsRecettes() async {
+    final db = await _dbService.database;
+
+    final result = await db.rawQuery('''
+      SELECT 
+        A.nom,
+        RA.quantite,
+        RA.unite,
+        RA.remarque
+      FROM RecetteAliment RA
+      JOIN Aliments A ON A.id_aliment = RA.id_aliment
+    ''');
+
+    return result.map((row) {
+      return IngredientRecette(
+        nom: row["nom"] as String,
+        quantite: (row["quantite"] as num).toDouble(),
+        unite: row["unite"] as String,
+        remarque: row["remarque"] as String?,
+      );
+    }).toList();
+  }
+
 
 
 }
