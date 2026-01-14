@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:s501_developpement/core/models/ingredient_recette_model.dart';
 import '../models/frigo_item_model.dart';
 import '../models/aliment_model.dart';
 import '../repositories/frigo_repository.dart';
@@ -152,6 +153,45 @@ class FrigoController extends ChangeNotifier {
     await _repository.deleteItemFrigo(idFrigo);
     await chargerContenuFrigo();
   }
+
+  Future<void> consommerIngredientsRecette(
+    List<IngredientRecette> ingredientsRecette,
+    List<Aliment> catalogueAliments,
+  ) async {
+    for (final ingredient in ingredientsRecette) {
+      try {
+        // retrouver l'aliment correspondant par nom
+        final aliment = catalogueAliments.firstWhere(
+          (a) => a.nom.toLowerCase() == ingredient.nom.toLowerCase(),
+        );
+
+        final itemFrigo = contenuFrigo.firstWhere(
+          (item) => item.id_aliment == aliment.id_aliment,
+        );
+
+        final nouvelleQuantite =
+            itemFrigo.quantite - ingredient.quantite;
+
+        if (nouvelleQuantite <= 0) {
+          // supprimer de la BDD + mémoire
+          await supprimerItem(itemFrigo.id_frigo);
+        } else {
+          // mettre à jour la quantité
+          await definirQuantite(
+            aliment,
+            nouvelleQuantite,
+            unite: itemFrigo.unite,
+          );
+        }
+      } catch (e) {
+        // ingrédient absent du frigo → on ignore
+        continue;
+      }
+    }
+
+    notifyListeners();
+  }
+
 
   String getUniteAliment(int idAliment) {
     try {

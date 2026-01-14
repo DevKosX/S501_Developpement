@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:s501_developpement/core/controllers/aliment_controller.dart';
+import 'package:s501_developpement/core/controllers/frigo_controller.dart';
 import '../../../core/models/recette_model.dart';
 import '../../../core/models/feedback_recette_model.dart';
 import 'package:provider/provider.dart';
@@ -196,14 +198,23 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
-                        onPressed: () {
-                          final etapes = _decouperEtapes(widget.recette.instructions);
+                        onPressed: () async {
+                          final recetteCtrl = context.read<RecetteController>();
+                          final frigoCtrl = context.read<FrigoController>();
+                          final alimentCtrl = context.read<AlimentController>();
+                          
+                          await frigoCtrl.consommerIngredientsRecette(
+                            recetteCtrl.ingredients,
+                            alimentCtrl.catalogueAliments,
+                          );
 
+                          final etapes = _decouperEtapes(widget.recette.instructions);
+                          
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => EcranEtapeCuisson(
-                                recette: widget.recette,   // <-- IMPORTANT
+                                recette: widget.recette,
                                 titre: widget.recette.titre,
                                 etapes: etapes,
                               ),
