@@ -20,6 +20,9 @@ class _EcranFrigoState extends State<EcranFrigo> {
   String _recherche = "";
   String _categorieSelectionnee = "Tout";
 
+  static const int _pageSize = 30;
+  int _currentPage = 1;
+
   @override
   Widget build(BuildContext context) {
     final alimentController = context.watch<AlimentController>();
@@ -27,14 +30,25 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
     final List<String> categories = ["Tout", ...alimentController.categories];
 
-    List<Aliment> alimentsAffiches = alimentController.catalogueAliments.where((aliment) {
-      final matchRecherche = aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
+    final List<Aliment> alimentsFiltres =
+        alimentController.catalogueAliments.where((aliment) {
+      final matchRecherche =
+          aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
       final catAliment = aliment.categorie.isEmpty ? "Autre" : aliment.categorie;
       final matchCategorie = _categorieSelectionnee == "Tout" ||
-          catAliment.toLowerCase() == _categorieSelectionnee.toLowerCase();
+          catAliment.toLowerCase() ==
+              _categorieSelectionnee.toLowerCase();
 
       return matchRecherche && matchCategorie;
     }).toList();
+
+
+    final int maxItems = _currentPage * _pageSize;
+    final List<Aliment> alimentsAffiches =
+        alimentsFiltres.take(maxItems).toList();
+
+    final bool hasMore = alimentsAffiches.length < alimentsFiltres.length;
+
 
     int totalItems = 0;
     for (var item in frigoController.contenuFrigo) {
@@ -166,7 +180,13 @@ class _EcranFrigoState extends State<EcranFrigo> {
                 ],
               ),
               child: TextField(
-                onChanged: (value) => setState(() => _recherche = value),
+                onChanged: (value) {
+                  setState(() {
+                    _recherche = value;
+                    _currentPage = 1; 
+                  });
+                },
+
                 decoration: InputDecoration(
                   hintText: "Rechercher un aliment...",
                   hintStyle: TextStyle(color: Colors.grey[400]),
@@ -201,6 +221,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
                       onTap: () {
                         setState(() {
                           _categorieSelectionnee = categorie;
+                          _currentPage = 1;
                         });
                       },
                       child: AnimatedContainer(
@@ -318,6 +339,38 @@ class _EcranFrigoState extends State<EcranFrigo> {
                 );
               },
             ),
+
+            if (hasMore)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _currentPage++;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE040FB),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      "Charger plus",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
 
             const SizedBox(height: 40),
           ],
