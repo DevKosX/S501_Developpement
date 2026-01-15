@@ -15,8 +15,33 @@ class EcranFrigo extends StatefulWidget {
 }
 
 class _EcranFrigoState extends State<EcranFrigo> {
+  // Variable utilisée pour le filtrage (mise à jour uniquement lors de la validation)
   String _recherche = "";
   String _categorieSelectionnee = "Tout";
+
+  // Contrôleur pour gérer la saisie du texte sans rafraîchir l'écran
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Méthode pour valider la recherche et mettre à jour l'affichage
+  void _lancerRecherche() {
+    setState(() {
+      _recherche = _searchController.text.trim();
+    });
+    // Fermer le clavier
+    FocusScope.of(context).unfocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +50,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
     final List<String> categories = ["Tout", ...alimentController.categories];
 
+    // Le filtrage se base sur _recherche (qui ne change que lors du clic sur le bouton)
     List<Aliment> alimentsAffiches = alimentController.catalogueAliments.where((aliment) {
       final matchRecherche = aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
       final catAliment = aliment.categorie.isEmpty ? "Autre" : aliment.categorie;
@@ -164,11 +190,19 @@ class _EcranFrigoState extends State<EcranFrigo> {
                 ],
               ),
               child: TextField(
-                onChanged: (value) => setState(() => _recherche = value),
+                controller: _searchController, // Utilisation du controller
+                textInputAction: TextInputAction.search, // Affiche le bouton "Rechercher" sur le clavier
+                onSubmitted: (_) => _lancerRecherche(), // Action quand on valide au clavier
                 decoration: InputDecoration(
                   hintText: "Rechercher un aliment...",
                   hintStyle: TextStyle(color: Colors.grey[400]),
                   prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+                  // Bouton de validation de recherche
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.arrow_forward_rounded, color: Color(0xFFE040FB)),
+                    onPressed: _lancerRecherche,
+                    tooltip: "Lancer la recherche",
+                  ),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),
