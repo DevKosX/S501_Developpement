@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/controllers/aliment_controller.dart';
 import '../../../core/controllers/frigo_controller.dart';
 import '../../../core/models/aliment_model.dart';
+import '../../../core/models/frigo_item_model.dart'; // [NOUVEAU] Import pour le statut
 import 'package:s501_developpement/ui/modules/frigo/widgets/tuile_ingredient.dart';
 
 class EcranFrigo extends StatefulWidget {
@@ -298,18 +299,27 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
                 double quantiteTrouvee = 0;
                 String uniteTrouvee = "pcs";
+                // [NOUVEAU] Variables pour date et statut
+                DateTime? datePeremption;
+                StatutPeremption? statut;
 
                 try {
                   final item = frigoController.contenuFrigo
                       .firstWhere((item) => item.id_aliment == aliment.id_aliment);
                   quantiteTrouvee = item.quantite;
                   uniteTrouvee = item.unite;
+                  // [NOUVEAU] On récupère la date et le statut calculé
+                  datePeremption = item.date_peremption;
+                  statut = item.statut;
                 } catch (e) {}
 
                 return TuileIngredient(
                   aliment: aliment,
                   quantiteAuFrigo: quantiteTrouvee,
                   unite: uniteTrouvee,
+                  // [NOUVEAU] On passe les infos au widget
+                  datePeremption: datePeremption,
+                  statut: statut, 
                   onTap: () {
                     _afficherFicheGestion(context, aliment);
                   },
