@@ -653,18 +653,42 @@ class _FicheGestionAliment extends StatefulWidget {
 
 class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
   late TextEditingController _quantiteController;
+  late DateTime _datePeremption; // [NOUVEAU] État local pour la date
   bool _isEditing = false;
 
   @override
   void initState() {
     super.initState();
     _quantiteController = TextEditingController();
+
+    // [NOUVEAU] Initialisation intelligente de la date
+    final frigoCtrl = context.read<FrigoController>();
+    Frigo? itemExistant;
+    try {
+      itemExistant = frigoCtrl.contenuFrigo
+          .firstWhere((item) => item.id_aliment == widget.aliment.id_aliment);
+    } catch (e) {
+      itemExistant = null;
+    }
+
+    if (itemExistant != null) {
+      // Si existe déjà, on prend sa date
+      _datePeremption = itemExistant.date_peremption;
+    } else {
+      // Sinon, calcul automatique basé sur la catégorie (Approche Hybride)
+      _datePeremption = frigoCtrl.calculerDatePeremptionParDefaut(widget.aliment);
+    }
   }
 
   @override
   void dispose() {
     _quantiteController.dispose();
     super.dispose();
+  }
+  
+  // Helper pour afficher la date joliment
+  String _formatDate(DateTime dt) {
+    return "${dt.day.toString().padLeft(2,'0')}/${dt.month.toString().padLeft(2,'0')}/${dt.year}";
   }
 
   Color _getNutriscoreColor(String score) {
@@ -822,7 +846,7 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
                 const SizedBox(height: 20),
 
-                // --- SAISIE MANUELLE DE LA QUANTITÉ ---
+                // --- 1. SAISIE MANUELLE DE LA QUANTITÉ ---
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -938,7 +962,7 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
                       const SizedBox(height: 16),
 
-                      // Boutons raccourcis
+                      // Boutons raccourcis quantité
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -984,6 +1008,90 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                   ),
                 ),
 
+                const SizedBox(height: 20),
+
+                // --- 2. [NOUVEAU] SECTION DATE DE PÉREMPTION ---
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.orange.shade100),
+                    boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.05), blurRadius: 10)],
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Date de péremption", 
+                        style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3436))
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      // Affichage Date + Picker
+                      InkWell(
+                        onTap: () async {
+                          DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate: _datePeremption,
+                            firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                            lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                            builder: (context, child) {
+                              return Theme(
+                                data: ThemeData.light().copyWith(
+                                  colorScheme: const ColorScheme.light(primary: Colors.orange),
+                                ),
+                                child: child!,
+                              );
+                            }
+                          );
+                          if (picked != null) {
+                            setState(() => _datePeremption = picked);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.orange.shade200),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.calendar_today, size: 18, color: Colors.orange[800]),
+                              const SizedBox(width: 10),
+                              Text(
+                                _formatDate(_datePeremption),
+                                style: TextStyle(
+                                  fontSize: 16, 
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange[900],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Chips de correction rapide (Hybrid Approach)
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _buildDateChip("Auj.", DateTime.now()),
+                          _buildDateChip("+3j", DateTime.now().add(const Duration(days: 3))),
+                          _buildDateChip("+1 sem", DateTime.now().add(const Duration(days: 7))),
+                          _buildDateChip("+2 sem", DateTime.now().add(const Duration(days: 14))),
+                          _buildDateChip("+1 mois", DateTime.now().add(const Duration(days: 30))),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 24),
 
                 // Bouton Valider
@@ -992,7 +1100,12 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                   child: ElevatedButton(
                     onPressed: () {
                       double nouvelleQuantite = double.tryParse(_quantiteController.text) ?? 0;
-                      frigoCtrl.definirQuantite(widget.aliment, nouvelleQuantite);
+                      // [NOUVEAU] On passe la date modifiée au contrôleur
+                      frigoCtrl.definirQuantite(
+                        widget.aliment, 
+                        nouvelleQuantite, 
+                        datePeremption: _datePeremption
+                      );
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
@@ -1031,6 +1144,40 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
           ),
         );
       },
+    );
+  }
+
+  // Widget helper pour les Chips de date
+  Widget _buildDateChip(String label, DateTime targetDate) {
+    // Vérifier si cette chip correspond à la date sélectionnée (à peu près)
+    bool isSelected = _datePeremption.year == targetDate.year &&
+                      _datePeremption.month == targetDate.month &&
+                      _datePeremption.day == targetDate.day;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _datePeremption = targetDate;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.orange : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.orange : Colors.grey.shade300,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[700],
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
     );
   }
 
