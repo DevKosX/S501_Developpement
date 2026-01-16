@@ -276,7 +276,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    "${alimentsAffiches.length} disponible${alimentsAffiches.length > 1 ? 's' : ''}",
+                    "${alimentsFiltres.length} disponible${alimentsFiltres.length > 1 ? 's' : ''}",
                     style: const TextStyle(
                       color: Color(0xFFAA00FF),
                       fontWeight: FontWeight.bold,
