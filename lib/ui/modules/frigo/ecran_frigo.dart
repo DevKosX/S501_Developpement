@@ -705,8 +705,11 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
   void initState() {
     super.initState();
     _quantiteController = TextEditingController();
-    _uniteSelectionnee = "pcs"; // fallback
+
+    final units = UnitService.getUnitsForTypeMesure(widget.aliment.type_mesure);
+    _uniteSelectionnee = units.first;
   }
+
 
   @override
   void dispose() {
@@ -727,10 +730,15 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
   @override
   Widget build(BuildContext context) {
-    final recetteCtrl = context.read<RecetteController>();
-    final List<String> unitesDisponibles = recetteCtrl.unitesDisponibles.isNotEmpty
-        ? recetteCtrl.unitesDisponibles
-        : ["pcs"];
+    final List<String> unitesDisponibles = UnitService
+        .getUnitsForTypeMesure(widget.aliment.type_mesure)
+        .toSet()
+        .toList();
+
+    if (!unitesDisponibles.contains(_uniteSelectionnee)) {
+      _uniteSelectionnee = unitesDisponibles.first;
+    }
+
     return Consumer<FrigoController>(
       builder: (context, frigoCtrl, child) {
         double qte = 0;
@@ -746,7 +754,10 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
         // Mettre à jour le controller seulement si on n'est pas en train d'éditer
         if (!_isEditing) {
           _quantiteController.text = qte > 0 ? qte.toInt().toString() : "";
-          _uniteSelectionnee = unite;
+          if (!_isEditing && unitesDisponibles.contains(unite)) {
+            _uniteSelectionnee = unite;
+          }
+
         }
 
         return SingleChildScrollView(

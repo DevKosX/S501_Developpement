@@ -51,8 +51,8 @@ id_aliment,nom,categorie,nutriscore,image,poids_unitaire,type_mesure
 50,Pain burger,Boulangerie,C,pain_burger.jpg,,UNITAIRE
 51,Cheddar (tranches),Crèmerie,D,cheddar.jpg,,POIDS
 52,Semoule (couscous),Épicerie,A,semoule.jpg,,POIDS
-53,Courgette,Légume,A,courgette.jpg,200,UNITAIRE
-54,Carotte,Légume,A,carotte.jpg,80,UNITAIRE
+53,Courgette,Légume,A,courgette.jpg,200,POIDS
+54,Carotte,Légume,A,carotte.jpg,80,POIDS
 55,Pois chiches (conserve),Légume,A,pois_chiches.jpg,,POIDS
 56,Pain pita,Boulangerie,B,pita.jpg,,UNITAIRE
 57,Lentilles corail,Épicerie,A,lentilles.jpg,,POIDS
@@ -63,7 +63,7 @@ id_aliment,nom,categorie,nutriscore,image,poids_unitaire,type_mesure
 62,Piment (flocons),Condiment,C,piment.jpg,250,POIDS
 63,Gorgonzola,Crèmerie,E,gorgonzola.jpg,,POIDS
 64,Gnocchis (frais),Épicerie,C,gnocchis.jpg,,POIDS
-65,Aubergine,Légume,A,aubergine.jpg,300,UNITAIRE
+65,Aubergine,Légume,A,aubergine.jpg,300,POIDS
 66,Feta,Crèmerie,D,feta.jpg,,POIDS
 67,Poisson blanc (filet),Poisson,A,poisson_blanc.jpg,,POIDS
 68,Paprika,Condiment,B,paprika.jpg,,INCONNU
@@ -79,12 +79,12 @@ id_aliment,nom,categorie,nutriscore,image,poids_unitaire,type_mesure
 78,Câpres,Condiment,B,capres.jpg,,INCONNU
 79,Anchois (filets),Poisson,C,anchois.jpg,,INCONNU
 80,Baguette,Boulangerie,B,baguette.jpg,,POIDS
-81,Épices Tandoori,Condiment,B,tandoori.jpg,,INCONNU
+81,Épices Tandoori,Condiment,B,tandoori.jpg,,POIDS
 82,Aneth,Condiment,A,aneth.jpg,,INCONNU
 83,Crevettes,Poisson,A,crevettes.jpg,,POIDS
 84,Chapelure,Épicerie,B,chapelure.jpg,,POIDS
 85,Galette de riz,Épicerie,B,galette_riz.jpg,,UNITAIRE
-86,Menthe,Condiment,A,menthe.jpg,,INCONNU
+86,Menthe,Condiment,A,menthe.jpg,,POIDS
 87,Ketchup,Condiment,E,ketchup.jpg,,VOLUME
 88,Polenta,Épicerie,A,polenta.jpg,,POIDS
 89,Tahini,Épicerie,C,tahini.jpg,,INCONNU

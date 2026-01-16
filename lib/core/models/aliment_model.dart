@@ -5,6 +5,7 @@ class Aliment {
   String nutriscore;
   String image;
   double poids_unitaire;
+  String type_mesure; 
 
   Aliment({
     required this.id_aliment,
@@ -13,6 +14,7 @@ class Aliment {
     required this.nutriscore,
     required this.image,
     required this.poids_unitaire,
+    required this.type_mesure,
   });
 
   int getIdAliment() {
@@ -43,6 +45,7 @@ class Aliment {
       nutriscore: map['nutriscore'] ?? "N/A",
       image: map['image'] ?? "",
       poids_unitaire: _toDoubleSafe(map['poids_unitaire']),
+      type_mesure: map['type_mesure'] ?? "INCONNU",
     );
   }
 
@@ -68,6 +71,7 @@ class Aliment {
       'nutriscore': nutriscore,
       'image': image,
       'poids_unitaire': poids_unitaire,
+      'type_mesure': type_mesure,
     };
   }
 }

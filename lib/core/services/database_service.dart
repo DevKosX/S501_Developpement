@@ -53,7 +53,8 @@ class DatabaseService {
           categorie TEXT,
           nutriscore TEXT,
           image TEXT,
-          poids_unitaire REAL
+          poids_unitaire REAL,
+          type_mesure TEXT
         );
       ''');
 
@@ -116,7 +117,7 @@ class DatabaseService {
       );
 
       await _importerCSV(txn, 'assets/db/aliments.csv',
-          'INSERT INTO Aliments (id_aliment, nom, categorie, nutriscore, image, poids_unitaire) VALUES (?, ?, ?, ?, ?, ?)'
+          'INSERT INTO Aliments (id_aliment, nom, categorie, nutriscore, image, poids_unitaire, type_mesure) VALUES (?, ?, ?, ?, ?, ?, ?)'
       );
 
       await _importerCSV(txn, 'assets/db/recettes.csv',
