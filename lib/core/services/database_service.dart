@@ -98,9 +98,12 @@ class DatabaseService {
           id_recette INTEGER,
           date_action TEXT,
           duree_totale_min INTEGER,
-          FOREIGN KEY (id_recette) REFERENCES Recettes(id_recette)
+          note INTEGER,
+          commentaire TEXT,
+          favori INTEGER DEFAULT 0
         );
       ''');
+
 
       await txn.execute('''
         CREATE TABLE FeedbackRecette (

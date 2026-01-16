@@ -203,13 +203,42 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                           final frigoCtrl = context.read<FrigoController>();
                           final alimentCtrl = context.read<AlimentController>();
                           
-                          await frigoCtrl.consommerIngredientsRecette(
+                          final success = await frigoCtrl.consommerIngredientsPourRecette(
                             recetteCtrl.ingredients,
                             alimentCtrl.catalogueAliments,
                           );
 
+                          if (!success) {
+                            if (!mounted) return;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: const [
+                                    Icon(Icons.warning, color: Colors.white),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        "Ingrédients insuffisants dans votre frigo",
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: Colors.redAccent,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                            return;
+                          }
+
+                          // ✅ Tout est OK → on lance la cuisson
                           final etapes = _decouperEtapes(widget.recette.instructions);
-                          
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -220,6 +249,7 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                               ),
                             ),
                           );
+
 
                         },
                         style: ElevatedButton.styleFrom(

@@ -3,6 +3,7 @@ import 'package:s501_developpement/core/models/ingredient_recette_model.dart';
 import '../models/frigo_item_model.dart';
 import '../models/aliment_model.dart';
 import '../repositories/frigo_repository.dart';
+import '../services/unit_conversion_service.dart';
 import '../repositories/aliment_repository.dart';
 
 class FrigoController extends ChangeNotifier {
@@ -19,6 +20,87 @@ class FrigoController extends ChangeNotifier {
     chargerContenuFrigo();
   }
 
+  Future<bool> consommerIngredientsPourRecette(
+    List<IngredientRecette> ingredientsRecette,
+    List<Aliment> aliments,
+  ) async {
+    // 🔒 1. Vérification AVANT déduction
+    for (final ingredient in ingredientsRecette) {
+      try {
+        final aliment = aliments.firstWhere(
+          (a) => a.nom.toLowerCase() == ingredient.nom.toLowerCase()
+
+        );
+
+        final itemFrigo = _contenuFrigo.firstWhere(
+          (item) => item.id_aliment == aliment.id_aliment,
+        );
+
+        final frigoGrammes = UnitConversionService.toGrammes(
+          quantite: itemFrigo.quantite,
+          unite: itemFrigo.unite,
+          poidsUnitaire: aliment.poids_unitaire,
+        );
+
+        final recetteGrammes = UnitConversionService.toGrammes(
+          quantite: ingredient.quantite,
+          unite: ingredient.unite,
+          poidsUnitaire: aliment.poids_unitaire,
+        );
+
+        if (frigoGrammes < recetteGrammes) {
+          return false; // ❌ pas assez d’ingrédient
+        }
+      } catch (e) {
+        return false; // ingrédient absent du frigo
+      }
+    }
+
+    // ✅ 2. Déduction réelle
+    for (final ingredient in ingredientsRecette) {
+      final aliment = aliments.firstWhere(
+        (a) => a.nom.toLowerCase() == ingredient.nom.toLowerCase()
+
+      );
+
+      final itemFrigo = _contenuFrigo.firstWhere(
+        (item) => item.id_aliment == aliment.id_aliment,
+      );
+
+      final frigoGrammes = UnitConversionService.toGrammes(
+        quantite: itemFrigo.quantite,
+        unite: itemFrigo.unite,
+        poidsUnitaire: aliment.poids_unitaire,
+      );
+
+      final recetteGrammes = UnitConversionService.toGrammes(
+        quantite: ingredient.quantite,
+        unite: ingredient.unite,
+        poidsUnitaire: aliment.poids_unitaire,
+      );
+
+      final resteGrammes = frigoGrammes - recetteGrammes;
+
+      final nouvelleQuantite = UnitConversionService.fromGrammes(
+        grammes: resteGrammes,
+        unite: itemFrigo.unite,
+        poidsUnitaire: aliment.poids_unitaire,
+      );
+
+      await definirQuantite(
+        aliment,
+        nouvelleQuantite,
+        unite: itemFrigo.unite,
+      );
+    }
+
+    await chargerContenuFrigo();
+    notifyListeners();
+    return true;
+  }
+
+
+  
   Future<void> chargerContenuFrigo() async {
     _isLoading = true;
     notifyListeners();
@@ -154,53 +236,16 @@ class FrigoController extends ChangeNotifier {
     await chargerContenuFrigo();
   }
 
-  Future<void> consommerIngredientsRecette(
-    List<IngredientRecette> ingredientsRecette,
-    List<Aliment> catalogueAliments,
-  ) async {
-    for (final ingredient in ingredientsRecette) {
-      try {
-        // retrouver l'aliment correspondant par nom
-        final aliment = catalogueAliments.firstWhere(
-          (a) => a.nom.toLowerCase() == ingredient.nom.toLowerCase(),
-        );
-
-        final itemFrigo = contenuFrigo.firstWhere(
-          (item) => item.id_aliment == aliment.id_aliment,
-        );
-
-        final nouvelleQuantite =
-            itemFrigo.quantite - ingredient.quantite;
-
-        if (nouvelleQuantite <= 0) {
-          // supprimer de la BDD + mémoire
-          await supprimerItem(itemFrigo.id_frigo);
-        } else {
-          // mettre à jour la quantité
-          await definirQuantite(
-            aliment,
-            nouvelleQuantite,
-            unite: itemFrigo.unite,
-          );
-        }
-      } catch (e) {
-        // ingrédient absent du frigo → on ignore
-        continue;
-      }
-    }
-
-    notifyListeners();
-  }
-
 
   String getUniteAliment(int idAliment) {
     try {
       final item = _contenuFrigo.firstWhere(
-              (item) => item.id_aliment == idAliment
+        (item) => item.id_aliment == idAliment,
       );
       return item.unite;
     } catch (e) {
       return "pcs";
     }
   }
+
 }

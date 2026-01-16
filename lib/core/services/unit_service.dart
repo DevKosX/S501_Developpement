@@ -1,12 +1,13 @@
 import '../models/ingredient_recette_model.dart';
+import '../models/aliment_model.dart';
 
 class UnitService {
   // ---------------------------------------------------------------------------
-  // NORMALISATION DES UNITÉS
+  // NORMALISATION DES UNITÉS (RECETTES / CSV / DB)
   // ---------------------------------------------------------------------------
 
   static const Map<String, String> _unitAliases = {
-    // poids
+    // --- POIDS ---
     'g': 'g',
     'gramme': 'g',
     'grammes': 'g',
@@ -15,7 +16,7 @@ class UnitService {
     'kilogramme': 'kg',
     'kilogrammes': 'kg',
 
-    // volume
+    // --- VOLUME ---
     'ml': 'ml',
     'millilitre': 'ml',
     'millilitres': 'ml',
@@ -28,7 +29,7 @@ class UnitService {
     'litre': 'l',
     'litres': 'l',
 
-    // unitaire
+    // --- UNITAIRE ---
     'pcs': 'pcs',
     'pc': 'pcs',
     'piece': 'pcs',
@@ -46,10 +47,10 @@ class UnitService {
   }
 
   // ---------------------------------------------------------------------------
-  // ✅ NOUVELLE LOGIQUE : UNITÉS SELON TYPE_MESURE (FRIGO)
+  // ✅ UTILISÉ PAR LA VUE FRIGO (AJOUT D’ALIMENT)
   // ---------------------------------------------------------------------------
 
-  /// Utilisé dans la vue frigo / ajout d’aliment
+  /// Retourne les unités disponibles selon type_mesure (Aliments)
   static List<String> getUnitsForTypeMesure(String typeMesure) {
     switch (typeMesure.toUpperCase()) {
       case 'UNITAIRE':
@@ -71,10 +72,10 @@ class UnitService {
   }
 
   // ---------------------------------------------------------------------------
-  // 🔙 COMPATIBILITÉ ANCIEN CODE (RECETTES)
+  // 🔙 COMPATIBILITÉ ANCIEN CODE (RecetteController)
+  // ⚠️ À NE SURTOUT PAS SUPPRIMER
   // ---------------------------------------------------------------------------
 
-  /// ⚠️ À NE PAS SUPPRIMER (utilisé par RecetteController)
   static List<String> getUnitsAsList(
     List<IngredientRecette> ingredients,
   ) {
@@ -92,8 +93,56 @@ class UnitService {
     return result;
   }
 
-  /// ⚠️ Méthode attendue par RecetteController
+  /// Méthode attendue par l’ancien code (cache supprimé volontairement)
   static void clearCache() {
     // volontairement vide (compatibilité)
+  }
+
+  // ---------------------------------------------------------------------------
+  // 🔥 CONVERSION MÉTIER (FRIGO ⇄ RECETTES)
+  // ---------------------------------------------------------------------------
+
+  /// Convertit une quantité vers une unité de base :
+  /// - POIDS   → grammes
+  /// - VOLUME  → millilitres
+  /// - UNITAIRE → pièces
+  static double toBase({
+    required double quantite,
+    required String unite,
+    required Aliment aliment,
+  }) {
+    final u = unite.toLowerCase();
+
+    switch (aliment.type_mesure.toUpperCase()) {
+
+      case 'POIDS':
+        if (u == 'kg') return quantite * 1000;
+        if (u == 'g') return quantite;
+        return quantite;
+
+      case 'VOLUME':
+        if (u == 'l') return quantite * 1000;
+        if (u == 'cl') return quantite * 10;
+        if (u == 'ml') return quantite;
+        return quantite;
+
+      case 'UNITAIRE':
+        if (u == 'pcs') return quantite;
+
+        // Conversion poids → unités si poids_unitaire connu
+        if (aliment.poids_unitaire > 0) {
+          if (u == 'g') return quantite / aliment.poids_unitaire;
+          if (u == 'kg') return (quantite * 1000) / aliment.poids_unitaire;
+        }
+        return quantite;
+
+      case 'MIXTE':
+        if (u == 'kg') return quantite * 1000;
+        if (u == 'g') return quantite;
+        return quantite;
+
+      default:
+        return quantite;
+    }
   }
 }
