@@ -8,11 +8,8 @@ import 'widgets/liste_recettes.dart';
 /// Implémentation du 22 novembre 2025
 ///
 
-
 class EcranRecettes extends StatefulWidget {
   const EcranRecettes({super.key});
-
-
 
   @override
   State<EcranRecettes> createState() => _EcranRecettesState();
@@ -31,7 +28,6 @@ final List<String> categoriesRecettes = [
 
 class _EcranRecettesState extends State<EcranRecettes> {
 
-
 // 2. Le contrôleur de recherche
   final TextEditingController _searchController = TextEditingController();
 
@@ -41,9 +37,11 @@ class _EcranRecettesState extends State<EcranRecettes> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RecetteController>().getRecettesTrieesParFrigo();
     });
-    _searchController.addListener(() {
-      context.read<RecetteController>().setRecherche(_searchController.text);
-    });
+    
+    // MODIFICATION : On retire le listener ici pour ne pas déclencher la recherche à chaque caractère.
+    // _searchController.addListener(() {
+    //   context.read<RecetteController>().setRecherche(_searchController.text);
+    // });
   }
 
   // AJOUT 3 : On n'oublie pas de nettoyer le contrôleur quand on quitte la page
@@ -100,16 +98,51 @@ class _EcranRecettesState extends State<EcranRecettes> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: TextField(
                   controller: _searchController,
+                  // MODIFICATION : Configure le bouton du clavier pour afficher "Rechercher"
+                  textInputAction: TextInputAction.search,
+                  // MODIFICATION : Déclenche la recherche uniquement quand l'utilisateur valide (Enter)
+                  onSubmitted: (value) {
+                    context.read<RecetteController>().setRecherche(value);
+                  },
+                  // AJOUT : Réinitialise la liste si le champ est vidé
+                  onChanged: (text) {
+                    if (text.isEmpty) {
+                      context.read<RecetteController>().setRecherche("");
+                    }
+                  },
                   decoration: InputDecoration(
                     hintText: "Rechercher une recette...",
+                    
+                    // MODIFICATION : La loupe redevient une simple icône décorative à gauche
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    
+                    // NOUVEAU : Bouton d'action explicite à droite
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.all(4.0), 
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE040FB), // Couleur du thème
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_forward_rounded, size: 20, color: Colors.white),
+                          tooltip: "Lancer la recherche",
+                          onPressed: () {
+                            // Action du bouton : Lance la recherche et ferme le clavier
+                            context.read<RecetteController>().setRecherche(_searchController.text);
+                            FocusScope.of(context).unfocus(); 
+                          },
+                        ),
+                      ),
+                    ),
+                    
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),

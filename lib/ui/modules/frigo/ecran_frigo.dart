@@ -50,7 +50,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
     final List<String> categories = ["Tout", ...alimentController.categories];
 
-    // Le filtrage se base sur _recherche (qui ne change que lors du clic sur le bouton)
+    // Le filtrage se base sur _recherche (qui ne change que lors du clic sur le bouton ou si vide)
     List<Aliment> alimentsAffiches = alimentController.catalogueAliments.where((aliment) {
       final matchRecherche = aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
       final catAliment = aliment.categorie.isEmpty ? "Autre" : aliment.categorie;
@@ -193,6 +193,14 @@ class _EcranFrigoState extends State<EcranFrigo> {
                 controller: _searchController, // Utilisation du controller
                 textInputAction: TextInputAction.search, // Affiche le bouton "Rechercher" sur le clavier
                 onSubmitted: (_) => _lancerRecherche(), // Action quand on valide au clavier
+                // AJOUT : Réinitialiser si le champ est vide
+                onChanged: (text) {
+                  if (text.isEmpty) {
+                    setState(() {
+                      _recherche = "";
+                    });
+                  }
+                },
                 decoration: InputDecoration(
                   hintText: "Rechercher un aliment...",
                   hintStyle: TextStyle(color: Colors.grey[400]),
