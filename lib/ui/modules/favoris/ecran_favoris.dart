@@ -81,8 +81,8 @@ class _EcranFavorisState extends State<EcranFavoris> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.pink.withOpacity(0.8),
-                          Colors.pink,
+                          const Color(0xFFE040FB).withOpacity(0.8),
+                          const Color(0xFFE040FB),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(15),
@@ -417,10 +417,10 @@ class _EcranFavorisState extends State<EcranFavoris> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink,
+                      backgroundColor: const Color(0xFFE040FB),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
+                      shape: RoundedRectangleBorder(  
                         borderRadius: BorderRadius.circular(25),
                       ),
                       elevation: 0,

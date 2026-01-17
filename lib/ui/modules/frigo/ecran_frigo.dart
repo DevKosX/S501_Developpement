@@ -163,7 +163,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  "${frigoController.contenuFrigo.length} aliment${frigoController.contenuFrigo.length > 1 ? 's' : ''} • $totalItems unité${totalItems > 1 ? 's' : ''}",
+                                  "${frigoController.contenuFrigo.length} aliment${frigoController.contenuFrigo.length > 1 ? 's' : ''}",
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.8),
                                     fontSize: 14,
