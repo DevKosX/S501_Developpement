@@ -3,6 +3,8 @@ import '../../../../core/models/historique_model.dart';
 import '../../../../core/models/recette_model.dart';
 import 'image_recette.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/controllers/historique_controller.dart';
+
 import '../../../../core/controllers/feedback_recette_controller.dart';
 
 
@@ -63,15 +65,15 @@ class CarteHistorique extends StatelessWidget {
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(Icons.delete,
-                          color: Colors.red.shade300, size: 20),
-                    )
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        final historiqueCtrl = context.read<HistoriqueController>();
+
+                        await historiqueCtrl.supprimerHistorique(historique.idhistorique!);
+                      },
+                    ),
+
                   ],
                 ),
 

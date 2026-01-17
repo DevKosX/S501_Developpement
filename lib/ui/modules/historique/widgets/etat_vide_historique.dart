@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:s501_developpement/ui/static/ecran_principal.dart';
 import '../../recettes/ecran_recettes.dart';
 
 class EtatVideHistorique extends StatelessWidget {
@@ -29,12 +30,14 @@ class EtatVideHistorique extends StatelessWidget {
             // ✅ BOUTON CORRIGÉ
             ElevatedButton(
               onPressed: () {
-                Navigator.pushReplacement(
+                Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const EcranRecettes(),
+                    builder: (_) => const EcranPrincipal(initialIndex: 2),
                   ),
+                  (route) => false,
                 );
+
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE040FB),
