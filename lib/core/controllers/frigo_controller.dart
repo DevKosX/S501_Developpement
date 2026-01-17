@@ -118,22 +118,19 @@ class FrigoController extends ChangeNotifier {
 
   /// Définir une quantité spécifique pour un aliment
   /// [MODIFIE] Accepte maintenant une datePeremption optionnelle
-  Future<void> definirQuantite(Aliment aliment, double nouvelleQuantite, {DateTime? datePeremption}) async {
+  Future<void> definirQuantite(Aliment aliment, double nouvelleQuantite, {DateTime? datePeremption},{required String unite,}) async {
     if (nouvelleQuantite <= 0) {
-      // Si la quantité est 0 ou négative, on supprime l'item
       try {
         final itemExistant = _contenuFrigo.firstWhere(
-                (item) => item.id_aliment == aliment.id_aliment
+          (item) => item.id_aliment == aliment.id_aliment,
         );
         await _repository.deleteItemFrigo(itemExistant.id_frigo);
-      } catch (e) {
-        // L'item n'existe pas, rien à faire
-      }
+      } catch (e) {}
     } else {
       Frigo? itemExistant;
       try {
         itemExistant = _contenuFrigo.firstWhere(
-                (item) => item.id_aliment == aliment.id_aliment
+          (item) => item.id_aliment == aliment.id_aliment,
         );
       } catch (e) {
         itemExistant = null;
@@ -150,26 +147,22 @@ class FrigoController extends ChangeNotifier {
       }
 
       if (itemExistant != null) {
-        // Mettre à jour la quantité existante
         final itemModifie = Frigo(
           id_frigo: itemExistant.id_frigo,
           id_aliment: itemExistant.id_aliment,
           quantite: nouvelleQuantite,
-          unite: itemExistant.unite,
+          unite: unite, 
           date_ajout: itemExistant.date_ajout,
           date_peremption: dateFinale, // <-- Mise à jour avec la date
         );
 
         await _repository.updateItemFrigo(itemModifie);
       } else {
-        // Créer un nouvel item avec la quantité spécifiée
-        String uniteParDefaut = await _alimentRepository.getUniteParDefaut(aliment.id_aliment);
-
         final nouvelItem = Frigo(
           id_frigo: 0,
           id_aliment: aliment.id_aliment,
           quantite: nouvelleQuantite,
-          unite: uniteParDefaut,
+          unite: unite, 
           date_ajout: DateTime.now(),
           date_peremption: dateFinale, // <-- Utilisation de la date calculée/choisie
         );
@@ -180,6 +173,7 @@ class FrigoController extends ChangeNotifier {
 
     await chargerContenuFrigo();
   }
+
 
   Future<void> diminuerQuantite(Aliment aliment) async {
     try {
