@@ -176,27 +176,27 @@ class _EcranRecettesState extends State<EcranRecettes> {
                           },
                           borderRadius: BorderRadius.circular(16),
                           child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: estSelectionnee ? const Color(0xFFE040FB) : Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: estSelectionnee 
-                                    ? const Color(0xFFE040FB) 
-                                    : Colors.grey.withOpacity(0.2),
-                                width: 1.5,
-                              ),
-                              boxShadow: estSelectionnee
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color(0xFFE040FB).withOpacity(0.3),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 4),
-                                      )
-                                    ]
-                                  : [],
-                            ),
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: estSelectionnee ? const Color(0xFFE040FB) : Colors.white,
+                                    borderRadius: BorderRadius.circular(25), // 👈 PLUS ROND
+                                    border: Border.all(
+                                      color: estSelectionnee
+                                          ? const Color(0xFFE040FB)
+                                          : Colors.grey.withOpacity(0.25),
+                                      width: 1.2,
+                                    ),
+                                    boxShadow: estSelectionnee
+                                        ? [
+                                            BoxShadow(
+                                              color: const Color(0xFFE040FB).withOpacity(0.25),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 4),
+                                            )
+                                          ]
+                                        : [],
+                                  ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min, // Important pour que le tag s'adapte au contenu
                               children: [
