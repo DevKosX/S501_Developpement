@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../recettes/ecran_recettes.dart';
 
 class EtatVideHistorique extends StatelessWidget {
   const EtatVideHistorique({super.key});
@@ -24,12 +25,24 @@ class EtatVideHistorique extends StatelessWidget {
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 25),
+
+            // ✅ BOUTON CORRIGÉ
             ElevatedButton(
-              onPressed: () => Navigator.pushReplacementNamed(context, "/recettes"),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const EcranRecettes(),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: const Color(0xFFE040FB),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -38,7 +51,7 @@ class EtatVideHistorique extends StatelessWidget {
                 "Voir les recettes",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-            )
+            ),
           ],
         ),
       ),
