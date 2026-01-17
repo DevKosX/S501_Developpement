@@ -45,6 +45,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
     // Fermer le clavier
     FocusScope.of(context).unfocus();
   }
+
   static const int _pageSize = 30;
   int _currentPage = 1;
 
@@ -56,27 +57,22 @@ class _EcranFrigoState extends State<EcranFrigo> {
     final List<String> categories = ["Tout", ...alimentController.categories];
 
     // Le filtrage se base sur _recherche (qui ne change que lors du clic sur le bouton ou si vide)
-    List<Aliment> alimentsAffiches = alimentController.catalogueAliments.where((aliment) {
-      final matchRecherche = aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
     final List<Aliment> alimentsFiltres =
         alimentController.catalogueAliments.where((aliment) {
       final matchRecherche =
           aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
       final catAliment = aliment.categorie.isEmpty ? "Autre" : aliment.categorie;
       final matchCategorie = _categorieSelectionnee == "Tout" ||
-          catAliment.toLowerCase() ==
-              _categorieSelectionnee.toLowerCase();
+          catAliment.toLowerCase() == _categorieSelectionnee.toLowerCase();
 
       return matchRecherche && matchCategorie;
     }).toList();
-
 
     final int maxItems = _currentPage * _pageSize;
     final List<Aliment> alimentsAffiches =
         alimentsFiltres.take(maxItems).toList();
 
     final bool hasMore = alimentsAffiches.length < alimentsFiltres.length;
-
 
     int totalItems = 0;
     for (var item in frigoController.contenuFrigo) {
@@ -87,360 +83,361 @@ class _EcranFrigoState extends State<EcranFrigo> {
       backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
         child: alimentController.isLoading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFFE040FB)))
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFE040FB)))
             : ListView(
-          padding: const EdgeInsets.all(20.0),
-          children: [
-            // --- HEADER ---
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Mon Frigo",
-                  style: TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF2D3436),
-                    letterSpacing: -0.5,
+                padding: const EdgeInsets.all(20.0),
+                children: [
+                  // --- HEADER ---
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Mon Frigo",
+                        style: TextStyle(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF2D3436),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      Text(
+                        "Gérez vos ingrédients disponibles",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Text(
-                  "Gérez vos ingrédients disponibles",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
 
-            const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-            // --- CARTE RÉSUMÉ DU FRIGO (Cliquable) ---
-            GestureDetector(
-              onTap: () => _afficherContenuFrigo(context),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFE040FB), Color(0xFFAA00FF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFE040FB).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
+                  // --- CARTE RÉSUMÉ DU FRIGO (Cliquable) ---
+                  GestureDetector(
+                    onTap: () => _afficherContenuFrigo(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE040FB), Color(0xFFAA00FF)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFE040FB).withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                      child: const Icon(
-                        Icons.kitchen,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          const Text(
-                            "Contenu du frigo",
-                            style: TextStyle(
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.kitchen,
                               color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                              size: 32,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "${frigoController.contenuFrigo.length} aliment${frigoController.contenuFrigo.length > 1 ? 's' : ''} • $totalItems unité${totalItems > 1 ? 's' : ''}",
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Contenu du frigo",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "${frigoController.contenuFrigo.length} aliment${frigoController.contenuFrigo.length > 1 ? 's' : ''} • $totalItems unité${totalItems > 1 ? 's' : ''}",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.arrow_forward_ios,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // --- BARRE DE RECHERCHE ---
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController, // Utilisation du controller
+                      textInputAction: TextInputAction.search, // Affiche le bouton "Rechercher" sur le clavier
+                      onSubmitted: (_) => _lancerRecherche(), // Action quand on valide au clavier
+                      // AJOUT : Réinitialiser si le champ est vide
+                      onChanged: (text) {
+                        if (text.isEmpty) {
+                          setState(() {
+                            _recherche = "";
+                            _currentPage = 1;
+                          });
+                        }
+                      },
+                      decoration: InputDecoration(
+                        hintText: "Rechercher un aliment...",
+                        hintStyle: TextStyle(color: Colors.grey[400]),
+                        prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+                        // Bouton de validation de recherche
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.arrow_forward_rounded,
+                              color: Color(0xFFE040FB)),
+                          onPressed: _lancerRecherche,
+                          tooltip: "Lancer la recherche",
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // --- CATÉGORIES (MODIFIÉ : WRAP POUR AFFICHAGE RESPONSIVE) ---
+                  const Text(
+                    "Catégories",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D3436),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Remplacement du SingleChildScrollView/Row par un SizedBox/Wrap
+                  SizedBox(
+                    width: double.infinity,
+                    child: Wrap(
+                      spacing: 8.0, // Espace horizontal entre les bulles
+                      runSpacing: 10.0, // Espace vertical entre les lignes
+                      alignment: WrapAlignment.start,
+                      children: categories.map((categorie) {
+                        final isSelected = _categorieSelectionnee == categorie;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _categorieSelectionnee = categorie;
+                                _currentPage = 1;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFFE040FB)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(25),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: isSelected
+                                        ? const Color(0xFFE040FB)
+                                            .withOpacity(0.3)
+                                        : Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                categorie,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.grey[700],
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // --- TITRE GRILLE ---
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Ajouter des aliments",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2D3436),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE040FB).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          "${alimentsFiltres.length} disponible${alimentsFiltres.length > 1 ? 's' : ''}",
+                          style: const TextStyle(
+                            color: Color(0xFFAA00FF),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // --- GRILLE D'ALIMENTS ---
+                  alimentsAffiches.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(40.0),
+                            child: Column(
+                              children: [
+                                Icon(Icons.search_off,
+                                    size: 60, color: Colors.grey[300]),
+                                const SizedBox(height: 16),
+                                Text(
+                                  "Aucun résultat",
+                                  style: TextStyle(
+                                      color: Colors.grey[500], fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.75,
+                          ),
+                          itemCount: alimentsAffiches.length,
+                          itemBuilder: (context, index) {
+                            final aliment = alimentsAffiches[index];
+
+                            double quantiteTrouvee = 0;
+                            String uniteTrouvee = "pcs";
+                            // [NOUVEAU] Variables pour date et statut
+                            DateTime? datePeremption;
+                            StatutPeremption? statut;
+
+                            try {
+                              final item = frigoController.contenuFrigo
+                                  .firstWhere((item) =>
+                                      item.id_aliment == aliment.id_aliment);
+                              quantiteTrouvee = item.quantite;
+                              uniteTrouvee = item.unite;
+                              // [NOUVEAU] On récupère la date et le statut calculé
+                              datePeremption = item.date_peremption;
+                              statut = item.statut;
+                            } catch (e) {}
+
+                            return TuileIngredient(
+                              aliment: aliment,
+                              quantiteAuFrigo: quantiteTrouvee,
+                              unite: uniteTrouvee,
+                              // [NOUVEAU] On passe les infos au widget
+                              datePeremption: datePeremption,
+                              statut: statut,
+                              onTap: () {
+                                _afficherFicheGestion(context, aliment);
+                              },
+                            );
+                          },
+                        ),
+
+                  if (hasMore)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _currentPage++;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE040FB),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Text(
+                            "Charger plus",
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
 
-            const SizedBox(height: 24),
-
-            // --- BARRE DE RECHERCHE ---
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
-              child: TextField(
-                controller: _searchController, // Utilisation du controller
-                textInputAction: TextInputAction.search, // Affiche le bouton "Rechercher" sur le clavier
-                onSubmitted: (_) => _lancerRecherche(), // Action quand on valide au clavier
-                // AJOUT : Réinitialiser si le champ est vide
-                onChanged: (text) {
-                  if (text.isEmpty) {
-                    setState(() {
-                      _recherche = "";
-                    });
-                  }
-                },
-                onChanged: (value) {
-                  setState(() {
-                    _recherche = value;
-                    _currentPage = 1; 
-                  });
-                },
-
-                decoration: InputDecoration(
-                  hintText: "Rechercher un aliment...",
-                  hintStyle: TextStyle(color: Colors.grey[400]),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
-                  // Bouton de validation de recherche
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.arrow_forward_rounded, color: Color(0xFFE040FB)),
-                    onPressed: _lancerRecherche,
-                    tooltip: "Lancer la recherche",
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // --- CATÉGORIES (MODIFIÉ : WRAP POUR AFFICHAGE RESPONSIVE) ---
-            const Text(
-              "Catégories",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D3436),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Remplacement du SingleChildScrollView/Row par un SizedBox/Wrap
-            SizedBox(
-              width: double.infinity,
-              child: Wrap(
-                spacing: 8.0, // Espace horizontal entre les bulles
-                runSpacing: 10.0, // Espace vertical entre les lignes
-                alignment: WrapAlignment.start,
-                children: categories.map((categorie) {
-                  final isSelected = _categorieSelectionnee == categorie;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _categorieSelectionnee = categorie;
-                          _currentPage = 1;
-                        });
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFE040FB) : Colors.white,
-                          borderRadius: BorderRadius.circular(25),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isSelected
-                                  ? const Color(0xFFE040FB).withOpacity(0.3)
-                                  : Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          categorie,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey[700],
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                            fontSize: 13,
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        categorie,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // --- TITRE GRILLE ---
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Ajouter des aliments",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3436),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE040FB).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    "${alimentsFiltres.length} disponible${alimentsFiltres.length > 1 ? 's' : ''}",
-                    style: const TextStyle(
-                      color: Color(0xFFAA00FF),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // --- GRILLE D'ALIMENTS ---
-            alimentsAffiches.isEmpty
-                ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(40.0),
-                child: Column(
-                  children: [
-                    Icon(Icons.search_off, size: 60, color: Colors.grey[300]),
-                    const SizedBox(height: 16),
-                    Text(
-                      "Aucun résultat",
-                      style: TextStyle(color: Colors.grey[500], fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            )
-                : GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.75,
-              ),
-              itemCount: alimentsAffiches.length,
-              itemBuilder: (context, index) {
-                final aliment = alimentsAffiches[index];
-
-                double quantiteTrouvee = 0;
-                String uniteTrouvee = "pcs";
-                // [NOUVEAU] Variables pour date et statut
-                DateTime? datePeremption;
-                StatutPeremption? statut;
-
-                try {
-                  final item = frigoController.contenuFrigo
-                      .firstWhere((item) => item.id_aliment == aliment.id_aliment);
-                  quantiteTrouvee = item.quantite;
-                  uniteTrouvee = item.unite;
-                  // [NOUVEAU] On récupère la date et le statut calculé
-                  datePeremption = item.date_peremption;
-                  statut = item.statut;
-                } catch (e) {}
-
-                return TuileIngredient(
-                  aliment: aliment,
-                  quantiteAuFrigo: quantiteTrouvee,
-                  unite: uniteTrouvee,
-                  // [NOUVEAU] On passe les infos au widget
-                  datePeremption: datePeremption,
-                  statut: statut, 
-                  onTap: () {
-                    _afficherFicheGestion(context, aliment);
-                  },
-                );
-              },
-            ),
-
-            if (hasMore)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _currentPage++;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE040FB),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      "Charger plus",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-
-            const SizedBox(height: 40),
-          ],
-        ),
       ),
     );
   }
@@ -464,7 +461,8 @@ class _EcranFrigoState extends State<EcranFrigo> {
                 return Container(
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24)),
                   ),
                   child: Column(
                     children: [
@@ -488,11 +486,15 @@ class _EcranFrigoState extends State<EcranFrigo> {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFFE040FB), Color(0xFFAA00FF)],
+                                  colors: [
+                                    Color(0xFFE040FB),
+                                    Color(0xFFAA00FF)
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              child: const Icon(Icons.kitchen, color: Colors.white, size: 24),
+                              child: const Icon(Icons.kitchen,
+                                  color: Colors.white, size: 24),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -509,7 +511,8 @@ class _EcranFrigoState extends State<EcranFrigo> {
                                   ),
                                   Text(
                                     "${contenu.length} aliment${contenu.length > 1 ? 's' : ''}",
-                                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                                    style: TextStyle(
+                                        color: Colors.grey[600], fontSize: 14),
                                   ),
                                 ],
                               ),
@@ -522,7 +525,8 @@ class _EcranFrigoState extends State<EcranFrigo> {
                                   color: Colors.grey[100],
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(Icons.close, color: Colors.grey[600], size: 20),
+                                child: Icon(Icons.close,
+                                    color: Colors.grey[600], size: 20),
                               ),
                             ),
                           ],
@@ -535,179 +539,202 @@ class _EcranFrigoState extends State<EcranFrigo> {
                       Expanded(
                         child: contenu.isEmpty
                             ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.inventory_2_outlined, size: 80, color: Colors.grey[300]),
-                              const SizedBox(height: 16),
-                              Text(
-                                "Votre frigo est vide",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Ajoutez des ingrédients depuis le catalogue",
-                                style: TextStyle(color: Colors.grey[500]),
-                              ),
-                            ],
-                          ),
-                        )
-                            : ListView.builder(
-                          controller: scrollController,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          itemCount: contenu.length,
-                          itemBuilder: (context, index) {
-                            final item = contenu[index];
-
-                            Aliment? aliment;
-                            try {
-                              aliment = alimentCtrl.catalogueAliments
-                                  .firstWhere((a) => a.id_aliment == item.id_aliment);
-                            } catch (e) {
-                              aliment = null;
-                            }
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.shade200),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.03),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Row(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    // Image
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Container(
-                                        width: 60,
-                                        height: 60,
-                                        color: Colors.grey[100],
-                                        child: aliment != null
-                                            ? Image.asset(
-                                          "assets/images/aliments/${aliment.image}",
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (c, e, s) => Icon(
-                                            Icons.fastfood,
-                                            color: Colors.grey[400],
-                                          ),
-                                        )
-                                            : Icon(Icons.fastfood, color: Colors.grey[400]),
+                                    Icon(Icons.inventory_2_outlined,
+                                        size: 80, color: Colors.grey[300]),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      "Votre frigo est vide",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey[600],
                                       ),
                                     ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      "Ajoutez des ingrédients depuis le catalogue",
+                                      style: TextStyle(color: Colors.grey[500]),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                controller: scrollController,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                itemCount: contenu.length,
+                                itemBuilder: (context, index) {
+                                  final item = contenu[index];
 
-                                    const SizedBox(width: 14),
+                                  Aliment? aliment;
+                                  try {
+                                    aliment = alimentCtrl.catalogueAliments
+                                        .firstWhere((a) =>
+                                            a.id_aliment == item.id_aliment);
+                                  } catch (e) {
+                                    aliment = null;
+                                  }
 
-                                    // Infos
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                          color: Colors.grey.shade200),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.03),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Row(
                                         children: [
-                                          Text(
-                                            aliment?.nom ?? "Aliment #${item.id_aliment}",
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15,
-                                              color: Color(0xFF2D3436),
+                                          // Image
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            child: Container(
+                                              width: 60,
+                                              height: 60,
+                                              color: Colors.grey[100],
+                                              child: aliment != null
+                                                  ? Image.asset(
+                                                      "assets/images/aliments/${aliment.image}",
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (c, e, s) => Icon(
+                                                        Icons.fastfood,
+                                                        color: Colors.grey[400],
+                                                      ),
+                                                    )
+                                                  : Icon(Icons.fastfood,
+                                                      color: Colors.grey[400]),
                                             ),
                                           ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 3,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: const Color(0xFFE040FB).withOpacity(0.1),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                ),
-                                                child: Text(
-                                                  "${item.quantite.toInt()} ${item.unite}",
-                                                  style: const TextStyle(
-                                                    color: Color(0xFFAA00FF),
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              if (aliment != null)
+
+                                          const SizedBox(width: 14),
+
+                                          // Infos
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
                                                 Text(
-                                                  aliment.categorie,
-                                                  style: TextStyle(
-                                                    color: Colors.grey[500],
-                                                    fontSize: 12,
+                                                  aliment?.nom ??
+                                                      "Aliment #${item.id_aliment}",
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15,
+                                                    color: Color(0xFF2D3436),
                                                   ),
                                                 ),
-                                            ],
+                                                const SizedBox(height: 4),
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 3,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(
+                                                                0xFFE040FB)
+                                                            .withOpacity(0.1),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
+                                                      ),
+                                                      child: Text(
+                                                        "${item.quantite.toInt()} ${item.unite}",
+                                                        style: const TextStyle(
+                                                          color:
+                                                              Color(0xFFAA00FF),
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    if (aliment != null)
+                                                      Text(
+                                                        aliment.categorie,
+                                                        style: TextStyle(
+                                                          color:
+                                                              Colors.grey[500],
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          // Bouton éditer
+                                          GestureDetector(
+                                            onTap: () {
+                                              Navigator.pop(context);
+                                              if (aliment != null) {
+                                                _afficherFicheGestion(
+                                                    context, aliment);
+                                              }
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFE040FB)
+                                                    .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: const Icon(
+                                                Icons.edit,
+                                                color: Color(0xFFE040FB),
+                                                size: 20,
+                                              ),
+                                            ),
+                                          ),
+
+                                          const SizedBox(width: 8),
+
+                                          // Bouton supprimer
+                                          GestureDetector(
+                                            onTap: () {
+                                              frigoCtrl.supprimerItem(
+                                                  item.id_frigo);
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    Colors.red.withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: const Icon(
+                                                Icons.delete_outline,
+                                                color: Colors.red,
+                                                size: 20,
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
-
-                                    // Bouton éditer
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        if (aliment != null) {
-                                          _afficherFicheGestion(context, aliment);
-                                        }
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFE040FB).withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: const Icon(
-                                          Icons.edit,
-                                          color: Color(0xFFE040FB),
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ),
-
-                                    const SizedBox(width: 8),
-
-                                    // Bouton supprimer
-                                    GestureDetector(
-                                      onTap: () {
-                                        frigoCtrl.supprimerItem(item.id_frigo);
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.red.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: const Icon(
-                                          Icons.delete_outline,
-                                          color: Colors.red,
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
                       ),
                     ],
                   ),
@@ -742,12 +769,18 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
   Color _getNutriscoreColor(String score) {
     switch (score.toUpperCase()) {
-      case 'A': return const Color(0xFF038141);
-      case 'B': return const Color(0xFF85BB2F);
-      case 'C': return const Color(0xFFFECB02);
-      case 'D': return const Color(0xFFEE8100);
-      case 'E': return const Color(0xFFE63E11);
-      default: return Colors.grey;
+      case 'A':
+        return const Color(0xFF038141);
+      case 'B':
+        return const Color(0xFF85BB2F);
+      case 'C':
+        return const Color(0xFFFECB02);
+      case 'D':
+        return const Color(0xFFEE8100);
+      case 'E':
+        return const Color(0xFFE63E11);
+      default:
+        return Colors.grey;
     }
   }
 }
@@ -792,30 +825,36 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
       _datePeremption = itemExistant.date_peremption;
     } else {
       // Sinon, calcul automatique basé sur la catégorie (Approche Hybride)
-      _datePeremption = frigoCtrl.calculerDatePeremptionParDefaut(widget.aliment);
+      _datePeremption =
+          frigoCtrl.calculerDatePeremptionParDefaut(widget.aliment);
     }
   }
-
 
   @override
   void dispose() {
     _quantiteController.dispose();
     super.dispose();
   }
-  
+
   // Helper pour afficher la date joliment
   String _formatDate(DateTime dt) {
-    return "${dt.day.toString().padLeft(2,'0')}/${dt.month.toString().padLeft(2,'0')}/${dt.year}";
+    return "${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}";
   }
 
   Color _getNutriscoreColor(String score) {
     switch (score.toUpperCase()) {
-      case 'A': return const Color(0xFF038141);
-      case 'B': return const Color(0xFF85BB2F);
-      case 'C': return const Color(0xFFFECB02);
-      case 'D': return const Color(0xFFEE8100);
-      case 'E': return const Color(0xFFE63E11);
-      default: return Colors.grey;
+      case 'A':
+        return const Color(0xFF038141);
+      case 'B':
+        return const Color(0xFF85BB2F);
+      case 'C':
+        return const Color(0xFFFECB02);
+      case 'D':
+        return const Color(0xFFEE8100);
+      case 'E':
+        return const Color(0xFFE63E11);
+      default:
+        return Colors.grey;
     }
   }
 
@@ -836,8 +875,8 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
         String unite = "pcs";
 
         try {
-          final item = frigoCtrl.contenuFrigo
-              .firstWhere((item) => item.id_aliment == widget.aliment.id_aliment);
+          final item = frigoCtrl.contenuFrigo.firstWhere(
+              (item) => item.id_aliment == widget.aliment.id_aliment);
           qte = item.quantite;
           unite = item.unite;
         } catch (e) {}
@@ -848,7 +887,6 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
           if (!_isEditing && unitesDisponibles.contains(unite)) {
             _uniteSelectionnee = unite;
           }
-
         }
 
         return SingleChildScrollView(
@@ -891,7 +929,8 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                           fit: BoxFit.cover,
                           errorBuilder: (c, e, s) => Container(
                             color: Colors.grey[200],
-                            child: const Icon(Icons.fastfood, size: 40, color: Colors.grey),
+                            child: const Icon(Icons.fastfood,
+                                size: 40, color: Colors.grey),
                           ),
                         ),
                       ),
@@ -913,23 +952,27 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                           ),
                           const SizedBox(height: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.grey[100],
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               widget.aliment.categorie,
-                              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              style: TextStyle(
+                                  color: Colors.grey[600], fontSize: 12),
                             ),
                           ),
                           const SizedBox(height: 8),
 
                           if (widget.aliment.nutriscore.isNotEmpty)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: _getNutriscoreColor(widget.aliment.nutriscore),
+                                color: _getNutriscoreColor(
+                                    widget.aliment.nutriscore),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -951,16 +994,19 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
                 // Unité affichée
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE040FB).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE040FB).withOpacity(0.3)),
+                    border: Border.all(
+                        color: const Color(0xFFE040FB).withOpacity(0.3)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: _uniteSelectionnee,
-                      icon: const Icon(Icons.expand_more, color: Color(0xFFAA00FF)),
+                      icon: const Icon(Icons.expand_more,
+                          color: Color(0xFFAA00FF)),
                       items: unitesDisponibles.map((u) {
                         return DropdownMenuItem(
                           value: u,
@@ -983,7 +1029,6 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                     ),
                   ),
                 ),
-
 
                 const SizedBox(height: 20),
 
@@ -1013,11 +1058,14 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                           // Bouton -
                           GestureDetector(
                             onTap: () {
-                              double current = double.tryParse(_quantiteController.text) ?? 0;
+                              double current =
+                                  double.tryParse(_quantiteController.text) ??
+                                      0;
                               if (current > 0) {
                                 setState(() {
                                   _isEditing = true;
-                                  _quantiteController.text = (current - 1).toInt().toString();
+                                  _quantiteController.text =
+                                      (current - 1).toInt().toString();
                                 });
                               }
                             },
@@ -1027,7 +1075,8 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                                 color: Colors.red.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.remove, color: Colors.red, size: 24),
+                              child: const Icon(Icons.remove,
+                                  color: Colors.red, size: 24),
                             ),
                           ),
 
@@ -1067,13 +1116,16 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE040FB), width: 2),
+                                  borderSide: const BorderSide(
+                                      color: Color(0xFFE040FB), width: 2),
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 12),
                               ),
                             ),
                           ),
@@ -1083,10 +1135,13 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                           // Bouton +
                           GestureDetector(
                             onTap: () {
-                              double current = double.tryParse(_quantiteController.text) ?? 0;
+                              double current =
+                                  double.tryParse(_quantiteController.text) ??
+                                      0;
                               setState(() {
                                 _isEditing = true;
-                                _quantiteController.text = (current + 1).toInt().toString();
+                                _quantiteController.text =
+                                    (current + 1).toInt().toString();
                               });
                             },
                             child: Container(
@@ -1095,7 +1150,8 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                                 color: const Color(0xFFE040FB).withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.add, color: Color(0xFFE040FB), size: 24),
+                              child: const Icon(Icons.add,
+                                  color: Color(0xFFE040FB), size: 24),
                             ),
                           ),
                         ],
@@ -1110,31 +1166,39 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                         alignment: WrapAlignment.center,
                         children: [
                           _buildQuickButton("+5", () {
-                            double current = double.tryParse(_quantiteController.text) ?? 0;
+                            double current =
+                                double.tryParse(_quantiteController.text) ?? 0;
                             setState(() {
                               _isEditing = true;
-                              _quantiteController.text = (current + 5).toInt().toString();
+                              _quantiteController.text =
+                                  (current + 5).toInt().toString();
                             });
                           }),
                           _buildQuickButton("+10", () {
-                            double current = double.tryParse(_quantiteController.text) ?? 0;
+                            double current =
+                                double.tryParse(_quantiteController.text) ?? 0;
                             setState(() {
                               _isEditing = true;
-                              _quantiteController.text = (current + 10).toInt().toString();
+                              _quantiteController.text =
+                                  (current + 10).toInt().toString();
                             });
                           }),
                           _buildQuickButton("+50", () {
-                            double current = double.tryParse(_quantiteController.text) ?? 0;
+                            double current =
+                                double.tryParse(_quantiteController.text) ?? 0;
                             setState(() {
                               _isEditing = true;
-                              _quantiteController.text = (current + 50).toInt().toString();
+                              _quantiteController.text =
+                                  (current + 50).toInt().toString();
                             });
                           }),
                           _buildQuickButton("+100", () {
-                            double current = double.tryParse(_quantiteController.text) ?? 0;
+                            double current =
+                                double.tryParse(_quantiteController.text) ?? 0;
                             setState(() {
                               _isEditing = true;
-                              _quantiteController.text = (current + 100).toInt().toString();
+                              _quantiteController.text =
+                                  (current + 100).toInt().toString();
                             });
                           }),
                           _buildQuickButton("Vider", () {
@@ -1158,39 +1222,46 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.orange.shade100),
-                    boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.05), blurRadius: 10)],
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.orange.withOpacity(0.05),
+                          blurRadius: 10)
+                    ],
                   ),
                   child: Column(
                     children: [
-                      const Text(
-                        "Date de péremption", 
-                        style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3436))
-                      ),
+                      const Text("Date de péremption",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2D3436))),
                       const SizedBox(height: 12),
-                      
+
                       // Affichage Date + Picker
                       InkWell(
                         onTap: () async {
                           DateTime? picked = await showDatePicker(
-                            context: context,
-                            initialDate: _datePeremption,
-                            firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                            lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-                            builder: (context, child) {
-                              return Theme(
-                                data: ThemeData.light().copyWith(
-                                  colorScheme: const ColorScheme.light(primary: Colors.orange),
-                                ),
-                                child: child!,
-                              );
-                            }
-                          );
+                              context: context,
+                              initialDate: _datePeremption,
+                              firstDate: DateTime.now()
+                                  .subtract(const Duration(days: 365)),
+                              lastDate: DateTime.now()
+                                  .add(const Duration(days: 365 * 2)),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: ThemeData.light().copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                        primary: Colors.orange),
+                                  ),
+                                  child: child!,
+                                );
+                              });
                           if (picked != null) {
                             setState(() => _datePeremption = picked);
                           }
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
                           decoration: BoxDecoration(
                             color: Colors.orange.shade50,
                             borderRadius: BorderRadius.circular(10),
@@ -1199,12 +1270,13 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.calendar_today, size: 18, color: Colors.orange[800]),
+                              Icon(Icons.calendar_today,
+                                  size: 18, color: Colors.orange[800]),
                               const SizedBox(width: 10),
                               Text(
                                 _formatDate(_datePeremption),
                                 style: TextStyle(
-                                  fontSize: 16, 
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.orange[900],
                                 ),
@@ -1223,10 +1295,14 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                         alignment: WrapAlignment.center,
                         children: [
                           _buildDateChip("Auj.", DateTime.now()),
-                          _buildDateChip("+3j", DateTime.now().add(const Duration(days: 3))),
-                          _buildDateChip("+1 sem", DateTime.now().add(const Duration(days: 7))),
-                          _buildDateChip("+2 sem", DateTime.now().add(const Duration(days: 14))),
-                          _buildDateChip("+1 mois", DateTime.now().add(const Duration(days: 30))),
+                          _buildDateChip("+3j",
+                              DateTime.now().add(const Duration(days: 3))),
+                          _buildDateChip("+1 sem",
+                              DateTime.now().add(const Duration(days: 7))),
+                          _buildDateChip("+2 sem",
+                              DateTime.now().add(const Duration(days: 14))),
+                          _buildDateChip("+1 mois",
+                              DateTime.now().add(const Duration(days: 30))),
                         ],
                       ),
                     ],
@@ -1240,11 +1316,12 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      double nouvelleQuantite = double.tryParse(_quantiteController.text) ?? 0;
+                      double nouvelleQuantite =
+                          double.tryParse(_quantiteController.text) ?? 0;
                       // [NOUVEAU] On passe la date modifiée au contrôleur
                       frigoCtrl.definirQuantite(
-                        widget.aliment, 
-                        nouvelleQuantite, 
+                        widget.aliment,
+                        nouvelleQuantite,
                         datePeremption: _datePeremption,
                         unite: _uniteSelectionnee,
                       );
@@ -1254,12 +1331,14 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                       backgroundColor: const Color(0xFFE040FB),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
                     child: const Text(
                       "Valider",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -1293,8 +1372,8 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
   Widget _buildDateChip(String label, DateTime targetDate) {
     // Vérifier si cette chip correspond à la date sélectionnée (à peu près)
     bool isSelected = _datePeremption.year == targetDate.year &&
-                      _datePeremption.month == targetDate.month &&
-                      _datePeremption.day == targetDate.day;
+        _datePeremption.month == targetDate.month &&
+        _datePeremption.day == targetDate.day;
 
     return GestureDetector(
       onTap: () {
@@ -1323,7 +1402,8 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
     );
   }
 
-  Widget _buildQuickButton(String label, VoidCallback onTap, {bool isDestructive = false}) {
+  Widget _buildQuickButton(String label, VoidCallback onTap,
+      {bool isDestructive = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1332,7 +1412,9 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
           color: isDestructive ? Colors.red.withOpacity(0.1) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isDestructive ? Colors.red.withOpacity(0.3) : Colors.grey.shade300,
+            color: isDestructive
+                ? Colors.red.withOpacity(0.3)
+                : Colors.grey.shade300,
           ),
         ),
         child: Text(
