@@ -116,14 +116,14 @@ class CarteHistorique extends StatelessWidget {
                 // DUREE + DIFFICULTE
                 Row(
                   children: [
-                    Icon(Icons.schedule, size: 18, color: Colors.green.shade700),
+                    Icon(Icons.schedule, size: 18, color: Color(0xFFE040FB)),
                     const SizedBox(width: 6),
                     Text("${historique.dureetotalemin} min"),
 
                     const SizedBox(width: 20),
 
                     Icon(Icons.bar_chart,
-                        size: 18, color: Colors.green.shade700),
+                        size: 18, color: Color(0xFFE040FB)),
                     const SizedBox(width: 6),
                     Text(recette?.difficulte ?? "—"),
                   ],
