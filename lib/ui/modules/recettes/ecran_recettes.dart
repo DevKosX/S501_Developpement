@@ -15,16 +15,17 @@ class EcranRecettes extends StatefulWidget {
   State<EcranRecettes> createState() => _EcranRecettesState();
 }
 
-final List<String> categoriesRecettes = [
-  'Toutes',
-  'Entrée',
-  'Plat',
-  'Dessert',
-  'Boisson',
-//  'Petit-déjeuner',
-  'Sauce',
-  'Accompagnement',
-];
+// MODIFICATION : Transformation de la liste en Map pour associer des icônes
+final Map<String, IconData> categoriesRecettesMap = {
+  'Toutes': Icons.grid_view_rounded,
+  'Entrée': Icons.soup_kitchen_rounded,
+  'Plat': Icons.restaurant_menu_rounded,
+  'Dessert': Icons.icecream_rounded,
+  'Boisson': Icons.local_bar_rounded,
+//  'Petit-déjeuner': Icons.free_breakfast_rounded,
+  'Sauce': Icons.water_drop_rounded,
+  'Accompagnement': Icons.rice_bowl_rounded,
+};
 
 class _EcranRecettesState extends State<EcranRecettes> {
 
@@ -149,43 +150,81 @@ class _EcranRecettesState extends State<EcranRecettes> {
 
               const SizedBox(height: 15),
 
-              // --- FILTRES PAR CATÉGORIE ---
-              SizedBox(
-                height: 45,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: categoriesRecettes.length,
-                  itemBuilder: (context, index) {
-                    final cat = categoriesRecettes[index];
-                    // On vérifie si cette catégorie est celle sélectionnée dans le contrôleur
-                    final estSelectionnee = controller.categorieSelectionnee == cat;
+              // --- FILTRES PAR CATÉGORIE (NOUVEAU : WRAP RESPONSIVE) ---
+              // Utilisation de Wrap au lieu de ListView pour afficher tout le contenu
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Wrap(
+                    spacing: 10.0, // Espace horizontal entre les items
+                    runSpacing: 10.0, // Espace vertical entre les lignes
+                    alignment: WrapAlignment.start,
+                    children: categoriesRecettesMap.entries.map((entry) {
+                      final String cat = entry.key;
+                      final IconData icon = entry.value;
+                      
+                      // On vérifie si cette catégorie est celle sélectionnée dans le contrôleur
+                      final estSelectionnee = controller.categorieSelectionnee == cat;
 
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: ChoiceChip(
-                        label: Text(cat),
-                        selected: estSelectionnee,
-                        selectedColor: const Color(0xFFE040FB),
-                        backgroundColor: Colors.white,
-                        elevation: 2,
-                        side: BorderSide.none,
-                        labelStyle: TextStyle(
-                          color: estSelectionnee ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.w600,
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            // On met à jour la catégorie dans le contrôleur
+                            controller.setCategorie(cat);
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: estSelectionnee ? const Color(0xFFE040FB) : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: estSelectionnee 
+                                    ? const Color(0xFFE040FB) 
+                                    : Colors.grey.withOpacity(0.2),
+                                width: 1.5,
+                              ),
+                              boxShadow: estSelectionnee
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFFE040FB).withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      )
+                                    ]
+                                  : [],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min, // Important pour que le tag s'adapte au contenu
+                              children: [
+                                Icon(
+                                  icon,
+                                  size: 18,
+                                  color: estSelectionnee ? Colors.white : Colors.grey[600],
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  cat,
+                                  style: TextStyle(
+                                    color: estSelectionnee ? Colors.white : Colors.grey[800],
+                                    fontWeight: estSelectionnee ? FontWeight.w700 : FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        onSelected: (_) {
-                          // On met à jour la catégorie dans le contrôleur
-                          controller.setCategorie(cat);
-                        },
-                      ),
-                    );
-                  },
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
 
               const SizedBox(height: 15),
-
 
               // --- ONGLETS ---
               Padding(

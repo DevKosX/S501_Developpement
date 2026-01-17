@@ -219,7 +219,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
             const SizedBox(height: 20),
 
-            // --- CATÉGORIES ---
+            // --- CATÉGORIES (MODIFIÉ : WRAP POUR AFFICHAGE RESPONSIVE) ---
             const Text(
               "Catégories",
               style: TextStyle(
@@ -230,42 +230,44 @@ class _EcranFrigoState extends State<EcranFrigo> {
             ),
             const SizedBox(height: 12),
 
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
+            // Remplacement du SingleChildScrollView/Row par un SizedBox/Wrap
+            SizedBox(
+              width: double.infinity,
+              child: Wrap(
+                spacing: 8.0, // Espace horizontal entre les bulles
+                runSpacing: 10.0, // Espace vertical entre les lignes
+                alignment: WrapAlignment.start,
                 children: categories.map((categorie) {
                   final isSelected = _categorieSelectionnee == categorie;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _categorieSelectionnee = categorie;
-                        });
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFE040FB) : Colors.white,
-                          borderRadius: BorderRadius.circular(25),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isSelected
-                                  ? const Color(0xFFE040FB).withOpacity(0.3)
-                                  : Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          categorie,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey[700],
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                            fontSize: 13,
+                  // Suppression du Padding ici car 'spacing' du Wrap gère l'espace
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _categorieSelectionnee = categorie;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFFE040FB) : Colors.white,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isSelected
+                                ? const Color(0xFFE040FB).withOpacity(0.3)
+                                : Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
+                        ],
+                      ),
+                      child: Text(
+                        categorie,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.grey[700],
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          fontSize: 13,
                         ),
                       ),
                     ),
