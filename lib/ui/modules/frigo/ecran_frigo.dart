@@ -18,9 +18,33 @@ class EcranFrigo extends StatefulWidget {
 }
 
 class _EcranFrigoState extends State<EcranFrigo> {
+  // Variable utilisée pour le filtrage (mise à jour uniquement lors de la validation)
   String _recherche = "";
   String _categorieSelectionnee = "Tout";
 
+  // Contrôleur pour gérer la saisie du texte sans rafraîchir l'écran
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Méthode pour valider la recherche et mettre à jour l'affichage
+  void _lancerRecherche() {
+    setState(() {
+      _recherche = _searchController.text.trim();
+    });
+    // Fermer le clavier
+    FocusScope.of(context).unfocus();
+  }
   static const int _pageSize = 30;
   int _currentPage = 1;
 
@@ -31,6 +55,9 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
     final List<String> categories = ["Tout", ...alimentController.categories];
 
+    // Le filtrage se base sur _recherche (qui ne change que lors du clic sur le bouton ou si vide)
+    List<Aliment> alimentsAffiches = alimentController.catalogueAliments.where((aliment) {
+      final matchRecherche = aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
     final List<Aliment> alimentsFiltres =
         alimentController.catalogueAliments.where((aliment) {
       final matchRecherche =
@@ -181,6 +208,17 @@ class _EcranFrigoState extends State<EcranFrigo> {
                 ],
               ),
               child: TextField(
+                controller: _searchController, // Utilisation du controller
+                textInputAction: TextInputAction.search, // Affiche le bouton "Rechercher" sur le clavier
+                onSubmitted: (_) => _lancerRecherche(), // Action quand on valide au clavier
+                // AJOUT : Réinitialiser si le champ est vide
+                onChanged: (text) {
+                  if (text.isEmpty) {
+                    setState(() {
+                      _recherche = "";
+                    });
+                  }
+                },
                 onChanged: (value) {
                   setState(() {
                     _recherche = value;
@@ -192,6 +230,12 @@ class _EcranFrigoState extends State<EcranFrigo> {
                   hintText: "Rechercher un aliment...",
                   hintStyle: TextStyle(color: Colors.grey[400]),
                   prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+                  // Bouton de validation de recherche
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.arrow_forward_rounded, color: Color(0xFFE040FB)),
+                    onPressed: _lancerRecherche,
+                    tooltip: "Lancer la recherche",
+                  ),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),
@@ -200,7 +244,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
             const SizedBox(height: 20),
 
-            // --- CATÉGORIES ---
+            // --- CATÉGORIES (MODIFIÉ : WRAP POUR AFFICHAGE RESPONSIVE) ---
             const Text(
               "Catégories",
               style: TextStyle(
@@ -211,9 +255,13 @@ class _EcranFrigoState extends State<EcranFrigo> {
             ),
             const SizedBox(height: 12),
 
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
+            // Remplacement du SingleChildScrollView/Row par un SizedBox/Wrap
+            SizedBox(
+              width: double.infinity,
+              child: Wrap(
+                spacing: 8.0, // Espace horizontal entre les bulles
+                runSpacing: 10.0, // Espace vertical entre les lignes
+                alignment: WrapAlignment.start,
                 children: categories.map((categorie) {
                   final isSelected = _categorieSelectionnee == categorie;
                   return Padding(
@@ -248,6 +296,14 @@ class _EcranFrigoState extends State<EcranFrigo> {
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                             fontSize: 13,
                           ),
+                        ],
+                      ),
+                      child: Text(
+                        categorie,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.grey[700],
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          fontSize: 13,
                         ),
                       ),
                     ),
