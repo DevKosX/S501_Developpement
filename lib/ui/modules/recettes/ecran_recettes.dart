@@ -210,7 +210,7 @@ class _EcranRecettesState extends State<EcranRecettes> {
                                   cat,
                                   style: TextStyle(
                                     color: estSelectionnee ? Colors.white : Colors.grey[800],
-                                    fontWeight: estSelectionnee ? FontWeight.w700 : FontWeight.w600,
+                                    fontWeight: estSelectionnee ? FontWeight.bold : FontWeight.w500,
                                     fontSize: 14,
                                   ),
                                 ),

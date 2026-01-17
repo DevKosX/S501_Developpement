@@ -68,10 +68,42 @@ class CarteHistorique extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () async {
-                        final historiqueCtrl = context.read<HistoriqueController>();
+                        final confirmer = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("Supprimer l’historique"),
+                              content: const Text(
+                                "Êtes-vous sûr de vouloir supprimer cette recette de l’historique ?\n"
+                                "Cette action est irréversible.",
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: const Text("Annuler"),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text("Supprimer"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
 
-                        await historiqueCtrl.supprimerHistorique(historique.idhistorique!);
+                        if (confirmer == true) {
+                          final historiqueCtrl = context.read<HistoriqueController>();
+                          await historiqueCtrl.supprimerHistorique(historique.idhistorique!);
+                        }
                       },
+
                     ),
 
                   ],
