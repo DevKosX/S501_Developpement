@@ -32,6 +32,48 @@ class FrigoController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// [NOUVEAU] Calcule la date par défaut selon la catégorie (Approche Hybride)
+  DateTime calculerDatePeremptionParDefaut(Aliment aliment) {
+    final now = DateTime.now();
+    int jours = 7; // Valeur par défaut de sécurité
+
+    // On normalise la catégorie pour éviter les soucis de majuscules
+    String cat = aliment.categorie.toLowerCase().trim();
+
+    switch (cat) {
+      // Produits très périssables (3-4 jours)
+      case 'viande':
+      case 'poisson':
+      case 'boulangerie': // Pain, etc.
+        jours = 3;
+        break;
+
+      // Produits frais standards (1 semaine)
+      case 'fruit':
+      case 'légume':
+      case 'crèmerie':
+      case 'charcuterie': // Jambon, etc.
+        jours = 7;
+        break;
+
+      // Produits avec conservation moyenne (2-4 semaines)
+      case 'boisson':
+        jours = 30; // 1 mois pour les boissons ouvertes
+        break;
+
+      // Longue conservation (6 mois et +)
+      case 'épicerie':
+      case 'condiment':
+        jours = 180; // ~6 mois
+        break;
+
+      default:
+        jours = 7; // Pour "Autre" ou catégories inconnues
+    }
+
+    return now.add(Duration(days: jours));
+  }
+
   Future<void> ajouterAlimentDuCatalogue(Aliment aliment) async {
     Frigo? itemExistant;
     try {
@@ -55,6 +97,9 @@ class FrigoController extends ChangeNotifier {
       await _repository.updateItemFrigo(itemModifie);
     } else {
       String uniteParDefaut = await _alimentRepository.getUniteParDefaut(aliment.id_aliment);
+      
+      // Utilise le calcul par défaut lors de l'ajout rapide
+      final dateDefaut = calculerDatePeremptionParDefaut(aliment);
 
       final nouvelItem = Frigo(
         id_frigo: 0,
@@ -62,7 +107,7 @@ class FrigoController extends ChangeNotifier {
         quantite: 1.0,
         unite: uniteParDefaut,
         date_ajout: DateTime.now(),
-        date_peremption: DateTime.now().add(const Duration(days: 7)),
+        date_peremption: dateDefaut,
       );
 
       await _repository.addItemAuFrigo(nouvelItem);
@@ -72,7 +117,8 @@ class FrigoController extends ChangeNotifier {
   }
 
   /// Définir une quantité spécifique pour un aliment
-  Future<void> definirQuantite(Aliment aliment, double nouvelleQuantite) async {
+  /// [MODIFIE] Accepte maintenant une datePeremption optionnelle
+  Future<void> definirQuantite(Aliment aliment, double nouvelleQuantite, {DateTime? datePeremption}) async {
     if (nouvelleQuantite <= 0) {
       // Si la quantité est 0 ou négative, on supprime l'item
       try {
@@ -93,6 +139,16 @@ class FrigoController extends ChangeNotifier {
         itemExistant = null;
       }
 
+      // Calcul de la date finale à utiliser
+      DateTime dateFinale;
+      if (datePeremption != null) {
+        dateFinale = datePeremption;
+      } else if (itemExistant != null) {
+        dateFinale = itemExistant.date_peremption; // On garde l'ancienne
+      } else {
+        dateFinale = calculerDatePeremptionParDefaut(aliment); // Nouveau calcul
+      }
+
       if (itemExistant != null) {
         // Mettre à jour la quantité existante
         final itemModifie = Frigo(
@@ -101,7 +157,7 @@ class FrigoController extends ChangeNotifier {
           quantite: nouvelleQuantite,
           unite: itemExistant.unite,
           date_ajout: itemExistant.date_ajout,
-          date_peremption: itemExistant.date_peremption,
+          date_peremption: dateFinale, // <-- Mise à jour avec la date
         );
 
         await _repository.updateItemFrigo(itemModifie);
@@ -115,7 +171,7 @@ class FrigoController extends ChangeNotifier {
           quantite: nouvelleQuantite,
           unite: uniteParDefaut,
           date_ajout: DateTime.now(),
-          date_peremption: DateTime.now().add(const Duration(days: 7)),
+          date_peremption: dateFinale, // <-- Utilisation de la date calculée/choisie
         );
 
         await _repository.addItemAuFrigo(nouvelItem);

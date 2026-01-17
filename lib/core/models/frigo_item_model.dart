@@ -1,3 +1,8 @@
+/// Fichier: core/models/frigo_item_model.dart
+
+// [NOUVEAU] Enum pour définir les états de péremption
+enum StatutPeremption { perime, critique, bientot, frais, inconnu }
+
 class Frigo {
 
   int id_frigo;
@@ -40,6 +45,27 @@ class Frigo {
 
   DateTime getDatePeremption() {
     return date_peremption;
+  }
+
+  // --- [NOUVEAU] LOGIQUE MÉTIER (BACKEND) ---
+  // Calcule automatiquement le statut en fonction de la date actuelle.
+  StatutPeremption get statut {
+    final now = DateTime.now();
+    // On compare les dates à minuit pour être précis en jours
+    final today = DateTime(now.year, now.month, now.day);
+    final expiration = DateTime(date_peremption.year, date_peremption.month, date_peremption.day);
+
+    final joursRestants = expiration.difference(today).inDays;
+
+    if (joursRestants < 0) {
+      return StatutPeremption.perime;   // Déjà périmé (Rouge)
+    } else if (joursRestants <= 3) {
+      return StatutPeremption.critique; // <= 3 jours (Rouge)
+    } else if (joursRestants <= 7) {
+      return StatutPeremption.bientot;  // <= 7 jours (Orange)
+    } else {
+      return StatutPeremption.frais;    // > 7 jours (Vert)
+    }
   }
 
   factory Frigo.fromMap(Map<String, dynamic> map) {
