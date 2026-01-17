@@ -82,63 +82,35 @@ class CarteHistorique extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // ETOILES + NOTE
-                FutureBuilder(
-                  future: context.read<FeedbackRecetteController>()
-                      .getFeedbackPourRecette(historique.idrecette),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return Row(
-                        children: const [
-                          Icon(Icons.star_border, size: 18, color: Colors.amber),
-                          SizedBox(width: 6),
-                          Text("Aucune note"),
-                        ],
-                      );
-                    }
-
-                    final feedback = snapshot.data!;
-                    final noteUser = feedback.note;
-
-                    return Row(
-                      children: [
-                        ...List.generate(
-                          noteUser,
-                          (i) => const Icon(Icons.star, size: 18, color: Colors.amber),
-                        ),
-                        ...List.generate(
-                          5 - noteUser,
-                          (i) => const Icon(Icons.star_border, size: 18, color: Colors.amber),
-                        ),
-                        const SizedBox(width: 6),
-                        Text("$noteUser/5"),
-                      ],
-                    );
-                  },
+                // NOTE
+                Row(
+                  children: [
+                    if (historique.note == null)
+                      const Text("Aucune note")
+                    else ...[
+                      ...List.generate(
+                        historique.note!,
+                        (i) => const Icon(Icons.star, size: 18, color: Colors.amber),
+                      ),
+                      ...List.generate(
+                        5 - historique.note!,
+                        (i) => const Icon(Icons.star_border, size: 18, color: Colors.amber),
+                      ),
+                      const SizedBox(width: 6),
+                      Text("${historique.note}/5"),
+                    ]
+                  ],
                 ),
+
 
 
                 const SizedBox(height: 14),
 
-                // COMMENTAIRE
-                FutureBuilder(
-                  future: context.read<FeedbackRecetteController>()
-                      .getFeedbackPourRecette(historique.idrecette),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return _commentBox("Aucun commentaire");
-                    }
-
-                    final feedback = snapshot.data!;
-                    final texte = (feedback.commentaire != null && feedback.commentaire!.isNotEmpty)
-                        ? feedback.commentaire!
-                        : "Aucun commentaire";
-
-                    return _commentBox('"$texte"');
-                  },
+                _commentBox(
+                  (historique.commentaire != null && historique.commentaire!.isNotEmpty)
+                      ? '"${historique.commentaire!}"'
+                      : "Aucun commentaire",
                 ),
-
-
                 const SizedBox(height: 14),
 
                 // DUREE + DIFFICULTE
