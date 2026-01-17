@@ -201,7 +201,7 @@ class FrigoController extends ChangeNotifier {
 
   /// Définir une quantité spécifique pour un aliment
   /// [MODIFIE] Accepte maintenant une datePeremption optionnelle
-  Future<void> definirQuantite(Aliment aliment, double nouvelleQuantite, {DateTime? datePeremption},{required String unite,}) async {
+  Future<void> definirQuantite(Aliment aliment, double nouvelleQuantite, {DateTime? datePeremption , required String unite,}) async {
     if (nouvelleQuantite <= 0) {
       try {
         final itemExistant = _contenuFrigo.firstWhere(
