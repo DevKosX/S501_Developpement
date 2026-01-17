@@ -3,6 +3,7 @@ import '../models/recette_model.dart';
 import '../repositories/recette_repository.dart';
 import '../models/recette_aliment_model.dart';
 import '../models/ingredient_recette_model.dart';
+import '../services/unit_service.dart';
 
 
 
@@ -25,6 +26,7 @@ class RecetteController extends ChangeNotifier {
   List<Recette> _recettesFaisables = [];
   List<Recette> _recettesManquantes = [];
   List<IngredientRecette> ingredients = [];
+  List<String> unitesDisponibles = [];
 
   // je garde un booléen pour savoir si je suis en train de charger
   bool _isLoading = false;
@@ -118,10 +120,14 @@ class RecetteController extends ChangeNotifier {
       // On récupère le Map depuis le repository
       final result = await _repository.getRecettesTrieesParFrigo();
 
-      // On stocke les résultats dans les variables de classe qu'on a créées en haut
-      // On utilise 'as List<Recette>' pour être sûr du type, ou '?? []' pour éviter les nulls
       _recettesFaisables = result["faisables"] ?? [];
       _recettesManquantes = result["manquantes"] ?? [];
+
+      if (unitesDisponibles.isEmpty) {
+        final ingredients = await _repository.getAllIngredientsRecettes();
+        unitesDisponibles = UnitService.getUnitsAsList(ingredients);
+      }
+
 
     } catch (e) {
       print("Erreur tri frigo: $e");
@@ -186,6 +192,7 @@ class RecetteController extends ChangeNotifier {
   Future<void> addIngredientToRecette(RecetteAliment recetteAliment) async {
     try {
       await _repository.addIngredientToRecette(recetteAliment);
+      UnitService.clearCache();
       print("CTRL: ingrédient ajouté pour la recette ${recetteAliment.idRecette}");
       notifyListeners();
     } catch (e) {
@@ -198,6 +205,7 @@ class RecetteController extends ChangeNotifier {
   Future<void> deleteIngredientsByRecette(int idRecette) async {
     try {
       await _repository.deleteIngredientsByRecette(idRecette);
+      UnitService.clearCache();
       print("CTRL: ingrédients supprimés pour la recette $idRecette");
       notifyListeners();
     } catch (e) {

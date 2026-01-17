@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import '../../../core/controllers/aliment_controller.dart';
 import '../../../core/controllers/frigo_controller.dart';
 import '../../../core/models/aliment_model.dart';
+import '../../../core/services/unit_service.dart';
+import '../../../core/controllers/recette_controller.dart';
+import '../../../core/models/frigo_item_model.dart'; // [NOUVEAU] Import pour le statut
 import 'package:s501_developpement/ui/modules/frigo/widgets/tuile_ingredient.dart';
 
 class EcranFrigo extends StatefulWidget {
@@ -42,6 +45,8 @@ class _EcranFrigoState extends State<EcranFrigo> {
     // Fermer le clavier
     FocusScope.of(context).unfocus();
   }
+  static const int _pageSize = 30;
+  int _currentPage = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +58,25 @@ class _EcranFrigoState extends State<EcranFrigo> {
     // Le filtrage se base sur _recherche (qui ne change que lors du clic sur le bouton ou si vide)
     List<Aliment> alimentsAffiches = alimentController.catalogueAliments.where((aliment) {
       final matchRecherche = aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
+    final List<Aliment> alimentsFiltres =
+        alimentController.catalogueAliments.where((aliment) {
+      final matchRecherche =
+          aliment.nom.toLowerCase().contains(_recherche.toLowerCase());
       final catAliment = aliment.categorie.isEmpty ? "Autre" : aliment.categorie;
       final matchCategorie = _categorieSelectionnee == "Tout" ||
-          catAliment.toLowerCase() == _categorieSelectionnee.toLowerCase();
+          catAliment.toLowerCase() ==
+              _categorieSelectionnee.toLowerCase();
 
       return matchRecherche && matchCategorie;
     }).toList();
+
+
+    final int maxItems = _currentPage * _pageSize;
+    final List<Aliment> alimentsAffiches =
+        alimentsFiltres.take(maxItems).toList();
+
+    final bool hasMore = alimentsAffiches.length < alimentsFiltres.length;
+
 
     int totalItems = 0;
     for (var item in frigoController.contenuFrigo) {
@@ -201,6 +219,13 @@ class _EcranFrigoState extends State<EcranFrigo> {
                     });
                   }
                 },
+                onChanged: (value) {
+                  setState(() {
+                    _recherche = value;
+                    _currentPage = 1; 
+                  });
+                },
+
                 decoration: InputDecoration(
                   hintText: "Rechercher un aliment...",
                   hintStyle: TextStyle(color: Colors.grey[400]),
@@ -239,26 +264,37 @@ class _EcranFrigoState extends State<EcranFrigo> {
                 alignment: WrapAlignment.start,
                 children: categories.map((categorie) {
                   final isSelected = _categorieSelectionnee == categorie;
-                  // Suppression du Padding ici car 'spacing' du Wrap gère l'espace
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _categorieSelectionnee = categorie;
-                      });
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFFE040FB) : Colors.white,
-                        borderRadius: BorderRadius.circular(25),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isSelected
-                                ? const Color(0xFFE040FB).withOpacity(0.3)
-                                : Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _categorieSelectionnee = categorie;
+                          _currentPage = 1;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFFE040FB) : Colors.white,
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: [
+                            BoxShadow(
+                              color: isSelected
+                                  ? const Color(0xFFE040FB).withOpacity(0.3)
+                                  : Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          categorie,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.grey[700],
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontSize: 13,
                           ),
                         ],
                       ),
@@ -297,7 +333,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    "${alimentsAffiches.length} disponible${alimentsAffiches.length > 1 ? 's' : ''}",
+                    "${alimentsFiltres.length} disponible${alimentsFiltres.length > 1 ? 's' : ''}",
                     style: const TextStyle(
                       color: Color(0xFFAA00FF),
                       fontWeight: FontWeight.bold,
@@ -342,24 +378,65 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
                 double quantiteTrouvee = 0;
                 String uniteTrouvee = "pcs";
+                // [NOUVEAU] Variables pour date et statut
+                DateTime? datePeremption;
+                StatutPeremption? statut;
 
                 try {
                   final item = frigoController.contenuFrigo
                       .firstWhere((item) => item.id_aliment == aliment.id_aliment);
                   quantiteTrouvee = item.quantite;
                   uniteTrouvee = item.unite;
+                  // [NOUVEAU] On récupère la date et le statut calculé
+                  datePeremption = item.date_peremption;
+                  statut = item.statut;
                 } catch (e) {}
 
                 return TuileIngredient(
                   aliment: aliment,
                   quantiteAuFrigo: quantiteTrouvee,
                   unite: uniteTrouvee,
+                  // [NOUVEAU] On passe les infos au widget
+                  datePeremption: datePeremption,
+                  statut: statut, 
                   onTap: () {
                     _afficherFicheGestion(context, aliment);
                   },
                 );
               },
             ),
+
+            if (hasMore)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _currentPage++;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE040FB),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      "Charger plus",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
 
             const SizedBox(height: 40),
           ],
@@ -687,18 +764,48 @@ class _FicheGestionAliment extends StatefulWidget {
 
 class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
   late TextEditingController _quantiteController;
+  late String _uniteSelectionnee;
+  late DateTime _datePeremption; // [NOUVEAU] État local pour la date
   bool _isEditing = false;
 
   @override
   void initState() {
     super.initState();
     _quantiteController = TextEditingController();
+
+    final units = UnitService.getUnitsForTypeMesure(widget.aliment.type_mesure);
+    _uniteSelectionnee = units.first;
+    _uniteSelectionnee = "pcs"; // fallback
+
+    // [NOUVEAU] Initialisation intelligente de la date
+    final frigoCtrl = context.read<FrigoController>();
+    Frigo? itemExistant;
+    try {
+      itemExistant = frigoCtrl.contenuFrigo
+          .firstWhere((item) => item.id_aliment == widget.aliment.id_aliment);
+    } catch (e) {
+      itemExistant = null;
+    }
+
+    if (itemExistant != null) {
+      // Si existe déjà, on prend sa date
+      _datePeremption = itemExistant.date_peremption;
+    } else {
+      // Sinon, calcul automatique basé sur la catégorie (Approche Hybride)
+      _datePeremption = frigoCtrl.calculerDatePeremptionParDefaut(widget.aliment);
+    }
   }
+
 
   @override
   void dispose() {
     _quantiteController.dispose();
     super.dispose();
+  }
+  
+  // Helper pour afficher la date joliment
+  String _formatDate(DateTime dt) {
+    return "${dt.day.toString().padLeft(2,'0')}/${dt.month.toString().padLeft(2,'0')}/${dt.year}";
   }
 
   Color _getNutriscoreColor(String score) {
@@ -714,6 +821,15 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> unitesDisponibles = UnitService
+        .getUnitsForTypeMesure(widget.aliment.type_mesure)
+        .toSet()
+        .toList();
+
+    if (!unitesDisponibles.contains(_uniteSelectionnee)) {
+      _uniteSelectionnee = unitesDisponibles.first;
+    }
+
     return Consumer<FrigoController>(
       builder: (context, frigoCtrl, child) {
         double qte = 0;
@@ -729,6 +845,10 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
         // Mettre à jour le controller seulement si on n'est pas en train d'éditer
         if (!_isEditing) {
           _quantiteController.text = qte > 0 ? qte.toInt().toString() : "";
+          if (!_isEditing && unitesDisponibles.contains(unite)) {
+            _uniteSelectionnee = unite;
+          }
+
         }
 
         return SingleChildScrollView(
@@ -831,32 +951,43 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
                 // Unité affichée
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE040FB).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFE040FB).withOpacity(0.3)),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.straighten, size: 18, color: Color(0xFFAA00FF)),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Unité: $unite",
-                        style: const TextStyle(
-                          color: Color(0xFFAA00FF),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _uniteSelectionnee,
+                      icon: const Icon(Icons.expand_more, color: Color(0xFFAA00FF)),
+                      items: unitesDisponibles.map((u) {
+                        return DropdownMenuItem(
+                          value: u,
+                          child: Text(
+                            u,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFAA00FF),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _isEditing = true;
+                          _uniteSelectionnee = value;
+                        });
+                      },
+                    ),
                   ),
                 ),
 
+
                 const SizedBox(height: 20),
 
-                // --- SAISIE MANUELLE DE LA QUANTITÉ ---
+                // --- 1. SAISIE MANUELLE DE LA QUANTITÉ ---
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -972,7 +1103,7 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
                       const SizedBox(height: 16),
 
-                      // Boutons raccourcis
+                      // Boutons raccourcis quantité
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -1018,6 +1149,90 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                   ),
                 ),
 
+                const SizedBox(height: 20),
+
+                // --- 2. [NOUVEAU] SECTION DATE DE PÉREMPTION ---
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.orange.shade100),
+                    boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.05), blurRadius: 10)],
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Date de péremption", 
+                        style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3436))
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      // Affichage Date + Picker
+                      InkWell(
+                        onTap: () async {
+                          DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate: _datePeremption,
+                            firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                            lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                            builder: (context, child) {
+                              return Theme(
+                                data: ThemeData.light().copyWith(
+                                  colorScheme: const ColorScheme.light(primary: Colors.orange),
+                                ),
+                                child: child!,
+                              );
+                            }
+                          );
+                          if (picked != null) {
+                            setState(() => _datePeremption = picked);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.orange.shade200),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.calendar_today, size: 18, color: Colors.orange[800]),
+                              const SizedBox(width: 10),
+                              Text(
+                                _formatDate(_datePeremption),
+                                style: TextStyle(
+                                  fontSize: 16, 
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange[900],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Chips de correction rapide (Hybrid Approach)
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _buildDateChip("Auj.", DateTime.now()),
+                          _buildDateChip("+3j", DateTime.now().add(const Duration(days: 3))),
+                          _buildDateChip("+1 sem", DateTime.now().add(const Duration(days: 7))),
+                          _buildDateChip("+2 sem", DateTime.now().add(const Duration(days: 14))),
+                          _buildDateChip("+1 mois", DateTime.now().add(const Duration(days: 30))),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 24),
 
                 // Bouton Valider
@@ -1026,7 +1241,13 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                   child: ElevatedButton(
                     onPressed: () {
                       double nouvelleQuantite = double.tryParse(_quantiteController.text) ?? 0;
-                      frigoCtrl.definirQuantite(widget.aliment, nouvelleQuantite);
+                      // [NOUVEAU] On passe la date modifiée au contrôleur
+                      frigoCtrl.definirQuantite(
+                        widget.aliment, 
+                        nouvelleQuantite, 
+                        datePeremption: _datePeremption,
+                        unite: _uniteSelectionnee,
+                      );
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
@@ -1065,6 +1286,40 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
           ),
         );
       },
+    );
+  }
+
+  // Widget helper pour les Chips de date
+  Widget _buildDateChip(String label, DateTime targetDate) {
+    // Vérifier si cette chip correspond à la date sélectionnée (à peu près)
+    bool isSelected = _datePeremption.year == targetDate.year &&
+                      _datePeremption.month == targetDate.month &&
+                      _datePeremption.day == targetDate.day;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _datePeremption = targetDate;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.orange : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.orange : Colors.grey.shade300,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[700],
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
     );
   }
 
