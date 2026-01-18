@@ -32,6 +32,7 @@
     flutter_test:
       sdk: flutter
     flutter_lints: ^3.0.0
+    flutter_launcher_icons: "^0.13.1"
 
   flutter:
     uses-material-design: true
@@ -42,4 +43,8 @@
       - assets/images/acceuil_hero.jpg
       - assets/images/aliments/
       - assets/images/recettes/
-    
+      
+  flutter_icons:
+    android: true
+    ios: true
+    image_path: "assets/images/icon.png" # Le chemin vers votre image
