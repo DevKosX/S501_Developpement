@@ -4,9 +4,10 @@ import '../models/recette_model.dart';
 import '../models/recette_aliment_model.dart';
 import '../services/database_service.dart';
 import 'dart:math';
+import '../services/unit_conversion_service.dart'; // <--- AJOUT POUR LA CONVERSION
 
 /// Fichier: core/repositories/recette_repository.dart
-/// Author: Mohamed KOSBAR
+/// Author: Mohamed KOSBAR , Rafi BETTAIEB
 /// Implémentation du 10 novembre 2025
 ///
 /// j'ai créé ce fichier pour gérer toutes les interactions avec la base de données
@@ -41,13 +42,27 @@ class RecetteRepositoryImpl implements RecetteRepository {
   // DatabaseService qui est un Singleton (une seule instance pour toute l'app).
   final DatabaseService _dbService = DatabaseService.instance;
 
+  // --- MÉTHODES UTILITAIRES (NOUVELLES) POUR ÉVITER LES CRASHs DE TYPAGE ---
+  // Ces méthodes convertissent n'importe quoi (String, int, null) en double/int propre.
+  double _toDoubleSafe(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  int _toIntSafe(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 
   /// Méthode : getRecettes
   /// Rôle : Récupère toutes les recettes stockées dans la base SQLite.
   ///   Implémentation SQL
   /// SELECT * FROM Recettes
-
-
   @override
   Future<List<Recette>> getRecettes() async {
     // j'attends que la connexion à la BDD soit prête
@@ -62,43 +77,52 @@ class RecetteRepositoryImpl implements RecetteRepository {
     return List.generate(maps.length, (i) => Recette.fromMap(maps[i]));
   }
 
-  
-
   /// -----------------------------------------------------------------------
-  /// PARTIE 1 : CALCUL DU SCORE (MÉTHODE PRIVÉE)
+  /// PARTIE 1 : CALCUL DU SCORE (MÉTHODE PRIVÉE SÉCURISÉE & AMÉLIORÉE)
   /// -----------------------------------------------------------------------
   /// Calcule le score en fonction de :
   /// 1. Note de base du recette (Attribut note_base)
   /// 2. Note que l'utilisateur a donné (Table FeedbackRecette)
   /// 3. La QUANTITÉ disponible dans le frigo vs requise (Table Frigo vs RecetteAliment)
-  ///    (Avec conversion d'unités kg->g, l->ml, etc.)
+  ///    (Avec conversion d'unités kg->g, l->ml, pcs->g via UnitConversionService)
   Future<void> _calculerEtMettreAJourScores(Database db) async {
-    print("REPO: Début du recalcul (Avec Difficulté Texte & Temps)...");
+    print("REPO: Début du recalcul précis (Safe Mode + UnitService)...");
 
     final recettesMaps = await db.query('Recettes');
     final liaisonsMaps = await db.query('RecetteAliment');
     final frigoMaps = await db.query('Frigo');
     final feedbacksMaps = await db.query('FeedbackRecette');
+    
+    // [NOUVEAU] Récupérer les aliments pour connaître leurs poids unitaires
+    final alimentsMaps = await db.query('Aliments');
+    
+    // Création de la Map de poids avec conversion sécurisée
+    final Map<int, double> poidsAlimentsMap = {
+      for (var a in alimentsMaps) 
+        _toIntSafe(a['id_aliment']): _toDoubleSafe(a['poids_unitaire'])
+    };
+
     final DateTime now = DateTime.now();
 
     for (var mapRecette in recettesMaps) {
-      int idRecette = mapRecette['id_recette'] as int;
+      int idRecette = _toIntSafe(mapRecette['id_recette']);
 
-      // --- RÉCUPÉRATION DES DONNÉES ---
-      double noteBase = (mapRecette['note_base'] as int? ?? 0).toDouble();
+      // --- CRITÈRES STATIQUES (Avec conversion sécurisée) ---
+      double noteBase = _toDoubleSafe(mapRecette['note_base']);
       
       // 1. Récupération du TEXTE pour la difficulté (Valeur par défaut : "Moyen")
       String difficulteTexte = (mapRecette['difficulte'] as String? ?? "Moyen");
       
       // 2. Récupération du temps (Valeur par défaut : 30 min)
-      int tempsPrep = (mapRecette['temps_preparation'] as int? ?? 30);
+      int tempsPrep = _toIntSafe(mapRecette['temps_preparation']);
+      if (tempsPrep == 0) tempsPrep = 30;
 
       double scoreBrut = 0.0;
 
-      // --- CRITÈRES NOTES & FAVORIS ---
-      var feedbackList = feedbacksMaps.where((f) => f['id_recette'] == idRecette).toList();
+      // --- CRITÈRES FEEDBACK ---
+      var feedbackList = feedbacksMaps.where((f) => _toIntSafe(f['id_recette']) == idRecette).toList();
       var feedback = feedbackList.isNotEmpty ? feedbackList.first : null;
-      int noteUtilisateur = feedback != null ? (feedback['note'] as int? ?? 0) : 0;
+      int noteUtilisateur = feedback != null ? _toIntSafe(feedback['note']) : 0;
 
       if (noteUtilisateur > 0) {
         scoreBrut += noteUtilisateur.toDouble() * 2;
@@ -106,7 +130,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
         scoreBrut += noteBase;
       }
 
-      if (feedback != null && (feedback['favori'] as int? ?? 0) == 1) {
+      if (feedback != null && _toIntSafe(feedback['favori']) == 1) {
         scoreBrut += 5.0;
       }
 
@@ -136,24 +160,38 @@ class RecetteRepositoryImpl implements RecetteRepository {
       }
 
       // ---------------------------------------------------------
-      // --- CRITÈRES FRIGO & PÉREMPTION (INCHANGÉ) ---
+      // --- CRITÈRES FRIGO & PÉREMPTION (AMÉLIORÉ AVEC SERVICE) ---
       // ---------------------------------------------------------
-      var ingredientsDeLaRecette = liaisonsMaps.where((l) => l['id_recette'] == idRecette);
+      var ingredientsDeLaRecette = liaisonsMaps.where((l) => _toIntSafe(l['id_recette']) == idRecette);
 
       for (var liaison in ingredientsDeLaRecette) {
-        int idAlimentNecessaire = liaison['id_aliment'] as int;
-        double qteRequise = (liaison['quantite'] as num).toDouble();
+        int idAliment = _toIntSafe(liaison['id_aliment']);
+        double qteRequise = _toDoubleSafe(liaison['quantite']);
         String uniteRequise = (liaison['unite'] as String? ?? "").toLowerCase();
 
-        var itemsFrigo = frigoMaps.where((f) => f['id_aliment'] == idAlimentNecessaire);
+        // On récupère le poids unitaire
+        double poidsUnitaire = poidsAlimentsMap[idAliment] ?? 0.0;
+
+        var itemsFrigo = frigoMaps.where((f) => _toIntSafe(f['id_aliment']) == idAliment);
 
         for (var item in itemsFrigo) {
-          double qteDispo = (item['quantite'] as num).toDouble();
+          double qteDispo = _toDoubleSafe(item['quantite']);
           String uniteDispo = (item['unite'] as String? ?? "").toLowerCase();
 
-          double qteRequiseNorm = _normaliserQuantite(qteRequise, uniteRequise);
-          double qteDispoNorm = _normaliserQuantite(qteDispo, uniteDispo);
+          // Conversion sécurisée via le Service
+          double qteRequiseNorm = UnitConversionService.toGrammes(
+            quantite: qteRequise,
+            unite: uniteRequise,
+            poidsUnitaire: poidsUnitaire
+          );
 
+          double qteDispoNorm = UnitConversionService.toGrammes(
+            quantite: qteDispo,
+            unite: uniteDispo,
+            poidsUnitaire: poidsUnitaire
+          );
+
+          // Comparaison précise
           if (qteDispoNorm >= qteRequiseNorm) {
             scoreBrut += 3.0;
           } else {
@@ -168,7 +206,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
               if (joursRestants < 0) {
                 scoreBrut -= 2.0;
               } else if (joursRestants <= 2) {
-                scoreBrut += 13.0;
+                scoreBrut += 13.0; // Urgence !
               } else if (joursRestants <= 5) {
                 scoreBrut += 8.0;
               } else {
@@ -204,59 +242,12 @@ class RecetteRepositoryImpl implements RecetteRepository {
         whereArgs: [idRecette],
       );
     }
-    print("REPO: Fin du recalcul (Scores lissés).");
-  }
-  /// Méthode utilitaire pour convertir les unités en standard
-  /// Poids -> Grammes
-  /// Volume -> Millilitres
-  /// Autres (pcs, c.à.s) -> Valeur brute ou estimation
-  double _normaliserQuantite(double qte, String unite) {
-    String u = unite.trim().toLowerCase();
-
-    switch (u) {
-      // Poids
-      case 'kg':
-      case 'kilogramme':
-      case 'kilo':
-        return qte * 1000;
-      case 'mg':
-      case 'milligramme':
-        return qte / 1000;
-      case 'g':
-      case 'gramme':
-        return qte;
-
-      // Volume
-      case 'l':
-      case 'litre':
-        return qte * 1000;
-      case 'dl':
-      case 'décilitre':
-        return qte * 100;
-      case 'cl':
-      case 'centilitre':
-        return qte * 10;
-      case 'ml':
-      case 'millilitre':
-        return qte;
-      
-      // Mesures ménagères (Estimations)
-      case 'c.à.s':
-      case 'cuillère à soupe':
-        return qte * 15; // env. 15g/ml
-      case 'c.à.c':
-      case 'cuillère à café':
-        return qte * 5; // env. 5g/ml
-      
-      // Par défaut (pcs, unités, ou inconnu), on ne touche pas
-      default:
-        return qte;
-    }
+    print("REPO: Fin du recalcul (Safe Mode).");
   }
 
 
   /// -----------------------------------------------------------------------
-  /// PARTIE 2 : RÉCUPÉRATION ET TRI (APPELLE PARTIE 1)
+  /// PARTIE 2 : RÉCUPÉRATION ET TRI (APPELLE PARTIE 1 AMÉLIORÉE)
   /// -----------------------------------------------------------------------
   @override
   Future<Map<String, List<Recette>>> getRecettesTrieesParFrigo() async {
@@ -270,49 +261,63 @@ class RecetteRepositoryImpl implements RecetteRepository {
     final recettesMaps = await db.query('Recettes', orderBy: 'score DESC'); 
     final liaisonsMaps = await db.query('RecetteAliment');
     final frigoMaps = await db.query('Frigo');
+    final alimentsMaps = await db.query('Aliments');
+
+    // [NOUVEAU] Map de poids sécurisée pour le tri
+    final Map<int, double> poidsAlimentsMap = {
+      for (var a in alimentsMaps) 
+        _toIntSafe(a['id_aliment']): _toDoubleSafe(a['poids_unitaire'])
+    };
 
     // 2. Je convertis les Recettes en objets Dart
     List<Recette> toutesLesRecettes = List.generate(
         recettesMaps.length, (i) => Recette.fromMap(recettesMaps[i]));
 
-
     List<Recette> faisables = [];
     List<Recette> manquantes = [];
 
-    // ÉTAPE C : Séparer Cuisinable / À compléter (AVEC QUANTITÉS)
+    // ÉTAPE C : Séparer Cuisinable / À compléter (AVEC QUANTITÉS PRÉCISES)
     for (var recette in toutesLesRecettes) {
       var ingredientsDeLaRecette = liaisonsMaps
-          .where((l) => l['id_recette'] == recette.id_recette)
+          .where((l) => _toIntSafe(l['id_recette']) == recette.id_recette)
           .toList();
 
       int nbManquants = 0;
 
       for (var liaison in ingredientsDeLaRecette) {
-        int idAlimentNecessaire = liaison['id_aliment'] as int;
-        double qteRequise = (liaison['quantite'] as num).toDouble();
-        String uniteRequise = (liaison['unite'] as String).toLowerCase();
+        int idAliment = _toIntSafe(liaison['id_aliment']);
+        double qteRequise = _toDoubleSafe(liaison['quantite']);
+        String uniteRequise = (liaison['unite'] as String? ?? "").toLowerCase();
+        double poidsUnitaire = poidsAlimentsMap[idAliment] ?? 0.0;
 
         // 🔎 Recherche dans le frigo
-        final itemFrigo = frigoMaps.firstWhere(
-          (f) => f['id_aliment'] == idAlimentNecessaire,
-          orElse: () => {},
-        );
+        final itemsFrigo = frigoMaps.where((f) => _toIntSafe(f['id_aliment']) == idAliment);
 
         // ❌ Aliment absent
-        if (itemFrigo.isEmpty) {
+        if (itemsFrigo.isEmpty) {
           nbManquants++;
           continue;
         }
 
-        double qteDispo = (itemFrigo['quantite'] as num).toDouble();
-        String uniteDispo = (itemFrigo['unite'] as String).toLowerCase();
+        // On additionne tout ce qu'on a au frigo pour cet aliment (converti en grammes)
+        double totalGrammesDispo = 0.0;
+        for(var item in itemsFrigo) {
+           totalGrammesDispo += UnitConversionService.toGrammes(
+             quantite: _toDoubleSafe(item['quantite']), 
+             unite: (item['unite'] as String? ?? "").toLowerCase(), 
+             poidsUnitaire: poidsUnitaire
+           );
+        }
 
-        // 🔄 Normalisation
-        double qteRequiseNorm = _normaliserQuantite(qteRequise, uniteRequise);
-        double qteDispoNorm = _normaliserQuantite(qteDispo, uniteDispo);
-
-        // ❌ Quantité insuffisante
-        if (qteDispoNorm < qteRequiseNorm) {
+        double grammesRequis = UnitConversionService.toGrammes(
+          quantite: qteRequise, 
+          unite: uniteRequise, 
+          poidsUnitaire: poidsUnitaire
+        );
+        
+        // ❌ Quantité insuffisante (avec petite marge d'erreur flottante de 0.1g)
+        // C'est ici que l'amélioration est critique : on compare des GRAMMES
+        if (totalGrammesDispo < (grammesRequis - 0.1)) {
           nbManquants++;
         }
       }
@@ -325,7 +330,6 @@ class RecetteRepositoryImpl implements RecetteRepository {
         manquantes.add(recette);
       }
     }
-
 
     // Le tri "faisables" est déjà fait par le "ORDER BY score DESC" du SQL ci-dessus.
 
@@ -368,7 +372,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
 
     if (result.isNotEmpty) {
       // si ça existe déjà, je récupère la valeur actuelle du favori (0 ou 1)
-      int currentStatus = result.first['favori'] as int? ?? 0;
+      int currentStatus = _toIntSafe(result.first['favori']);
       // j'inverse la valeur : si c'était 1 ça devient 0, et inversement.
       int newStatus = (currentStatus == 1) ? 0 : 1;
 
@@ -451,49 +455,49 @@ class RecetteRepositoryImpl implements RecetteRepository {
   /// Retour :
   ///   Une liste typée de IngredientRecette prête à être affichée dans l’UI.
 
-
   @override
-Future<List<IngredientRecette>> getIngredientsByRecette(int idRecette) async {
-  final db = await _dbService.database;
+  Future<List<IngredientRecette>> getIngredientsByRecette(int idRecette) async {
+    final db = await _dbService.database;
 
-  final result = await db.rawQuery('''
-    SELECT 
-      A.nom,
-      RA.quantite,
-      RA.unite,
-      RA.remarque
-    FROM RecetteAliment RA
-    JOIN Aliments A ON A.id_aliment = RA.id_aliment
-    WHERE RA.id_recette = ?
-  ''', [idRecette]);
+    final result = await db.rawQuery('''
+      SELECT 
+        A.nom,
+        RA.quantite,
+        RA.unite,
+        RA.remarque
+      FROM RecetteAliment RA
+      JOIN Aliments A ON A.id_aliment = RA.id_aliment
+      WHERE RA.id_recette = ?
+    ''', [idRecette]);
 
-  print("REPO: ${result.length} ingrédients trouvés pour la recette $idRecette");
+    print("REPO: ${result.length} ingrédients trouvés pour la recette $idRecette");
 
-  // Conversion en une liste d'objets IngredientRecette
-  return result.map((row) {
-    return IngredientRecette(
-      nom: row["nom"] as String,
-      quantite: (row["quantite"] as num).toDouble(),
-      unite: row["unite"] as String,
-      remarque: row["remarque"] as String?,
-    );
-  }).toList();
-}
+    // Conversion en une liste d'objets IngredientRecette
+    return result.map((row) {
+      return IngredientRecette(
+        nom: row["nom"] as String,
+        quantite: _toDoubleSafe(row["quantite"]),
+        unite: row["unite"] as String? ?? "",
+        remarque: row["remarque"] as String?,
+      );
+    }).toList();
+  }
 
-/// Version RAW pour la logique interne (ex: recommandations, frigo)
-Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette) async {
-  final db = await _dbService.database;
+  /// Version RAW pour la logique interne (ex: recommandations, frigo)
+  @override
+  Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette) async {
+    final db = await _dbService.database;
 
-  return await db.rawQuery('''
-    SELECT 
-      RA.id_aliment,
-      RA.quantite,
-      RA.unite,
-      RA.remarque
-    FROM RecetteAliment RA
-    WHERE RA.id_recette = ?
-  ''', [idRecette]);
-}
+    return await db.rawQuery('''
+      SELECT 
+        RA.id_aliment,
+        RA.quantite,
+        RA.unite,
+        RA.remarque
+      FROM RecetteAliment RA
+      WHERE RA.id_recette = ?
+    ''', [idRecette]);
+  }
 
 
   /// Méthode : addIngredientToRecette
@@ -566,13 +570,10 @@ Future<List<Map<String, dynamic>>> getIngredientsRaw(int idRecette) async {
     return result.map((row) {
       return IngredientRecette(
         nom: row["nom"] as String,
-        quantite: (row["quantite"] as num).toDouble(),
-        unite: row["unite"] as String,
+        quantite: _toDoubleSafe(row["quantite"]),
+        unite: row["unite"] as String? ?? "",
         remarque: row["remarque"] as String?,
       );
     }).toList();
   }
-
-
-
 }
