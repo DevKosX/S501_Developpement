@@ -7,6 +7,9 @@ import 'package:s501_developpement/ui/modules/profil/widgets/conseils_rotatifs.d
 // Imports de la logique (Core)
 import '../../../core/controllers/profil_controller.dart';
 import '../../../core/repositories/profil_repository.dart';
+import 'package:provider/provider.dart';
+import '../../../core/controllers/recette_controller.dart';
+
 
 class EcranProfil extends StatefulWidget {
   const EcranProfil({super.key});
@@ -26,7 +29,9 @@ class _EcranProfilState extends State<EcranProfil> {
   void _gererCalcul(double poids, double taille, String objectif) async {
     // 1. On demande au contrôleur de faire le travail (sauvegarde + calcul)
     await _controller.mettreAJourProfil(poids, taille, objectif);
-
+    if (mounted) {
+      await context.read<RecetteController>().getRecettesTrieesParFrigo();
+    }
     // 2. On met à jour l'écran avec les nouvelles valeurs du contrôleur
     setState(() {
       _imcResultat = _controller.imc;

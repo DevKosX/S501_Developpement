@@ -47,7 +47,11 @@ class CarteHistorique extends StatelessWidget {
           // IMAGE
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: ImageRecette(imagePath: recette?.image ?? ""),
+            child: ImageRecette(
+              imagePath: (recette?.image != null && recette!.image.isNotEmpty)
+                  ? "recettes/${recette!.image}"
+                  : "",
+            ),
           ),
 
           Padding(

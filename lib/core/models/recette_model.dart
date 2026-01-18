@@ -14,8 +14,10 @@ class Recette {
   int noteBase;
   String image;
   String difficulte;
+  int calories;
   // Champ non stocké en BDD, juste pour l'affichage UI
   int nombreManquants;
+  
 
 
   // --- CONSTRUCTEUR ---
@@ -30,6 +32,7 @@ class Recette {
     required this.noteBase,
     required this.image,
     required this.difficulte,
+    this.calories = 0,
     this.nombreManquants = 0,
   });
 
@@ -66,6 +69,10 @@ class Recette {
   String getDifficulte() {
     return difficulte;
   }
+  
+  int getCalories() {
+    return calories;
+  }
 
 
   // --- HELPERS BDD (le mapping ici) ---
@@ -84,6 +91,7 @@ class Recette {
       noteBase: map['note_base'] ?? 0,
       image: map['image'] ?? "",
       difficulte: map['difficulte'] ?? "Moyenne",
+      calories: map['calories'] ?? 0,
     );
 
 
@@ -101,6 +109,7 @@ class Recette {
       'note_base': noteBase,
       'image': image,
       'difficulte': difficulte,
+      'calories': calories,
     };
   }
 }

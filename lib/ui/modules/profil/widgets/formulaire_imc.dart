@@ -11,6 +11,9 @@ class FormulaireIMC extends StatefulWidget {
 }
 
 class _FormulaireIMCState extends State<FormulaireIMC> {
+  // Clé globale pour identifier le formulaire et lancer la validation
+  final _formKey = GlobalKey<FormState>();
+
   final _tailleController = TextEditingController();
   final _poidsController = TextEditingController();
 
@@ -39,98 +42,119 @@ class _FormulaireIMCState extends State<FormulaireIMC> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Titre
-          const Row(
-            children: [
-              Icon(Icons.calculate_outlined, color: Color(0xFF9C27B0), size: 28),
-              SizedBox(width: 10),
-              Text("Calculateur d'IMC", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Champ Taille
-          const Text("Taille (cm ou m)", style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _tailleController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              hintText: "Ex: 175 ou 1.75",
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      // On enveloppe la Column dans un Form pour activer la validation
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Titre
+            const Row(
+              children: [
+                Icon(Icons.calculate_outlined, color: Color(0xFF9C27B0), size: 28),
+                SizedBox(width: 10),
+                Text("Calculateur d'IMC", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              ],
             ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-          // Champ Poids
-          const Text("Poids (kg)", style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _poidsController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              hintText: "Ex: 70",
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // --- MENU DÉROULANT OBJECTIF ---
-          const Text("Mon Objectif", style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _objectifSelectionne,
-                isExpanded: true,
-                items: _listeObjectifs.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    _objectifSelectionne = newValue!;
-                  });
-                },
+            // Champ Taille
+            const Text("Taille (cm ou m)", style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _tailleController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                hintText: "Ex: 175 ou 1.75",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Bouton
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                final taille = double.tryParse(_tailleController.text.replaceAll(',', '.')) ?? 0.0;
-                final poids = double.tryParse(_poidsController.text.replaceAll(',', '.')) ?? 0.0;
-                
-                // On envoie les 3 infos au parent
-                widget.onCalculer(poids, taille, _objectifSelectionne);
+              // Validation : obligatoire
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Veuillez entrer votre taille';
+                }
+                return null;
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey.shade200,
-                foregroundColor: Colors.black87,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              icon: const Icon(Icons.calculate),
-              label: const Text("Calculer mon IMC"),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+
+            // Champ Poids
+            const Text("Poids (kg)", style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _poidsController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                hintText: "Ex: 70",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              // Validation : obligatoire
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Veuillez entrer votre poids';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // --- MENU DÉROULANT OBJECTIF ---
+            const Text("Mon Objectif", style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _objectifSelectionne,
+                  isExpanded: true,
+                  items: _listeObjectifs.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      _objectifSelectionne = newValue!;
+                    });
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Bouton
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // On vérifie si les champs sont valides avant de continuer
+                  if (_formKey.currentState!.validate()) {
+                    final taille = double.tryParse(_tailleController.text.replaceAll(',', '.')) ?? 0.0;
+                    final poids = double.tryParse(_poidsController.text.replaceAll(',', '.')) ?? 0.0;
+                    
+                    // On envoie les 3 infos au parent
+                    widget.onCalculer(poids, taille, _objectifSelectionne);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey.shade200,
+                  foregroundColor: Colors.black87,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                icon: const Icon(Icons.calculate),
+                label: const Text("Calculer mon IMC"),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

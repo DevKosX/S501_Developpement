@@ -45,6 +45,12 @@ class _EcranFrigoState extends State<EcranFrigo> {
     // Fermer le clavier
     FocusScope.of(context).unfocus();
   }
+  
+  Future<void> _rafraichirRecettes() async {
+    if (mounted) {
+      await context.read<RecetteController>().getRecettesTrieesParFrigo();
+    }
+  }
 
   static const int _pageSize = 30;
   int _currentPage = 1;
@@ -710,9 +716,10 @@ class _EcranFrigoState extends State<EcranFrigo> {
 
                                           // Bouton supprimer
                                           GestureDetector(
-                                            onTap: () {
+                                            onTap: () async {
                                               frigoCtrl.supprimerItem(
                                                   item.id_frigo);
+                                              await _rafraichirRecettes();
                                             },
                                             child: Container(
                                               padding: const EdgeInsets.all(8),
@@ -761,7 +768,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(ctx).viewInsets.bottom,
           ),
-          child: _FicheGestionAliment(aliment: aliment),
+          child: _FicheGestionAliment(aliment: aliment , onValidation: _rafraichirRecettes),
         );
       },
     );
@@ -788,8 +795,12 @@ class _EcranFrigoState extends State<EcranFrigo> {
 // --- WIDGET STATEFUL POUR LA FICHE DE GESTION ---
 class _FicheGestionAliment extends StatefulWidget {
   final Aliment aliment;
+  final VoidCallback onValidation;
 
-  const _FicheGestionAliment({required this.aliment});
+  const _FicheGestionAliment({
+    required this.aliment, 
+    required this.onValidation,
+  });
 
   @override
   State<_FicheGestionAliment> createState() => _FicheGestionAlimentState();
@@ -1315,16 +1326,17 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async{
                       double nouvelleQuantite =
                           double.tryParse(_quantiteController.text) ?? 0;
                       // [NOUVEAU] On passe la date modifiée au contrôleur
-                      frigoCtrl.definirQuantite(
+                      await frigoCtrl.definirQuantite(
                         widget.aliment,
                         nouvelleQuantite,
                         datePeremption: _datePeremption,
                         unite: _uniteSelectionnee,
                       );
+                      widget.onValidation();
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(

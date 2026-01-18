@@ -148,6 +148,8 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                     children: [
                       _InfoBadge(icon: Icons.timer, text: "${widget.recette.tempsPreparation} min"),
                       _InfoBadge(icon: Icons.speed, text: widget.recette.difficulte),
+                      if (widget.recette.calories > 0)
+                        _InfoBadge(icon: Icons.local_fire_department, text: "${widget.recette.calories} kcal"),
                       _InfoBadge(icon: Icons.star, text: "${widget.recette.score}/5"),
                     ],
                   ),
@@ -243,6 +245,7 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                             );
                             return;
                           }
+                          await recetteCtrl.getRecettesTrieesParFrigo();
 
                           // ✅ Tout est OK → on lance la cuisson
                           final etapes = _decouperEtapes(widget.recette.instructions);

@@ -185,6 +185,13 @@ class CarteRecette extends StatelessWidget {
                     _InfoPill(icon: Icons.timer_outlined, text: "${recette.tempsPreparation} min"),
                     const SizedBox(width: 12),
                     _InfoPill(icon: Icons.bar_chart_rounded, text: recette.difficulte),
+                    if (recette.calories > 0) ...[
+                      const SizedBox(width: 12),
+                      _InfoPill(
+                        icon: Icons.local_fire_department_rounded, 
+                        text: "${recette.calories} kcal"
+                      ), 
+                    ],
                     const Spacer(),
                     const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
                     const SizedBox(width: 4),
