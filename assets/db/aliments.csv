@@ -44,7 +44,7 @@ id_aliment,nom,categorie,nutriscore,image,poids_unitaire,type_mesure
 43,Pâte brisée,Boulangerie,D,pate_brisee.jpg,,UNITAIRE
 44,Tortillas (maïs ou blé),Boulangerie,B,tortillas.jpg,,UNITAIRE
 45,Petits pois (conserve),Légume,A,petits_pois.jpg,,POIDS
-46,Sauce soja,Condiment,D,sauce_soja.jpg,,INCONNU
+46,Sauce soja,Condiment,D,sauce_soja.jpg,,VOLUME
 47,Nouilles (asiatiques),Épicerie,B,nouilles.jpg,,POIDS
 48,Lait de coco,Épicerie,D,lait_coco.jpg,,VOLUME
 49,Pâte de curry,Épicerie,C,curry_pate.jpg,,INCONNU

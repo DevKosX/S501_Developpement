@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/controllers/feedback_recette_controller.dart';
 import '../../../../core/models/recette_model.dart';
@@ -24,19 +25,24 @@ class _DialogFeedbackState extends State<DialogFeedback> {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 20,
-              color: Colors.black.withOpacity(0.1),
-            )
-          ],
-        ),
-        child: Column(
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 20,
+                  color: Colors.black.withOpacity(0.1),
+                ),
+              ],
+            ),
+            child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // --- ICONE GREEN CHECK ---
@@ -111,7 +117,9 @@ class _DialogFeedbackState extends State<DialogFeedback> {
             TextField(
               controller: commentaireController,
               maxLines: 4,
-              maxLength: 500,
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(500),
+              ],
               decoration: InputDecoration(
                 hintText: "Ajoutez vos commentaires...",
                 border: OutlineInputBorder(
@@ -191,12 +199,14 @@ class _DialogFeedbackState extends State<DialogFeedback> {
                     ),
                   ),
                 ),
-
               ],
             )
           ],
+            ),
+          ),
         ),
       ),
     );
+
   }
 }
