@@ -230,7 +230,7 @@ class _EcranFavorisState extends State<EcranFavoris> {
                 ),
                 child: image.isNotEmpty
                     ? Image.asset(
-                        image,
+                        "assets/images/recettes/$image",
                         height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,

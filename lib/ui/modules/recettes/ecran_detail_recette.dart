@@ -245,6 +245,7 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                             );
                             return;
                           }
+                          await recetteCtrl.getRecettesTrieesParFrigo();
 
                           // ✅ Tout est OK → on lance la cuisson
                           final etapes = _decouperEtapes(widget.recette.instructions);

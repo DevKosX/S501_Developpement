@@ -40,11 +40,9 @@ class _EcranAccueilState extends State<EcranAccueil> {
 
   // Fonction pour récupérer et trier les recettes
   Future<List<Recette>> _getTop5Recettes() async {
-    List<Recette> toutes = await _recetteRepo.getRecettes();
-    // Tri par score décroissant
-    toutes.sort((a, b) => b.score.compareTo(a.score));
-    // On garde les 5 premières
-    return toutes.take(5).toList();
+    
+    List<Recette> topRecettes = await _recetteRepo.getRecettesRecommandees();
+    return topRecettes.take(5).toList();
   }
 
   @override
