@@ -52,7 +52,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
     }
   }
 
-  static const int _pageSize = 30;
+  static const int _pageSize = 20;
   int _currentPage = 1;
 
   @override
