@@ -328,7 +328,7 @@ class _EcranAccueilState extends State<EcranAccueil> {
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                   child: Image.asset(
-                    "assets/images/${recette.image}", // Assurez-vous d'avoir les images dans assets
+                    "assets/images/recettes/${recette.image}", // Assurez-vous d'avoir les images dans assets
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
