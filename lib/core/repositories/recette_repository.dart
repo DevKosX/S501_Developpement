@@ -95,6 +95,11 @@ class RecetteRepositoryImpl implements RecetteRepository {
     
     // [NOUVEAU] Récupérer les aliments pour connaître leurs poids unitaires
     final alimentsMaps = await db.query('Aliments');
+    final profilMaps = await db.query('Profil', limit: 1);
+    String userObjectif = ""; 
+    if (profilMaps.isNotEmpty) {
+      userObjectif = profilMaps.first['objectif'] as String? ?? "";
+    }
     
     // Création de la Map de poids avec conversion sécurisée
     final Map<int, double> poidsAlimentsMap = {
@@ -162,13 +167,24 @@ class RecetteRepositoryImpl implements RecetteRepository {
       int calories = _toIntSafe(mapRecette['calories']);
       
       // On n'applique le bonus/malus que si les calories sont renseignées (> 0)
-      if (calories > 0) {
-        if (calories < 500) {
-          scoreBrut += 3.0; // Repas léger/équilibré
-        } else if(calories <= 700) {
-          scoreBrut += 1.0; // Repas normal
-        } else if (calories > 700) {
-          scoreBrut -= 1.0; // Repas très riche
+      // Logique selon l'objectif (Perte de poids / Prise de masse) ---
+      // On ne fait rien si l'utilisateur n'a pas d'objectif ou si la recette n'a pas de calories
+      if (userObjectif.isNotEmpty && calories > 0) {
+        switch (userObjectif) {
+          case "Perte de poids":
+            if (calories < 400) scoreBrut += 4.0;       // Bonus léger
+            else if (calories < 600) scoreBrut += 2.0;  // Petit bonus
+            else if (calories > 800) scoreBrut -= 3.0;  // Malus trop riche
+            break;
+
+          case "Prise de masse":
+            if (calories > 600) scoreBrut += 4.0;       // Bonus calorique
+            else if (calories < 400) scoreBrut -= 2.0;  // Malus trop léger
+            break;
+
+          case "Maintien":
+            if (calories >= 500 && calories <= 750) scoreBrut += 3.0; // Bonus équilibre
+            break;
         }
       }
 
@@ -187,8 +203,6 @@ class RecetteRepositoryImpl implements RecetteRepository {
       if (nombreEtapes == 0 && instructions.isNotEmpty) nombreEtapes = 1;
 
       // 2. Calcul du Ratio (Étapes / Minutes)
-      // Exemple : 10 étapes en 15 min = 0.66 (> 0.5) -> Trop speed !
-      // Exemple : 5 étapes en 60 min = 0.08 (< 0.5) -> Tranquille.
       if (tempsPrep > 0) {
         double ratio = nombreEtapes / tempsPrep;
         
