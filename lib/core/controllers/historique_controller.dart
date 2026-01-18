@@ -44,4 +44,9 @@ class HistoriqueController extends ChangeNotifier {
     await _repository.enregistrerAction(action);
     await chargerHistorique();  // recharge après modification pour être à jour
   }
+  Future<void> supprimerHistorique(int idHistorique) async {
+    await _repository.supprimerHistorique(idHistorique);
+    await chargerHistorique();
+  }
+
 }

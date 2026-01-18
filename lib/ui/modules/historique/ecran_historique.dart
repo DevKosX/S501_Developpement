@@ -59,11 +59,11 @@ class _EcranHistoriqueState extends State<EcranHistorique> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.green.shade50,
+                          color: Color(0xFFE040FB).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.history,
-                            color: Colors.green, size: 26),
+                            color: Color(0xFFE040FB)),
                       ),
                       const SizedBox(width: 12),
                       Column(

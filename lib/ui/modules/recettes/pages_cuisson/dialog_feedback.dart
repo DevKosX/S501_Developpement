@@ -160,6 +160,8 @@ class _DialogFeedbackState extends State<DialogFeedback> {
                           idrecette: widget.recette.id_recette,
                           dateaction: DateTime.now(),
                           dureetotalemin: widget.recette.tempsPreparation,
+                          note: note, 
+                          commentaire: commentaireController.text.trim(),
                         ),
                       );
 

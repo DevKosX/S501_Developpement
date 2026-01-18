@@ -275,19 +275,12 @@ class RecetteRepositoryImpl implements RecetteRepository {
     List<Recette> toutesLesRecettes = List.generate(
         recettesMaps.length, (i) => Recette.fromMap(recettesMaps[i]));
 
-    // 3. Je fais une liste simple des IDs d'aliments qui sont dans mon frigo
-    // (Set est plus rapide pour la recherche)
-    Set<int> idsDansFrigo = frigoMaps
-        .map((e) => e['id_aliment'] as int)
-        .toSet();
 
     List<Recette> faisables = [];
     List<Recette> manquantes = [];
 
-
-    // ÉTAPE C : Séparer Cuisinable / À compléter
+    // ÉTAPE C : Séparer Cuisinable / À compléter (AVEC QUANTITÉS)
     for (var recette in toutesLesRecettes) {
-      // Je trouve les ingrédients nécessaires pour cette recette
       var ingredientsDeLaRecette = liaisonsMaps
           .where((l) => l['id_recette'] == recette.id_recette)
           .toList();
@@ -296,14 +289,34 @@ class RecetteRepositoryImpl implements RecetteRepository {
 
       for (var liaison in ingredientsDeLaRecette) {
         int idAlimentNecessaire = liaison['id_aliment'] as int;
+        double qteRequise = (liaison['quantite'] as num).toDouble();
+        String uniteRequise = (liaison['unite'] as String).toLowerCase();
 
-        // Si l'aliment n'est PAS dans le frigo, ça manque !
-        if (!idsDansFrigo.contains(idAlimentNecessaire)) {
+        // 🔎 Recherche dans le frigo
+        final itemFrigo = frigoMaps.firstWhere(
+          (f) => f['id_aliment'] == idAlimentNecessaire,
+          orElse: () => {},
+        );
+
+        // ❌ Aliment absent
+        if (itemFrigo.isEmpty) {
+          nbManquants++;
+          continue;
+        }
+
+        double qteDispo = (itemFrigo['quantite'] as num).toDouble();
+        String uniteDispo = (itemFrigo['unite'] as String).toLowerCase();
+
+        // 🔄 Normalisation
+        double qteRequiseNorm = _normaliserQuantite(qteRequise, uniteRequise);
+        double qteDispoNorm = _normaliserQuantite(qteDispo, uniteDispo);
+
+        // ❌ Quantité insuffisante
+        if (qteDispoNorm < qteRequiseNorm) {
           nbManquants++;
         }
       }
 
-      // Je stocke le résultat dans l'objet pour l'afficher plus tard
       recette.nombreManquants = nbManquants;
 
       if (nbManquants == 0) {
@@ -312,6 +325,7 @@ class RecetteRepositoryImpl implements RecetteRepository {
         manquantes.add(recette);
       }
     }
+
 
     // Le tri "faisables" est déjà fait par le "ORDER BY score DESC" du SQL ci-dessus.
 

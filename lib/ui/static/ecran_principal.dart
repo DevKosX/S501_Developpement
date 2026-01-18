@@ -9,18 +9,31 @@ import '../modules/historique/ecran_historique.dart';
 import '../modules/profil/ecran_profil.dart';
 
 class EcranPrincipal extends StatefulWidget {
-  const EcranPrincipal({super.key});
+  final int initialIndex;
+
+  const EcranPrincipal({
+    super.key,
+    this.initialIndex = 0,
+  });
 
   @override
   State<EcranPrincipal> createState() => _EcranPrincipalState();
 }
+
 
 class _EcranPrincipalState extends State<EcranPrincipal> {
   // --- CONFIGURATION DE L'ACCUEIL ---
   // 0 = Accueil, 1 = Frigo, 2 = Recettes...
   // Tu veux que Frigo soit l'ouverture, donc on met 1.
   // Lancement de l'app : Acceuil (index 0)
-  int _indexSelectionne = 0;
+  late int _indexSelectionne;
+
+  @override
+  void initState() {
+    super.initState();
+    _indexSelectionne = widget.initialIndex;
+  }
+
 
   // La liste de tes 6 pages
   final List<Widget> _ecrans = [

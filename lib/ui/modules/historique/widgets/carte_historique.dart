@@ -3,6 +3,8 @@ import '../../../../core/models/historique_model.dart';
 import '../../../../core/models/recette_model.dart';
 import 'image_recette.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/controllers/historique_controller.dart';
+
 import '../../../../core/controllers/feedback_recette_controller.dart';
 
 
@@ -63,15 +65,47 @@ class CarteHistorique extends StatelessWidget {
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(Icons.delete,
-                          color: Colors.red.shade300, size: 20),
-                    )
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        final confirmer = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("Supprimer l’historique"),
+                              content: const Text(
+                                "Êtes-vous sûr de vouloir supprimer cette recette de l’historique ?\n"
+                                "Cette action est irréversible.",
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: const Text("Annuler"),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text("Supprimer"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirmer == true) {
+                          final historiqueCtrl = context.read<HistoriqueController>();
+                          await historiqueCtrl.supprimerHistorique(historique.idhistorique!);
+                        }
+                      },
+
+                    ),
+
                   ],
                 ),
 
@@ -82,76 +116,48 @@ class CarteHistorique extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // ETOILES + NOTE
-                FutureBuilder(
-                  future: context.read<FeedbackRecetteController>()
-                      .getFeedbackPourRecette(historique.idrecette),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return Row(
-                        children: const [
-                          Icon(Icons.star_border, size: 18, color: Colors.amber),
-                          SizedBox(width: 6),
-                          Text("Aucune note"),
-                        ],
-                      );
-                    }
-
-                    final feedback = snapshot.data!;
-                    final noteUser = feedback.note;
-
-                    return Row(
-                      children: [
-                        ...List.generate(
-                          noteUser,
-                          (i) => const Icon(Icons.star, size: 18, color: Colors.amber),
-                        ),
-                        ...List.generate(
-                          5 - noteUser,
-                          (i) => const Icon(Icons.star_border, size: 18, color: Colors.amber),
-                        ),
-                        const SizedBox(width: 6),
-                        Text("$noteUser/5"),
-                      ],
-                    );
-                  },
+                // NOTE
+                Row(
+                  children: [
+                    if (historique.note == null)
+                      const Text("Aucune note")
+                    else ...[
+                      ...List.generate(
+                        historique.note!,
+                        (i) => const Icon(Icons.star, size: 18, color: Colors.amber),
+                      ),
+                      ...List.generate(
+                        5 - historique.note!,
+                        (i) => const Icon(Icons.star_border, size: 18, color: Colors.amber),
+                      ),
+                      const SizedBox(width: 6),
+                      Text("${historique.note}/5"),
+                    ]
+                  ],
                 ),
+
 
 
                 const SizedBox(height: 14),
 
-                // COMMENTAIRE
-                FutureBuilder(
-                  future: context.read<FeedbackRecetteController>()
-                      .getFeedbackPourRecette(historique.idrecette),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return _commentBox("Aucun commentaire");
-                    }
-
-                    final feedback = snapshot.data!;
-                    final texte = (feedback.commentaire != null && feedback.commentaire!.isNotEmpty)
-                        ? feedback.commentaire!
-                        : "Aucun commentaire";
-
-                    return _commentBox('"$texte"');
-                  },
+                _commentBox(
+                  (historique.commentaire != null && historique.commentaire!.isNotEmpty)
+                      ? '"${historique.commentaire!}"'
+                      : "Aucun commentaire",
                 ),
-
-
                 const SizedBox(height: 14),
 
                 // DUREE + DIFFICULTE
                 Row(
                   children: [
-                    Icon(Icons.schedule, size: 18, color: Colors.green.shade700),
+                    Icon(Icons.schedule, size: 18, color: Color(0xFFE040FB)),
                     const SizedBox(width: 6),
                     Text("${historique.dureetotalemin} min"),
 
                     const SizedBox(width: 20),
 
                     Icon(Icons.bar_chart,
-                        size: 18, color: Colors.green.shade700),
+                        size: 18, color: Color(0xFFE040FB)),
                     const SizedBox(width: 6),
                     Text(recette?.difficulte ?? "—"),
                   ],

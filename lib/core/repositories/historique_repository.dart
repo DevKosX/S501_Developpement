@@ -5,6 +5,8 @@ import '../services/database_service.dart';
 abstract class HistoriqueRepository {
   Future<List<Historique>> getHistorique();
   Future<void> enregistrerAction(Historique action);
+  Future<void> supprimerHistorique(int idHistorique);
+
 }
 
 class HistoriqueRepositoryImpl implements HistoriqueRepository {
@@ -27,4 +29,15 @@ class HistoriqueRepositoryImpl implements HistoriqueRepository {
     );
     print("REPO: action enregistrée en BDD");
   }
+
+  @override
+  Future<void> supprimerHistorique(int idHistorique) async {
+    final db = await _dbService.database;
+    await db.delete(
+      'Historique',
+      where: 'id_historique = ?',
+      whereArgs: [idHistorique],
+    );
+  }
+
 }
