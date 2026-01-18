@@ -92,64 +92,69 @@ class TuileIngredient extends StatelessWidget {
           children: [
             // Contenu principal
             Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // 🔒 Zone image à hauteur contrôlée
                 Expanded(
-                  flex: 3,
+                  flex: 6,
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8),
                     child: Image.asset(
                       "assets/images/aliments/${aliment.image}",
                       fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.fastfood,
-                          size: 40,
-                          color: Colors.grey[400],
-                        );
-                      },
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.fastfood,
+                        size: 40,
+                        color: Colors.grey[400],
+                      ),
                     ),
                   ),
                 ),
+
+                // 🔒 Zone texte à hauteur contrôlée
                 Expanded(
-                  flex: 2,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    child: Column( // [MODIF] Column au lieu de juste Text pour ajouter la date
+                  flex: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           aliment.nom,
-                          textAlign: TextAlign.center,
-                          maxLines: 1, // [MODIF] Max 1 ligne pour laisser place à la date
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 11,
-                            fontWeight: _estDansFrigo ? FontWeight.bold : FontWeight.w500,
+                            fontWeight:
+                                _estDansFrigo ? FontWeight.bold : FontWeight.w500,
                             color: _estDansFrigo
                                 ? const Color(0xFFAA00FF)
                                 : const Color(0xFF2D3436),
                           ),
                         ),
-                        // [NOUVEAU] Affichage de la date sous le nom
+
                         if (_estDansFrigo && datePeremption != null) ...[
                           const SizedBox(height: 2),
-                          Text(
-                            "Exp: ${_formaterDate(datePeremption!)}",
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: couleurStatut, // Texte de la couleur du statut
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              "Exp: ${_formaterDate(datePeremption!)}",
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: couleurStatut,
+                              ),
                             ),
                           ),
-                        ]
+                        ],
                       ],
                     ),
                   ),
                 ),
               ],
             ),
+
+
 
             // Badge quantité
             if (_estDansFrigo)
