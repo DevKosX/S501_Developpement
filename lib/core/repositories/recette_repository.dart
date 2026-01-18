@@ -158,9 +158,61 @@ class RecetteRepositoryImpl implements RecetteRepository {
       } else if (tempsPrep > 60) {
         scoreBrut -= 2.0; // Malus "Long à faire"
       }
+      // C. Densité Nutritionnelle (Calories)
+      int calories = _toIntSafe(mapRecette['calories']);
+      
+      // On n'applique le bonus/malus que si les calories sont renseignées (> 0)
+      if (calories > 0) {
+        if (calories < 500) {
+          scoreBrut += 3.0; // Repas léger/équilibré
+        } else if(calories <= 700) {
+          scoreBrut += 1.0; // Repas normal
+        } else if (calories > 700) {
+          scoreBrut -= 1.0; // Repas très riche
+        }
+      }
 
       // ---------------------------------------------------------
-      // --- CRITÈRES FRIGO & PÉREMPTION (AMÉLIORÉ AVEC SERVICE) ---
+      // D. COMPLEXITÉ RÉELLE & ONE POT
+      // ---------------------------------------------------------
+      
+      String instructions = mapRecette['instructions'] as String? ?? "";
+      String titre = mapRecette['titre'] as String? ?? "";
+
+      // 1. Comptage dynamique des étapes (basé sur "1. ", "2. ", etc.)
+      final regexEtapes = RegExp(r'(\d+)\.\s');
+      int nombreEtapes = regexEtapes.allMatches(instructions).length;
+
+      // Si aucune numérotation trouvée, on suppose 1 étape (pour éviter division par 0 ou ratio infini)
+      if (nombreEtapes == 0 && instructions.isNotEmpty) nombreEtapes = 1;
+
+      // 2. Calcul du Ratio (Étapes / Minutes)
+      // Exemple : 10 étapes en 15 min = 0.66 (> 0.5) -> Trop speed !
+      // Exemple : 5 étapes en 60 min = 0.08 (< 0.5) -> Tranquille.
+      if (tempsPrep > 0) {
+        double ratio = nombreEtapes / tempsPrep;
+        
+        if (ratio > 0.5) {
+          scoreBrut -= 2.0; // Pénalité : Recette trop complexe pour le temps imparti
+        }
+        else {
+          scoreBrut += 1.0; // Bonus : Recette bien équilibrée
+        }
+      }
+
+      // 3. Bonus "One Pot" (Peu de vaisselle)
+      // On cherche des mots clés dans le titre ou les instructions
+      bool isOnePot = titre.toLowerCase().contains("one pot") || 
+                      titre.toLowerCase().contains("tout en un") ||
+                      instructions.toLowerCase().contains("tout mettre dans") ||
+                      instructions.toLowerCase().contains("cuire ensemble");
+
+      if (isOnePot) {
+        scoreBrut += 2.0; // Gros bonus confort !
+      }
+
+      // ---------------------------------------------------------
+      // E CRITÈRES FRIGO & PÉREMPTION (AMÉLIORÉ AVEC SERVICE) ---
       // ---------------------------------------------------------
       var ingredientsDeLaRecette = liaisonsMaps.where((l) => _toIntSafe(l['id_recette']) == idRecette);
 

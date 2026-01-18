@@ -42,7 +42,8 @@ class DatabaseService {
           score REAL,
           note_base INTEGER,
           image TEXT,
-          difficulte TEXT
+          difficulte TEXT,
+          calories INTEGER
         );
       ''');
 
@@ -124,7 +125,7 @@ class DatabaseService {
       );
 
       await _importerCSV(txn, 'assets/db/recettes.csv',
-          'INSERT INTO Recettes (id_recette, titre, instructions, temps_preparation, type_recette, score, note_base, image, difficulte) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          'INSERT INTO Recettes (id_recette, titre, instructions, temps_preparation, type_recette, score, note_base, image, difficulte,calories) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
 
       await _importerCSV(txn, 'assets/db/recetteAliment.csv',
@@ -138,6 +139,7 @@ class DatabaseService {
       await db.execute("ALTER TABLE Historique ADD COLUMN note INTEGER;");
       await db.execute("ALTER TABLE Historique ADD COLUMN commentaire TEXT;");
       await db.execute("ALTER TABLE Historique ADD COLUMN favori INTEGER DEFAULT 0;");
+      await db.execute("ALTER TABLE Recettes ADD COLUMN calories INTEGER DEFAULT 0;");
     }
   }
 
