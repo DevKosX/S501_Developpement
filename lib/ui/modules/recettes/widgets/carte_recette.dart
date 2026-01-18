@@ -46,7 +46,7 @@ class CarteRecette extends StatelessWidget {
                   height: 190,
                   width: double.infinity,
                   child: Image.asset(
-                    "assets/images/${recette.image}",
+                    "assets/images/recettes/${recette.image}",
                     fit: BoxFit.cover,
                     errorBuilder: (c, e, s) => Container(
                       color: Colors.grey[100],

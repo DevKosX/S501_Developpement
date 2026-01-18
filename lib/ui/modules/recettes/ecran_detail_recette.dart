@@ -116,11 +116,19 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                   shadows: [Shadow(blurRadius: 10, color: Colors.black45)]
                 ),
               ),
+              // [CORRECTION] Utilisation de Image.asset avec le chemin complet au lieu de network
               background: widget.recette.image.isNotEmpty
-                ? Image.network(
-                    widget.recette.image,
+                ? Image.asset(
+                    "assets/images/recettes/${widget.recette.image}",
                     fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => Container(color: Colors.orange.shade200),
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.orange.shade200,
+                        child: const Center(
+                          child: Icon(Icons.restaurant, size: 50, color: Colors.white54),
+                        ),
+                      );
+                    },
                   )
                 : Container(color: Colors.orange),
             ),
