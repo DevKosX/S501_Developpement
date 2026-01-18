@@ -284,6 +284,49 @@ class RecetteRepositoryImpl implements RecetteRepository {
           }
         }
       }
+      // =========================================================
+      // F . CONTEXTE TEMPOREL (MOMENT DE LA JOURNÉE)
+      // =========================================================
+      
+      int currentHour = now.hour;
+      String typeRecetteNorm = (mapRecette['type_recette'] as String? ?? "").toLowerCase();
+      String titreNorm = (mapRecette['titre'] as String? ?? "").toLowerCase();
+
+      bool isBreakfast = 
+          titreNorm.contains("muesli") || 
+          titreNorm.contains("pancake") ||
+          titreNorm.contains("bowl") ||
+          titreNorm.contains("granola") ||
+          titreNorm.contains("tartine") ||
+          titreNorm.contains("croissant") ||
+          titreNorm.contains("brioche") ||
+          titreNorm.contains("déjeuner") ||
+          titreNorm.contains("oeuf") ||      
+          titreNorm.contains("omelette") ||    
+          titreNorm.contains("crêpe") ||       
+          titreNorm.contains("pain perdu") ||  
+          titreNorm.contains("lait au miel") ||
+          titreNorm.contains("avocat");       
+
+      bool isPlat = typeRecetteNorm == "plat";
+
+      // --- RÈGLE 1 : MATIN (5h à 10h) ---
+      if (currentHour >= 5 && currentHour <= 10) {
+        if (isBreakfast) {
+          scoreBrut += 5.0; 
+        } else if (isPlat) {
+          scoreBrut -= 10.0;
+        }
+      }
+      
+      // --- RÈGLE 2 : REPAS PRINCIPAUX (11h-14h et 19h-21h) ---
+      // On favorise les vrais plats
+      else if ((currentHour >= 11 && currentHour <= 14) || 
+               (currentHour >= 19 && currentHour <= 21)) {
+        if (isPlat) {
+          scoreBrut += 3.0; 
+        }
+      }
 
       if (scoreBrut < 0) scoreBrut = 0.0;
 
