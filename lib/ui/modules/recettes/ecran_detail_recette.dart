@@ -369,7 +369,7 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                           ),
                         ),
                         child: const Text(
-                          "🍳 Commencer à cuisiner",
+                          "Commencer à cuisiner",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
