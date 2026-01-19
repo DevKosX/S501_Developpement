@@ -22,35 +22,52 @@ class ListeRecettes extends StatelessWidget {
   Widget build(BuildContext context) {
     // 1. ici c le cas si c vide
     if (recettes.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20)],
-              ),
-              child: Icon(
+      return ListView(
+        padding: EdgeInsets.only(
+          top: 80,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 80,
+        ),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                    ),
+                  ],
+                ),
+                child: Icon(
                   estFaisable ? Icons.soup_kitchen : Icons.edit_note,
                   size: 60,
-                  color: Colors.grey[300]
+                  color: Colors.grey[300],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              estFaisable
-                  ? "Rien n'est prêt !\nAjoutez des ingrédients au frigo."
-                  : "Aucune recette ici.\nTout est peut-être déjà cuisinable ?",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[500], fontSize: 16),
-            ),
-          ],
-        ),
+              const SizedBox(height: 20),
+              Text(
+                estFaisable
+                    ? "Rien n'est prêt !\nAjoutez des ingrédients au frigo."
+                    : "Aucune recette ici.\nTout est peut-être déjà cuisinable ?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ],
       );
     }
+
+
 
     // 2. CAS AVEC DONNÉES
     return ListView.separated(

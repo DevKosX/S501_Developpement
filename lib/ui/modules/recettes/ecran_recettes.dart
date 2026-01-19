@@ -59,6 +59,7 @@ class _EcranRecettesState extends State<EcranRecettes> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         backgroundColor: const Color(0xFFF9FAFB),
         // MODIFICATION : Column remplacée par NestedScrollView pour le scroll sticky
         body: NestedScrollView(
@@ -194,7 +195,7 @@ class _EcranRecettesState extends State<EcranRecettes> {
                                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                                   decoration: BoxDecoration(
                                     color: estSelectionnee ? const Color(0xFFE040FB) : Colors.white,
-                                    borderRadius: BorderRadius.circular(25), // 👈 PLUS ROND
+                                    borderRadius: BorderRadius.circular(25), 
                                     border: Border.all(
                                       color: estSelectionnee
                                           ? const Color(0xFFE040FB)
@@ -212,7 +213,7 @@ class _EcranRecettesState extends State<EcranRecettes> {
                                         : [],
                                   ),
                                   child: Row(
-                                    mainAxisSize: MainAxisSize.min, // Important pour que le tag s'adapte au contenu
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
                                         icon,
@@ -305,21 +306,25 @@ class _EcranRecettesState extends State<EcranRecettes> {
 
           // --- BLOC 3 : LE CONTENU (LISTE) ---
           body: controller.isLoading
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFFE040FB)))
-              : TabBarView(
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFFE040FB)))
+            : Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: TabBarView(
                   children: [
-                    // Onglet 1
                     ListeRecettes(
                       recettes: controller.recettesFaisablesFiltrees,
                       estFaisable: true,
                     ),
-                    // Onglet 2
                     ListeRecettes(
                       recettes: controller.recettesManquantesFiltrees,
                       estFaisable: false,
                     ),
                   ],
                 ),
+              ),
+
         ),
       ),
     );
