@@ -98,13 +98,17 @@ class TuileIngredient extends StatelessWidget {
                   flex: 6,
                   child: Padding(
                     padding: const EdgeInsets.all(8),
-                    child: Image.asset(
-                      "assets/images/aliments/${aliment.image}",
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Icon(
-                        Icons.fastfood,
-                        size: 40,
-                        color: Colors.grey[400],
+                    child: Center( 
+                      child: Image.asset(
+                        "assets/images/aliments/${aliment.image}",
+                        fit: BoxFit.contain,
+                        width: double.infinity, // Force l'image à prendre la largeur dispo
+                        alignment: Alignment.center, 
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.fastfood,
+                          size: 40,
+                          color: Colors.grey[400],
+                        ),
                       ),
                     ),
                   ),
