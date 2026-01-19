@@ -109,71 +109,7 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
 
     return Scaffold(
       // --- BOUTON FAVORIS ---
-      floatingActionButton: Consumer<FeedbackRecetteController>(
-        builder: (context, controller, _) {
-          final estFavori = controller.feedbacks
-              .any((f) => f.idrecette == widget.recette.id_recette && f.favori == 1); //
-          
-          return FloatingActionButton.extended(
-            backgroundColor: estFavori ? Colors.red : Colors.white,
-            elevation: 8,
-            onPressed: () async {
-              final feedback = FeedbackRecette(
-                idrecette: widget.recette.id_recette,
-                favori: estFavori ? 0 : 1,
-                note: 0,
-              );
-              await controller.toggleFavori(feedback); //
-
-              if (context.mounted) {
-                await context.read<RecetteController>().getRecettesTrieesParFrigo(); //
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        Icon(
-                          estFavori ? Icons.heart_broken : Icons.favorite,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          estFavori 
-                            ? 'Retiré des favoris' 
-                            : 'Ajouté aux favoris !',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    duration: const Duration(seconds: 2),
-                    backgroundColor: estFavori ? Colors.grey[800] : Colors.pink,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                );
-              }
-            },
-            icon: Icon(
-              estFavori ? Icons.favorite : Icons.favorite_border,
-              color: estFavori ? Colors.white : Colors.red,
-              size: 28,
-            ),
-            label: Text(
-              estFavori ? 'En favoris' : 'Ajouter',
-              style: TextStyle(
-                color: estFavori ? Colors.white : Colors.red,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          );
-        },
-      ),
+      
 
       body: CustomScrollView(
         slivers: [
@@ -182,6 +118,77 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
             expandedHeight: 250.0,
             pinned: true,
             backgroundColor: Colors.orange,
+
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Consumer<FeedbackRecetteController>(
+                  builder: (context, controller, _) {
+                    final estFavori = controller.feedbacks.any(
+                      (f) =>
+                          f.idrecette == widget.recette.id_recette &&
+                          f.favori == 1,
+                    );
+
+                    return GestureDetector(
+                      onTap: () async {
+                        final feedback = FeedbackRecette(
+                          idrecette: widget.recette.id_recette,
+                          favori: estFavori ? 0 : 1,
+                          note: 0,
+                        );
+
+                        await controller.toggleFavori(feedback);
+                        await context
+                            .read<RecetteController>()
+                            .getRecettesTrieesParFrigo();
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: estFavori
+                              ? Colors.red
+                              : Colors.white.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.25),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              estFavori
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: estFavori ? Colors.white : Colors.red,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              estFavori ? "En favoris" : "Ajouter",
+                              style: TextStyle(
+                                color:
+                                    estFavori ? Colors.white : Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+
+
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 widget.recette.titre, //
