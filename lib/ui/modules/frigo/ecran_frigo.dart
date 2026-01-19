@@ -52,13 +52,14 @@ class _EcranFrigoState extends State<EcranFrigo> {
     }
   }
 
-  static const int _pageSize = 30;
+  static const int _pageSize = 20;
   int _currentPage = 1;
 
   @override
   Widget build(BuildContext context) {
     final alimentController = context.watch<AlimentController>();
     final frigoController = context.watch<FrigoController>();
+    final width = MediaQuery.of(context).size.width;
 
     final List<String> categories = ["Tout", ...alimentController.categories];
 
@@ -365,15 +366,17 @@ class _EcranFrigoState extends State<EcranFrigo> {
                             ),
                           ),
                         )
+                        
                       : GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
+                          
                           gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
+                             SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: width < 360 ? 3 : 4,
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
-                            childAspectRatio: 0.75,
+                            childAspectRatio: width < 360 ? 0.65 : 0.7,
                           ),
                           itemCount: alimentsAffiches.length,
                           itemBuilder: (context, index) {

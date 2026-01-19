@@ -182,25 +182,23 @@ class CarteRecette extends StatelessWidget {
                 // Infos
                 Row(
                   children: [
-                    _InfoPill(icon: Icons.timer_outlined, text: "${recette.tempsPreparation} min"),
-                    const SizedBox(width: 12),
-                    _InfoPill(icon: Icons.bar_chart_rounded, text: recette.difficulte),
-                    if (recette.calories > 0) ...[
-                      const SizedBox(width: 12),
-                      _InfoPill(
-                        icon: Icons.local_fire_department_rounded, 
-                        text: "${recette.calories} kcal"
-                      ), 
-                    ],
-                    const Spacer(),
-                    const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${recette.score}", // Le score se mettra à jour après l'étape 2 du onTap
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                    _InfoItem(
+                      icon: Icons.timer_outlined,
+                      text: "${recette.tempsPreparation} min",
                     ),
+                    _InfoItem(
+                      icon: Icons.bar_chart_rounded,
+                      text: recette.difficulte,
+                    ),
+                    if (recette.calories > 0)
+                      _InfoItem(
+                        icon: Icons.local_fire_department_rounded,
+                        text: "${recette.calories} kcal",
+                      ),
+                    _InfoRating(score: recette.score),
                   ],
                 ),
+
 
                 const SizedBox(height: 20),
 
@@ -272,6 +270,71 @@ class _GlassBadge extends StatelessWidget {
     );
   }
 }
+
+
+class _InfoItem extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _InfoItem({
+    required this.icon,
+    required this.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 16, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.grey[800],
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRating extends StatelessWidget {
+  final double score;
+
+  const _InfoRating({required this.score});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+          const SizedBox(width: 4),
+          Text(
+            score.toStringAsFixed(1),
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
 
 class _InfoPill extends StatelessWidget {
   final IconData icon;
