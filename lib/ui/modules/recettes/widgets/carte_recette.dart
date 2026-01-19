@@ -318,7 +318,7 @@ class _InfoRating extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+          const Icon(Icons.star_rounded, color: Color(0xFFE040FB), size: 18),
           const SizedBox(width: 4),
           Text(
             score.toStringAsFixed(1),

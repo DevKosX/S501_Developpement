@@ -63,7 +63,7 @@ class _EcranPrincipalState extends State<EcranPrincipal> {
 
         // --- STYLE VISUEL (Comme ta capture) ---
         type: BottomNavigationBarType.fixed, // OBLIGATOIRE quand il y a + de 3 onglets
-        selectedItemColor: Colors.orange,    // Couleur de l'icône active (Frigo)
+        selectedItemColor: Color(0xFFE040FB),    // Couleur de l'icône active (Frigo)
         unselectedItemColor: Colors.grey,    // Couleur des autres
         showUnselectedLabels: true,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),

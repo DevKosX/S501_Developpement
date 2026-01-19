@@ -117,7 +117,7 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
           SliverAppBar(
             expandedHeight: 250.0,
             pinned: true,
-            backgroundColor: Colors.orange,
+            backgroundColor:  Color(0xFFE040FB),
 
             actions: [
               Padding(
@@ -203,14 +203,14 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: Colors.orange.shade200,
+                        color: Color(0xFFE040FB),
                         child: const Center(
                           child: Icon(Icons.restaurant, size: 50, color: Colors.white54),
                         ),
                       );
                     },
                   )
-                : Container(color: Colors.orange),
+                : Container(color: Color(0xFFE040FB)),
             ),
           ),
 
@@ -370,7 +370,7 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
+                          backgroundColor: Color(0xFFE040FB),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -421,7 +421,7 @@ class _EcranDetailRecetteState extends State<EcranDetailRecette> {
                 width: 28,
                 height: 28,
                 decoration: const BoxDecoration(
-                  color: Colors.orange,
+                  color: Color(0xFFE040FB),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -484,7 +484,7 @@ class _InfoBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, color: Colors.orange, size: 28),
+        Icon(icon, color: Color(0xFFE040FB), size: 28),
         const SizedBox(height: 4),
         Text(
           text,
