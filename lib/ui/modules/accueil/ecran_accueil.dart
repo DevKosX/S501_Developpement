@@ -237,44 +237,7 @@ class _EcranAccueilState extends State<EcranAccueil> {
             // ============================================================
             // 4. SECTION CONTACT
             // ============================================================
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: paddingGlobal, vertical: 20),
-              padding: const EdgeInsets.all(25),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))
-                ]
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.mail_outline, color: Colors.orange, size: 35),
-                  const SizedBox(height: 15),
-                  Text(
-                    "Une question ou une idée ?",
-                    style: TextStyle(color: Colors.white, fontSize: screenSize.width * 0.045, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Notre équipe est là pour vous aider à cuisiner mieux.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[400], fontSize: 13),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.send, size: 16),
-                    label: const Text("Nous contacter"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+
             const SizedBox(height: 20),
           ],
         ),
