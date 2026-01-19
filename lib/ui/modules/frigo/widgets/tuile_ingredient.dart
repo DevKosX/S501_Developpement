@@ -45,18 +45,25 @@ class TuileIngredient extends StatelessWidget {
 
   /// Formate l'affichage de la quantité selon l'unité
   String _formaterQuantite() {
-    final qte = quantiteAuFrigo.toInt();
     final uniteLC = unite.toLowerCase();
 
-    // Unités de comptage → "x3"
-    if (uniteLC == "pcs" || uniteLC == "pièce" || uniteLC == "pièces" ||
-        uniteLC == "unité" || uniteLC == "unités") {
-      return "x$qte";
+    // Unités entières
+    if (uniteLC == "pcs" ||
+        uniteLC == "pièce" ||
+        uniteLC == "pièces" ||
+        uniteLC == "unité" ||
+        uniteLC == "unités") {
+      return "x${quantiteAuFrigo.toInt()}";
     }
 
-    // Unités de mesure → "110g", "500ml"
-    return "$qte$unite";
+    // 🔢 Unités décimales (kg, g, ml…)
+    final valeur = quantiteAuFrigo % 1 == 0
+        ? quantiteAuFrigo.toInt().toString()
+        : quantiteAuFrigo.toStringAsFixed(1);
+
+    return "$valeur$unite";
   }
+
 
   @override
   Widget build(BuildContext context) {

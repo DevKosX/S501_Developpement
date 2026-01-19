@@ -451,6 +451,26 @@ class _EcranFrigoState extends State<EcranFrigo> {
     );
   }
 
+  String _formatQuantite(double qte, String unite) {
+    final uniteLC = unite.toLowerCase();
+
+    // Unités entières uniquement
+    if (uniteLC == "pcs" ||
+        uniteLC == "pièce" ||
+        uniteLC == "pièces" ||
+        uniteLC == "unité" ||
+        uniteLC == "unités") {
+      return "${qte.toInt()} $unite";
+    }
+
+    // Unités décimales
+    final valeur = qte % 1 == 0
+        ? qte.toInt().toString()
+        : qte.toStringAsFixed(1);
+
+    return "$valeur $unite";
+  }
+
   // --- MODALE : CONTENU DU FRIGO ---
   void _afficherContenuFrigo(BuildContext context) {
     showModalBottomSheet(
@@ -664,7 +684,7 @@ class _EcranFrigoState extends State<EcranFrigo> {
                                                                 .circular(8),
                                                       ),
                                                       child: Text(
-                                                        "${item.quantite.toInt()} ${item.unite}",
+                                                        _formatQuantite(item.quantite, item.unite),
                                                         style: const TextStyle(
                                                           color:
                                                               Color(0xFFAA00FF),
@@ -897,11 +917,32 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
 
         // Mettre à jour le controller seulement si on n'est pas en train d'éditer
         if (!_isEditing) {
-          _quantiteController.text = qte > 0 ? qte.toInt().toString() : "";
-          if (!_isEditing && unitesDisponibles.contains(unite)) {
+          if (qte > 0) {
+            final uniteLC = unite.toLowerCase();
+
+            // PCS → entier
+            if (uniteLC == "pcs" ||
+                uniteLC == "pièce" ||
+                uniteLC == "pièces" ||
+                uniteLC == "unité" ||
+                uniteLC == "unités") {
+              _quantiteController.text = qte.toInt().toString();
+            } 
+            // Autres unités → décimal
+            else {
+              _quantiteController.text = qte % 1 == 0
+                  ? qte.toInt().toString()
+                  : qte.toString().replaceAll('.', ','); // locale FR
+            }
+          } else {
+            _quantiteController.text = "";
+          }
+
+          if (unitesDisponibles.contains(unite)) {
             _uniteSelectionnee = unite;
           }
         }
+
 
         return SingleChildScrollView(
           child: Padding(
@@ -1109,7 +1150,9 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                                 color: Color(0xFF2D3436),
                               ),
                               inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*([.,]\d*)?$'),
+                                ),
                               ],
                               onTap: () {
                                 setState(() {
@@ -1329,19 +1372,37 @@ class _FicheGestionAlimentState extends State<_FicheGestionAliment> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () async{
-                      double nouvelleQuantite =
-                          double.tryParse(_quantiteController.text) ?? 0;
-                      // [NOUVEAU] On passe la date modifiée au contrôleur
+                    onPressed: () async {
+                      final texte = _quantiteController.text.trim();
+
+                      // Interdire décimales pour pcs
+                      final estDecimal = texte.contains(',') || texte.contains('.');
+                      if (_uniteSelectionnee == "pcs" && estDecimal) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Les pièces doivent être un nombre entier"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      // Normalisation virgule → point
+                      final nouvelleQuantite = double.tryParse(
+                        texte.replaceAll(',', '.'),
+                      ) ?? 0;
+
                       await frigoCtrl.definirQuantite(
                         widget.aliment,
                         nouvelleQuantite,
                         datePeremption: _datePeremption,
                         unite: _uniteSelectionnee,
                       );
+
                       widget.onValidation();
                       Navigator.pop(context);
                     },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE040FB),
                       foregroundColor: Colors.white,
